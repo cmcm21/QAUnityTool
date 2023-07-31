@@ -9,32 +9,35 @@ direction TB
 class ISnifferInput{
 <<interface>>
 }
-class IRecorder{
-<<interface>>
+class Recorder{
+<<abstract>>
++Record()
 }
-class IPlayer{
-<<interface>>
+class RecorderPlayer{
+<<abstract>>
++Playback(file)
 }
 class SnifferCore
 
 SnifferCore: +Init()
 SnifferCore: +Record()
-SnifferCore: +Play(recordFile)
+SnifferCore: +Playback(recordFile)
 SnifferCore: +SnifferState state
 SnifferCore: -ISnifferInput input
-SnifferCore: -IRecorder recorder
-SnifferCore: -IPlayer player
+SnifferCore: -Recorder recorder
+SnifferCore: -RecorderPlayer player
 
 class SnifferState{
-	+SnifferState.Recording
-	+SnifferState.PlayBack
+	<<enumeration>>
+	Recording
+	PlayingBack
 }
 
 
 SnifferCore *--SnifferState
 SnifferCore *--ISnifferInput
-SnifferCore *--IRecorder
-SnifferCore *--IPlayer
+SnifferCore *--Recorder
+SnifferCore *--RecorderPlayer
 ```
 
 ```mermaid
@@ -42,11 +45,13 @@ SnifferCore *--IPlayer
 title: Sniffer Input class Diagram
 ---
 classDiagram
+direction RL
 class ISnifferInput{
 <<interface>>
+	+event InputTriggered ~InputData~ inputEvent
+	+Init()
 	+GetInputs()
-	+SaveInputsData()
-	+LoadInputData(recordFile)
+	+GetInputData() InputData
 }
 
 class NewInputSystem{
@@ -56,10 +61,70 @@ class NewInputSystem{
 class OldInputSystem{
 	+PhysicalInput[] phyInputs
 	+Touch[] touchInputs
-	+VirtaulAxis[] virtualAxes
+	+VirtuallAxis[] virtualAxes
+}
+
+class InputData{
+	+InputType type
+	+String inputName
+	+float duration
+	+Vector3 position
+	+float startingTime
+	+float endingTime	
 }
 
 ISnifferInput <|--NewInputSystem
 ISnifferInput <|--OldInputSystem
 
 ```
+
+``
+```mermaid
+---
+title: Sniffer Recorder Class Diagram
+---
+classDiagram
+direction TB
+class Recorder{
+<<abstract>>
+	-ISnifferInput input
+	-RecorderTimeline timelines[]
+	+RecorderState state
+	+Recorder(snifferInput)
+	+Stop()
+}
+
+class RecorderTimeline{
+	-RecoderClip[] clips
+	+RecorderTimeline()	
+	+CreateClip(inputData) 
+}
+
+class RecorderClip{
+	+RecorderClipType type
+	+InputData input
+	+RecorderTimeline ref timelineRef
+}
+
+class RecorderClipType{
+<<enumeration>>
+	IDLE,
+	EVENT_ACTION,
+	CONTINIOUS_ACTION	
+ }
+
+class RecorderState{
+<<enumeration>>
+	IDLE,
+	RECORDING,
+	STOP
+}
+
+RecorderTimeline*--RecorderClip
+RecorderClip*--RecorderClipType
+Recorder*--RecorderTimeline
+Recorder*--RecorderState
+Recorder*--ISnifferInput
+
+```
+

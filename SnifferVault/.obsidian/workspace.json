@@ -4,10 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "83d3ebf2059f6ea4",
+        "id": "a7bae0f3a657ef96",
         "type": "tabs",
-        "dimension": 44.3029490616622,
         "children": [
+          {
+            "id": "93648156bd284dbc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
           {
             "id": "ca31fab9eb11872b",
             "type": "leaf",
@@ -23,18 +34,17 @@
         ]
       },
       {
-        "id": "a7bae0f3a657ef96",
+        "id": "992fdb0c6aab277d",
         "type": "tabs",
-        "dimension": 55.6970509383378,
         "children": [
           {
-            "id": "93648156bd284dbc",
+            "id": "27ae4081922e134d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "Architecture/Sniffer Class Diagram.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -167,7 +177,7 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ca31fab9eb11872b",
+  "active": "93648156bd284dbc",
   "lastOpenFiles": [
     "Notes/Today Tasks.md",
     "Architecture/Sniffer Class Diagram.md",
