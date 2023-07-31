@@ -1,0 +1,182 @@
+{
+  "main": {
+    "id": "578fd26f276329c3",
+    "type": "split",
+    "children": [
+      {
+        "id": "83d3ebf2059f6ea4",
+        "type": "tabs",
+        "dimension": 44.3029490616622,
+        "children": [
+          {
+            "id": "ca31fab9eb11872b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "a7bae0f3a657ef96",
+        "type": "tabs",
+        "dimension": 55.6970509383378,
+        "children": [
+          {
+            "id": "93648156bd284dbc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "681fc2201a60279c",
+    "type": "split",
+    "children": [
+      {
+        "id": "7dce21cdf4c65859",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "195863c140aa436a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "ee698b3c69c082eb",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "69dcc7e65d416deb",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "e3e48fb6066ee8e4",
+    "type": "split",
+    "children": [
+      {
+        "id": "100770fccf3af911",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4f7193ef08c5e6de",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "ae981392615c7797",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "1feecca0b3e881a6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "c0e22173fc825bf1",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Architecture/Sniffer Class Diagram.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "ca31fab9eb11872b",
+  "lastOpenFiles": [
+    "Notes/Today Tasks.md",
+    "Architecture/Sniffer Class Diagram.md",
+    "2023-07-31.md",
+    "Untitled 1.canvas",
+    "Untitled.canvas",
+    "bootstrap.md",
+    "Architecture.md",
+    "Architecture",
+    "Notes"
+  ]
+}
