@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.tagwizz.qa.sniffer": {
-      "version": "file:QA Sniffer",
+      "version": "file:Tagwizz QA Sniffer",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

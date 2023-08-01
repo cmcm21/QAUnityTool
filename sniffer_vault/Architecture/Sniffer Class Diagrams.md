@@ -1,4 +1,4 @@
-[[Sniffer Core Diagram]]
+
 
 ```mermaid
 ---
@@ -31,8 +31,8 @@ SnifferCore: -SnifferPlayer player
 
 class SnifferState{
 	<<enumeration>>
-	Recording
-	PlayingBack
+	RECORDING
+	PLAYINGBACK
 }
 
 class RecordingData{
