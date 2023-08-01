@@ -7,17 +7,18 @@ title: Sniffer Core Class Diagram
 
 classDiagram 
 direction TB
+
 class ISnifferInput{
 <<interface>>
 }
+
 class Recorder{
-<<abstract>>
 +Record()
 }
-class RecorderPlayer{
-<<abstract>>
+class SnifferPlayer{
 +Playback(RecordingData recData)
 }
+
 class SnifferCore
 
 SnifferCore: +Init()
@@ -26,7 +27,7 @@ SnifferCore: +Playback(RecordingData recordrecData)
 SnifferCore: +SnifferState state
 SnifferCore: -ISnifferInput input
 SnifferCore: -Recorder recorder
-SnifferCore: -RecorderPlayer player
+SnifferCore: -SnifferPlayer player
 
 class SnifferState{
 	<<enumeration>>
@@ -42,8 +43,9 @@ class RecordingData{
 SnifferCore *--SnifferState
 SnifferCore *--ISnifferInput
 SnifferCore *--Recorder
-SnifferCore *--RecorderPlayer
-SnifferCore*--RecordingData
+SnifferCore *--SnifferPlayer
+Recorder*--RecordingData
+SnifferPlayer*--RecordingData
 ```
 
 ```mermaid
@@ -80,8 +82,21 @@ class InputData{
 	+float endingTime	
 }
 
+class AxeInputData{
+	+float xValue
+	+float yValue
+}
+
+class InputType{
+	<<enumeration>>
+}
+
 ISnifferInput <|--NewInputSystem
 ISnifferInput <|--OldInputSystem
+ISnifferInput *--InputData
+InputData<|--AxeInputData
+InputData*--InputType
+
 
 ```
 
@@ -93,7 +108,6 @@ title: Sniffer Recorder Class Diagram
 classDiagram
 direction LR
 class Recorder{
-<<abstract>>
 	#ISnifferInput input
 	#RecorderTimeline timeline
 	#ConnectInputEvents()
@@ -114,23 +128,9 @@ class RecorderState{
 	STOP,
 }
 
-class RecorderNewSys{
-	+RecorderNewSys()
-	+Record(String recordingName)
-	+Stop() 
-}
-
-class RecorderOldSys{
-	+RecorderOldSys()
-	+Record(String recordingName)
-	+Stop()
-}
-
 Recorder*--RecorderTimeline
 Recorder*--RecorderState
 Recorder*--ISnifferInput
-Recorder<|--RecorderNewSys
-Recorder<|--RecorderOldSys
 
 ```
 
