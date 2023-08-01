@@ -1,3 +1,4 @@
+[[Sniffer Core Diagram]]
 
 ```mermaid
 ---
