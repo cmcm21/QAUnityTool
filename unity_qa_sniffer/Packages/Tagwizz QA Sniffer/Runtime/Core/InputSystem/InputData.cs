@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Tagwizz_QA_Sniffer.Core.InputSystem
 {
-    public struct InputData
+    public class InputData
     {
         public InputType type;
         public string Name;
@@ -11,5 +11,8 @@ namespace Tagwizz_QA_Sniffer.Core.InputSystem
         public Vector2 EndingPosition;
         public float StartingTime;
         public float EndingTime;
+        public int frames;
+        public float VerticalAxeValue;
+        public float HorizontalAxeValue;
     }
 }

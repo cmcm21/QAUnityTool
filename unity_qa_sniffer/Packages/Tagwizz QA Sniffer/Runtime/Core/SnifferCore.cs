@@ -1,4 +1,5 @@
 using Tagwizz_QA_Sniffer.Core.InputSystem;
+using Tagwizz_QA_Sniffer.Core.InputSystem.OldSystemInput;
 
 namespace Tagwizz_QA_Sniffer.Core 
 {
@@ -8,13 +9,13 @@ namespace Tagwizz_QA_Sniffer.Core
         private SnifferState _state;
         public SnifferState State => _state;
 
-        private ISnifferInput _input;
+        private SnifferInputSystem _inputSystem;
 
         public void Start()
         {
             //TODO: Select input system depending on the package that is installed in the project
-            _input = new OldSystemInput();
-            _input.Init();
+            _inputSystem = new OldSystemInput();
+            _inputSystem.Init();
         }
     }
 }
