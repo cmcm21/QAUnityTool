@@ -1,7 +1,7 @@
 {
   "name": "com.tagwizz.qa.sniffer",
   "version": "0.0.1",
-  "displayName": "Sniffer",
+  "displayName": "Tagwizz QA Sniffer",
   "description": "This is a QA recorder and playback package",
   "unity": "2020.3",
   "unityRelease": "",
