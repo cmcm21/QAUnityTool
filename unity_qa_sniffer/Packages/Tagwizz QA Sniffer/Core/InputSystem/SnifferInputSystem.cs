@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Tagwizz_QA_Sniffer.Core.InputSystem
+namespace TagwizzQASniffer.Core.InputSystem
 {
     public delegate void InputEventTriggered(InputData inputData);
     public abstract class SnifferInputSystem
@@ -15,6 +15,7 @@ namespace Tagwizz_QA_Sniffer.Core.InputSystem
         {
             InputEvent?.Invoke(inputData);
         }
+        
     }
     
     public enum InputType{TOUCH,KEY,BUTTON}

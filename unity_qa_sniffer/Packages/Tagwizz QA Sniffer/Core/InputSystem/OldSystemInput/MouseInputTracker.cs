@@ -1,4 +1,4 @@
-namespace Tagwizz_QA_Sniffer.Core.InputSystem.OldSystemInput
+namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
     public class MouseInputTracker: InputTracker
     {

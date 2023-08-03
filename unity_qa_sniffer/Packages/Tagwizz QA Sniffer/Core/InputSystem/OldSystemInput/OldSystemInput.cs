@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
-namespace Tagwizz_QA_Sniffer.Core.InputSystem.OldSystemInput
+namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
     public class OldSystemInput: SnifferInputSystem
     {
@@ -31,6 +30,16 @@ namespace Tagwizz_QA_Sniffer.Core.InputSystem.OldSystemInput
         {
             foreach (var tracker in _trackers)
                 tracker.CheckInputs();
+        }
+
+        public override async void Stop()
+        {
+            base.Stop();
+            foreach(var tracker in _trackers)
+            {
+                foreach (var trackerTask in tracker.TrackTasks)
+                    await trackerTask;
+            }
         }
     }
 }
