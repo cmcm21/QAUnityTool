@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.IMGUI.Controls;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
@@ -11,6 +9,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
     {
         private  Dictionary<string, InputData> _axesRef = new Dictionary<string, InputData>();
         private readonly Dictionary<string, bool> _axesTracking = new Dictionary<string, bool>();
+        private readonly List<string> _axesNames = new List<string>();
 
         public AxesInputTracker()
         {
@@ -32,14 +31,16 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                         Name = name,
                         type = GetInputType(inputType)
                     });
+                    
+                    _axesNames.Add(name);
                 }
                 if(!_axesTracking.ContainsKey(name))
                     _axesTracking.Add(name,false);
             }
         }
-        public override async void CheckInputs()
+        public override void CheckInputs()
         {
-            foreach (var axeName in _axesRef.Keys)
+            foreach (var axeName in _axesNames)
             {
                 var axisVal = Input.GetAxis(axeName);
                 if (axisVal != 0)
@@ -66,11 +67,6 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                     }
                 }
             }
-        }
-
-        private  void TrackSingleAxe(string axeName)
-        {
-
         }
 
         private InputType GetInputType(AxeInputType type)

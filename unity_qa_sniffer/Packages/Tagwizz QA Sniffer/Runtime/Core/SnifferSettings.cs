@@ -1,3 +1,4 @@
+using TagwizzQASniffer.Core;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Core

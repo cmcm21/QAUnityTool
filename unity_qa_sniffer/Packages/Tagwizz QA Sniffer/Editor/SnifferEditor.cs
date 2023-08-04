@@ -1,5 +1,4 @@
 using System.IO;
-using System.Net;
 using TagwizzQASniffer.Core;
 using UnityEditor;
 using UnityEngine;

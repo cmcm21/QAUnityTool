@@ -1,4 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
-    <ui:Label text="Sniffer Recorder" class="header" />
-    <ui:VisualElement />
+    <ui:VisualElement style="flex-grow: 1; align-items: stretch; padding-left: 20px; padding-right: 20px; padding-top: 20px; padding-bottom: 20px; justify-content: space-between;">
+        <ui:Label text="Sniffer Recorder" class="header" style="flex-grow: 0; flex-shrink: 1; -unity-text-align: upper-center; font-size: 24px; -unity-font-style: bold;" />
+        <ui:Button text="Instantiate Sniffer" display-tooltip-when-elided="true" name="InstantiateSnifferButton" style="padding-top: 5px; padding-bottom: 5px;" />
+        <uie:ObjectField label="Sniffer Container" name="SnifferContainerObjField" style="font-size: 14px; -unity-font-style: normal;" />
+        <ui:VisualElement name="Options">
+            <ui:Button text="Start Recording" display-tooltip-when-elided="true" name="StartRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
+            <ui:Button text="Stop Recording" display-tooltip-when-elided="true" name="StopRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
 </ui:UXML>

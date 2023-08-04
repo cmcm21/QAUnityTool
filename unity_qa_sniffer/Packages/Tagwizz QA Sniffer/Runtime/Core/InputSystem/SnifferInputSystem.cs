@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace TagwizzQASniffer.Core.InputSystem
 {
     public delegate void InputEventTriggered(InputData inputData);
@@ -9,7 +6,7 @@ namespace TagwizzQASniffer.Core.InputSystem
         public event InputEventTriggered InputEvent;
         public virtual void Init() { }
         public virtual void Stop(){}
-        public virtual async void GetInputs(){}
+        public virtual void GetInputs(){}
 
         public void OnInputEvent(InputData inputData)
         {
