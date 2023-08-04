@@ -1,6 +1,6 @@
 using System.Collections;
-using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Editor;
+using TagwizzQASniffer.Core;
 using System.Collections.Generic;
 using UnityEngine;
 
