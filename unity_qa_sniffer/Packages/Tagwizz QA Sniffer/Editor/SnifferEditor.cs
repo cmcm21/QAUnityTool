@@ -47,7 +47,7 @@ namespace TagwizzQASniffer.Editor
         }
     }
 
-    internal static class SnifferEndPoints
+    public static class SnifferEndPoints
     {
         public static readonly string RecordingsFilesDirectory = "Assets/SnifferRecordings/";
         public static readonly string SnifferSettingsPath = "Assets/Resources/SnifferSettings.asset"; 

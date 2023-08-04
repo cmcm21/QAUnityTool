@@ -7,7 +7,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
     public enum AxeInputType { KeyOrMouseButton, MouseMovement, JoystickAxis }
     public class AxesInputTracker: InputTracker
     {
-        private  Dictionary<string, InputData> _axesRef = new Dictionary<string, InputData>();
+        private readonly Dictionary<string, InputData> _axesRef = new Dictionary<string, InputData>();
         private readonly Dictionary<string, bool> _axesTracking = new Dictionary<string, bool>();
         private readonly List<string> _axesNames = new List<string>();
 
@@ -40,30 +40,30 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         }
         public override void CheckInputs()
         {
-            foreach (var axeName in _axesNames)
+            foreach (var axisName in _axesNames)
             {
-                var axisVal = Input.GetAxis(axeName);
+                var axisVal = Input.GetAxis(axisName);
                 if (axisVal != 0)
                 {
-                    if (!_axesTracking[axeName])
+                    if (!_axesTracking[axisName])
                     {
-                        _axesTracking[axeName] = true;
-                        _axesRef[axeName] = OnTrackStarted(_axesRef[axeName]);
-                        Debug.Log($"[{GetType()}]Starting Tracking Input : {axeName}"); 
+                        _axesTracking[axisName] = true;
+                        _axesRef[axisName] = OnTrackStarted(_axesRef[axisName]);
+                        Debug.Log($"[{GetType()}]Starting Tracking Input : {axisName}"); 
                     }
                     else
                     {
-                        _axesRef[axeName].duration += Time.deltaTime;
-                        Debug.Log($"[{GetType()}]Tracking Input : {axeName}"); 
+                        _axesRef[axisName].duration += Time.deltaTime;
+                        Debug.Log($"[{GetType()}]Tracking Input : {axisName}"); 
                     }
                 }
                 else 
                 {
-                    if (_axesTracking[axeName])
+                    if (_axesTracking[axisName])
                     {
-                        _axesTracking[axeName] = false;
-                        OnTrackEnded(_axesRef[axeName]);                
-                        Debug.Log($"[{GetType()}]Ending Tracking Input : {axeName}"); 
+                        _axesTracking[axisName] = false;
+                        OnTrackEnded(_axesRef[axisName]);                
+                        Debug.Log($"[{GetType()}]Ending Tracking Input : {axisName}"); 
                     }
                 }
             }

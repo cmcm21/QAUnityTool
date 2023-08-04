@@ -14,5 +14,6 @@ namespace TagwizzQASniffer.Core.InputSystem
         public List<InputData> GetInputData();
     }
     
+    [System.Serializable]
     public enum InputType{TOUCH,KEY,BUTTON}
 }

@@ -1,7 +1,6 @@
 {
-    "name": "Tagwizz.QA.Sniffer",
+    "name": "Tagwizz.QA.Sniffer.Runtime",
     "references": [
-        "384079700fc036546a070e27f5a7344e"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
