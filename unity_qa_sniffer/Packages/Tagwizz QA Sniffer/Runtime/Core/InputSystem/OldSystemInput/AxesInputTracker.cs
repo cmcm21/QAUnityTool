@@ -28,7 +28,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                 {
                     _axesRef.Add(name,new InputData()
                     {
-                        Name = name,
+                        name = name,
                         type = GetInputType(inputType)
                     });
                     
@@ -53,7 +53,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                     }
                     else
                     {
-                        _axesRef[axeName].Duration += Time.deltaTime;
+                        _axesRef[axeName].duration += Time.deltaTime;
                         Debug.Log($"[{GetType()}]Tracking Input : {axeName}"); 
                     }
                 }

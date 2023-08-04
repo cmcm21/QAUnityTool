@@ -1,18 +1,17 @@
+using System;
+using System.Collections.Generic;
+using Unity.Plastic.Newtonsoft.Json.Serialization;
+using Action = System.Action;
+
 namespace TagwizzQASniffer.Core.InputSystem
 {
-    public delegate void InputEventTriggered(InputData inputData);
-    public abstract class SnifferInputSystem
+    public interface ISnifferInputSystem
     {
-        public event InputEventTriggered InputEvent;
-        public virtual void Init() { }
-        public virtual void Stop(){}
-        public virtual void GetInputs(){}
-
-        public void OnInputEvent(InputData inputData)
-        {
-            InputEvent?.Invoke(inputData);
-        }
-        
+        public event Action<InputData> InputStarted;
+        public event Action<InputData> InputEnded;
+        public void Init();
+        public void ReadInputs();
+        public List<InputData> GetInputData();
     }
     
     public enum InputType{TOUCH,KEY,BUTTON}

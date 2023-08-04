@@ -9,9 +9,12 @@ unity_qa_sniffer/[Bb]uild/
 unity_qa_sniffer/[Bb]uilds/
 unity_qa_sniffer/[Ll]ogs/
 unity_qa_sniffer/[Uu]ser[Ss]ettings/
+unity_qa_sniffer/Assets/SnifferRecordings/
+unity_qa_sniffer/Assets/SnifferRecordings.meta
 sniffer_vault/.obsidian/plugins/
 sniffer_vault/.obsidian/community_plugins.json
 sniffer_vault/.obsidian/appearence.json
+
 
 
 .idea

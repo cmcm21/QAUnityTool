@@ -4,7 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Editor
+namespace TagwizzQASniffer.Editor
 {
     public class SnifferEditorWindow : EditorWindow
     {
@@ -120,11 +120,7 @@ namespace Editor
         {
             if (_snifferCore == null) return;
             _stopRecButton.SetEnabled(true);
-            _snifferCore.Recording(); 
-        }
-
-        private void OnSnifferObjectFieldValChanged(ChangeEvent<Object> obj)
-        {
+            _snifferCore.Record(); 
         }
 
         private void ElementError(string elementName)

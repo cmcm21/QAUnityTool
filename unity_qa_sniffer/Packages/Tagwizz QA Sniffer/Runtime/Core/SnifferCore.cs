@@ -1,64 +1,48 @@
-using TagwizzQASniffer.Core.InputSystem;
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
+using TagwizzQASniffer.Core.Recording;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace TagwizzQASniffer.Core 
 {
     public enum SnifferState {RECORDING,IDLE,PLAYING_BACK}
-    public class SnifferCore: ILifeCycleSubscriber 
+    public class SnifferCore
     {
         private SnifferState _state;
         public SnifferState State => _state;
 
-        private SnifferInputSystem _inputSystem;
+        public Recorder _recorder;
 
         public void Init()
         {
-            Debug.Log($"[{GetType()}]Sniffer Init");
             _state = SnifferState.IDLE;
-            InitLifeCycle(); 
-            SetInputSystem();
+            InitDependencies();
+            InitLifeCycle();
         }
 
-        private void SetInputSystem()
+        private void InitDependencies()
         {
-            _inputSystem = new OldSystemInput();
-            _inputSystem.Init();
+            _recorder = new Recorder(typeof(OldSystemInput));
         }
-
+        
         private void InitLifeCycle()
         {
-            //TODO: GET PATH FROM SNIFFER EDITOR or vice-versa
             var snifferSettings = Resources.Load<SnifferSettings>("SnifferSettings");
             var lifeCycle = Object.Instantiate(snifferSettings.LifeCycle);
             lifeCycle.gameObject.name = "LifeCycle";
-            lifeCycle.Subscribe(this);
+            lifeCycle.Subscribe(_recorder);
         }
         
         public void Stop()
         {
             _state = SnifferState.IDLE;
-            _inputSystem.Stop();
-            //get data from input system and store it in a json file
+            _recorder.StopRec();
         }
 
-        public void Recording()
+        public void Record()
         {
             _state = SnifferState.RECORDING;
-        }
-
-        public void OnAwake() { }
-
-        public void OnStart() { }
-
-        public void OnUpdate()
-        {
-            switch (_state)
-            {
-               case SnifferState.RECORDING: _inputSystem.GetInputs(); break;
-               case SnifferState.PLAYING_BACK: break;
-            }
+            _recorder.StartRec();
         }
     }
 }
