@@ -1,4 +1,5 @@
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
+using TagwizzQASniffer.Core.InputSystem.NewSystemInput;
 using TagwizzQASniffer.Core.Recording;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -11,24 +12,29 @@ namespace TagwizzQASniffer.Core
         private SnifferState _state;
         public SnifferState State => _state;
 
-        public Recorder _recorder;
+        private Recorder _recorder;
+        private SnifferSettings _snifferSettings;
 
         public void Init()
         {
             _state = SnifferState.IDLE;
+            _snifferSettings = Resources.Load<SnifferSettings>("SnifferSettings");
             InitDependencies();
             InitLifeCycle();
         }
 
         private void InitDependencies()
         {
-            _recorder = new Recorder(typeof(OldSystemInput));
+            var inputType = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
+                ? typeof(NewSystemInput)
+                : typeof(OldSystemInput);
+            
+            _recorder = new Recorder(inputType);
         }
         
         private void InitLifeCycle()
         {
-            var snifferSettings = Resources.Load<SnifferSettings>("SnifferSettings");
-            var lifeCycle = Object.Instantiate(snifferSettings.LifeCycle);
+            var lifeCycle = Object.Instantiate(_snifferSettings.LifeCycle);
             lifeCycle.gameObject.name = "LifeCycle";
             lifeCycle.Subscribe(_recorder);
         }
@@ -43,6 +49,15 @@ namespace TagwizzQASniffer.Core
         {
             _state = SnifferState.RECORDING;
             _recorder.StartRec();
+        }
+
+        public void SaveRecord(string recordingFileName)
+        {
+            if (_state == SnifferState.IDLE)
+            {
+                var recData = _recorder.GetRecordingData();
+                RecordingFileManager.SaveToJson(recData,recordingFileName); 
+            }
         }
     }
 }

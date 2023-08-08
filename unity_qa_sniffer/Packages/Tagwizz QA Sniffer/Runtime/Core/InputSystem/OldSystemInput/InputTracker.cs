@@ -15,7 +15,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         {
             inputData.startingPosition = Input.mousePosition;
             inputData.startingFrame = Time.frameCount;
-            Debug.Log($"[{GetType()}]:: Start Tracking Input: {inputData}");
+            inputData.lastFrame = Time.frameCount;
             TrackStarted?.Invoke(inputData);
             return inputData;
         }
@@ -24,8 +24,16 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         {
             inputData.endingPosition = Input.mousePosition;
             inputData.endingFrame = Time.frameCount;
-            Debug.Log($"[{GetType()}]:: End Tracking Input: {inputData}");
             TrackEnded?.Invoke(inputData);
+        }
+
+        private bool ValidateInputData(InputData inputData)
+        {
+            if (inputData.type == InputType.TOUCH.ToString()
+                && Vector3.Distance(inputData.startingPosition, inputData.endingPosition) == 0)
+                return false;
+            
+            return true;
         }
     }
 }

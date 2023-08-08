@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44ce63f20d274334dba0830a209465c3, type: 3}
   m_Name: SnifferSettings
   m_EditorClassIdentifier: 
-  inputType: 0
+  inputSystemType: 1
   lifeCycle: {fileID: 6129087749859578532, guid: 5bf0f32028dc7e545a3a80042ab35a55, type: 3}

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TagwizzQASniffer.Core.InputSystem;
@@ -25,7 +24,7 @@ namespace TagwizzQASniffer.Core.Recording
                     _clipsRefs.Add(clip.inputData.Id,clip);
         }
 
-        public void InputStarted(InputData inputData)
+        public void ClipStarted(InputData inputData)
         {
             if (!_clipsRefs.ContainsKey(inputData.Id))
             {
@@ -37,12 +36,26 @@ namespace TagwizzQASniffer.Core.Recording
             }
         }
 
-        public void InputFinished(InputData inputData)
+        public void ClipFinished(InputData inputData)
         {
             if (_clipsRefs.TryGetValue(inputData.Id, out var clip))
+            {
                 clip.timelineEnd = _duration;
+                clip.type = GetRecorderType(inputData.duration);
+            }
         }
 
+        private string GetRecorderType(float inputDuration)
+        {
+            var duration = inputDuration;
+            if (duration <= SnifferDefinitions.EVENT_TIME || duration < SnifferDefinitions.CONTINUOUS_TIME)
+                return RecorderClipType.EVENT_ACTION.ToString();
+            if (duration >= SnifferDefinitions.CONTINUOUS_TIME)
+                return RecorderClipType.CONTINUOUS_ACTION.ToString();
+            
+            return RecorderClipType.IDLE.ToString();
+        }
+        
         public void Update()
         {
             _duration += Time.deltaTime;
@@ -57,8 +70,6 @@ namespace TagwizzQASniffer.Core.Recording
                 clips = _clipsRefs.Values.ToList()
             };
         }
-    
-    
     }
 
     [System.Serializable]

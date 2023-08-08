@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Sniffer Core Diagram.md",
+                "file": "Architecture/Sniffer Class Diagrams.md",
                 "mode": "source",
                 "source": false
               }
@@ -37,14 +37,13 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Architecture/Sniffer Class Diagrams.md",
-                "mode": "preview",
+                "file": "2023-08-07.md",
+                "mode": "source",
                 "source": false
               }
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -172,12 +171,13 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ca31fab9eb11872b",
+  "active": "93648156bd284dbc",
   "lastOpenFiles": [
-    "2023-08-03.md",
-    "Architecture/Sniffer Class Diagrams.md",
-    "2023-08-01.md",
     "Sniffer Core Diagram.md",
+    "Architecture/Sniffer Class Diagrams.md",
+    "2023-08-03.md",
+    "2023-08-07.md",
+    "2023-08-01.md",
     "Notes/Today Tasks.md",
     "2023-07-31.md",
     "Untitled 1.canvas",

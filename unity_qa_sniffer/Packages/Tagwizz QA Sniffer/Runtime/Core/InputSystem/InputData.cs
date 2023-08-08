@@ -9,27 +9,37 @@ namespace TagwizzQASniffer.Core.InputSystem
     {
         public InputData()
         {
-            type = InputType.KEY;
+            type = "";
             name = "";
             duration = 0;
             startingPosition = Vector2.zero;
             endingPosition = Vector2.zero;
-            startingTime = 0;
-            endingTime = 0;
             startingFrame = 0;
             endingFrame = 0;
-            axeValue = 0;
+            startingAxeValue = 0;
+            lastAxeValue = 0;
+            startingScrollDeltaY = 0;
+            startingScrollDeltaX = 0;
+            lastScrollDeltaX = 0;
+            lastScrollDeltaY = 0;
         }
-        [SerializeField] public InputType type;
+        [SerializeField] public string type;
         [SerializeField] public string name;
         [SerializeField] public float duration;
         [SerializeField] public Vector2 startingPosition;
+        [SerializeField] public Vector2 lastPosition;
         [SerializeField] public Vector2 endingPosition;
         [SerializeField] public float startingTime;
         [SerializeField] public float endingTime;
         [SerializeField] public int startingFrame;
+        [SerializeField] public int lastFrame;
         [SerializeField] public int endingFrame;
-        [SerializeField] public float axeValue;
-        public string Id => name + startingTime.ToString(CultureInfo.InvariantCulture);
+        [SerializeField] public float startingAxeValue;
+        [SerializeField] public float lastAxeValue;
+        [SerializeField] public float startingScrollDeltaX;
+        [SerializeField] public float startingScrollDeltaY;
+        [SerializeField] public float lastScrollDeltaX;
+        [SerializeField] public float lastScrollDeltaY;
+        public string Id => name + startingFrame.ToString(CultureInfo.InvariantCulture);
     }
 }

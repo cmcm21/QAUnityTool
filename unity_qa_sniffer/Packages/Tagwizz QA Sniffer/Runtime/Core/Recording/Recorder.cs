@@ -1,5 +1,6 @@
 using System;
 using TagwizzQASniffer.Core.InputSystem;
+using TagwizzQASniffer.Core.InputSystem.NewSystemInput;
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
 using UnityEngine;
 
@@ -21,28 +22,25 @@ namespace TagwizzQASniffer.Core.Recording
         public Recorder(Type inputType)
         {
             if (inputType == typeof(OldSystemInput))
-            {
                 _inputSystem = new OldSystemInput();
-                _inputSystem.Init();
-            }
-
-            if (_inputSystem != null)
-            {
-                _inputSystem.InputEnded += InputSystemOnInputEnded;
-                _inputSystem.InputStarted += InputSystemOnInputStarted;
-            }
+            else
+                _inputSystem = new NewSystemInput();
+            
+            _inputSystem.Init();
+            _inputSystem.InputEnded += InputSystemOnInputEnded;
+            _inputSystem.InputStarted += InputSystemOnInputStarted;
 
             _state = RecordingState.IDLE;
         }
 
         private void InputSystemOnInputStarted(InputData inputData)
         {
-            _timeline.InputStarted(inputData);
+            _timeline.ClipStarted(inputData);
         }
 
         private void InputSystemOnInputEnded(InputData inputData)
         {
-            _timeline.InputFinished(inputData);
+            _timeline.ClipFinished(inputData);
         }
 
         public void StartRec(string recordingName = "")
@@ -54,7 +52,8 @@ namespace TagwizzQASniffer.Core.Recording
         public void StopRec()
         {
             _state = RecordingState.STOP;
-            Save();
+            _inputSystem.ReadInputs();
+            _timeline.Update();
         }
 
         public void OnAwake()
@@ -74,16 +73,12 @@ namespace TagwizzQASniffer.Core.Recording
             }
         }
 
-        public void Save()
+        public RecordingData GetRecordingData()
         {
-            var recordingData = _timeline.Export();
-            var jsonfile = JsonUtility.ToJson(recordingData);
-            System.IO.File.WriteAllText(GetFilePath(recordingData.timelineName),jsonfile); 
-        }
-
-        private string GetFilePath(string recordingName)
-        {
-            return $"Assets/SnifferRecordings/{recordingName}.json";
-        }
+            if(_state == RecordingState.STOP || _state == RecordingState.IDLE)
+              return _timeline.Export();
+            
+            return null;
+        } 
     }
 }

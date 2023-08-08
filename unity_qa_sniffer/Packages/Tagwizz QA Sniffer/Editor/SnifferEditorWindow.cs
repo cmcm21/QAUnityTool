@@ -114,11 +114,13 @@ namespace TagwizzQASniffer.Editor
         private void StopRecButtonOnClicked()
         {
             _snifferCore.Stop(); 
+            _snifferCore.SaveRecord(string.Empty);
         }
 
         private void StartRecButtonOnClicked()
         {
             if (_snifferCore == null) return;
+            _startRecButton.SetEnabled(false);
             _stopRecButton.SetEnabled(true);
             _snifferCore.Record(); 
         }

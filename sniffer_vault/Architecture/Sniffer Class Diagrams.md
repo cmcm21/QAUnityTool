@@ -179,13 +179,13 @@ class RecordingData{
 	+RecordingTimeline timeline
 }
 
-class RecordingDataUtils{
+class RecordingFileManager{
 	<<static class>>	
-	+CreateJson(RecordingData)
+	+SaveJson(RecordingData recData,string filename)
 	+Rewrite(RecordingData recData, String path) 
 	+LoadJson(string path) RecordingData
 }
 
-RecordingData..>RecordingDataUtils
+RecordingData..>RecordingFileManager
 
 ```
