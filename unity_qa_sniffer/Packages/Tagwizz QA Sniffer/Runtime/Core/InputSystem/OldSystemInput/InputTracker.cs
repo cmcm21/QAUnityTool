@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -7,17 +8,16 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
     public abstract class InputTracker
     {
+        protected readonly Dictionary<string, List<InputData>> InputDataRead = new Dictionary<string, List<InputData>>();
+        protected readonly Dictionary<string, bool> TrackingInputs = new Dictionary<string, bool>();
+        protected readonly List<string> InputsNames = new List<string>();
         public event Action<InputData> TrackStarted;
         public event Action<InputData> TrackEnded;
         public virtual void CheckInputs() {}
         
-        protected virtual InputData OnTrackStarted(InputData inputData)
+        protected virtual void OnTrackStarted(InputData inputData)
         {
-            inputData.startingPosition = Input.mousePosition;
-            inputData.startingFrame = Time.frameCount;
-            inputData.lastFrame = Time.frameCount;
             TrackStarted?.Invoke(inputData);
-            return inputData;
         }
 
         protected virtual void OnTrackEnded(InputData inputData)
@@ -27,13 +27,49 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             TrackEnded?.Invoke(inputData);
         }
 
-        private bool ValidateInputData(InputData inputData)
+        protected virtual void StartTracking(string inputName)
         {
-            if (inputData.type == InputType.TOUCH.ToString()
-                && Vector3.Distance(inputData.startingPosition, inputData.endingPosition) == 0)
-                return false;
+            if (!InputDataRead.ContainsKey(inputName)) return;
             
-            return true;
+            TrackingInputs[inputName] = true;
+            InputDataRead[inputName].Add(CreateInputData(inputName));
+            var lastIndex = InputDataRead[inputName].Count - 1;
+            InputDataRead[inputName][lastIndex].duration += Time.deltaTime;
+            InputDataRead[inputName][lastIndex].startingPosition = Input.mousePosition;
+            InputDataRead[inputName][lastIndex].startingFrame = Time.frameCount;
+            
+            OnTrackStarted(InputDataRead[inputName][lastIndex]);
+            Debug.Log($"[{GetType()}]Starting Tracking Input : {inputName}"); 
+        }
+
+        protected virtual void ContinueTracking(string inputName)
+        {
+            if (!InputDataRead.ContainsKey(inputName)) return;
+            var lastIndex = InputDataRead[inputName].Count - 1;
+            InputDataRead[inputName][lastIndex].duration += Time.deltaTime;
+            
+            Debug.Log($"[{GetType()}]Tracking Input : {inputName}"); 
+        }
+
+        protected virtual void EndTracking(string inputName)
+        {
+            if (!InputDataRead.ContainsKey(inputName)) return;
+    
+            var lastIndex = InputDataRead[inputName].Count - 1;
+            TrackingInputs[inputName] = false;
+            InputDataRead[inputName][lastIndex].duration += Time.deltaTime;
+            InputDataRead[inputName][lastIndex].endingFrame = Time.frameCount;
+            
+            OnTrackEnded(InputDataRead[inputName].Last());                
+            Debug.Log($"[{GetType()}]Ending Tracking Input : {inputName}"); 
+        }
+        
+        private InputData CreateInputData(string axisName)
+        {
+            return new InputData()
+            {
+                name = axisName,
+            };
         }
     }
 }

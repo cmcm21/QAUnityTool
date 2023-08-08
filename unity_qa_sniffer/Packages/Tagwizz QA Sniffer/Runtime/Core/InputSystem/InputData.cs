@@ -23,16 +23,13 @@ namespace TagwizzQASniffer.Core.InputSystem
             lastScrollDeltaX = 0;
             lastScrollDeltaY = 0;
         }
+        
         [SerializeField] public string type;
         [SerializeField] public string name;
         [SerializeField] public float duration;
         [SerializeField] public Vector2 startingPosition;
-        [SerializeField] public Vector2 lastPosition;
         [SerializeField] public Vector2 endingPosition;
-        [SerializeField] public float startingTime;
-        [SerializeField] public float endingTime;
         [SerializeField] public int startingFrame;
-        [SerializeField] public int lastFrame;
         [SerializeField] public int endingFrame;
         [SerializeField] public float startingAxeValue;
         [SerializeField] public float lastAxeValue;

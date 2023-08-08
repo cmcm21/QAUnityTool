@@ -11,11 +11,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
     public enum AxeInputType { KeyOrMouseButton, MouseMovement, JoystickAxis }
     public class AxesInputTracker: InputTracker
     {
-        //Each axe name can have different input data
-        private readonly Dictionary<string, List<InputData>> _axesRef = new Dictionary<string, List<InputData>>();
         private readonly Dictionary<string, AxeInputType> _axesInputType = new Dictionary<string, AxeInputType>();
-        private readonly Dictionary<string, bool> _axesTracking = new Dictionary<string, bool>();
-        private readonly List<string> _axesNames = new List<string>();
 
         public AxesInputTracker()
         {
@@ -30,26 +26,26 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                 var name = axis.FindPropertyRelative("m_Name").stringValue;
                 var inputType = (AxeInputType)axis.FindPropertyRelative("type").intValue;
                 
-                if (!_axesRef.ContainsKey(name))
-                     _axesRef.Add(name,new List<InputData>());
+                if (!InputDataRead.ContainsKey(name))
+                     InputDataRead.Add(name,new List<InputData>());
 
                 if(!_axesInputType.ContainsKey(name))
                     _axesInputType.Add(name,inputType);
                 
-                if (!_axesTracking.ContainsKey(name))
-                    _axesTracking.Add(name,false);
+                if (!TrackingInputs.ContainsKey(name))
+                    TrackingInputs.Add(name,false);
                 
-                if(!_axesNames.Contains(name))
-                    _axesNames.Add(name);
+                if(!InputsNames.Contains(name))
+                    InputsNames.Add(name);
             }
         }
         
         public override void CheckInputs()
         {
-            foreach (var axisName in _axesNames)
+            foreach (var axisName in InputsNames)
             {
                 if (axisName == "Mouse X" || axisName == "Mouse Y" || axisName == "Mouse ScrollWheel")
-                    ReadMouse(axisName);
+                   ReadMouse(axisName);
                 else
                     ReadAxeValue(axisName);
             }
@@ -67,24 +63,27 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         {
             if (Input.mouseScrollDelta.y != 0)
             {
-                if (!_axesTracking[axisName])
+                if (!TrackingInputs[axisName])
                 {
-                    StartReadAxis(axisName);
-                    _axesRef[axisName].Last().startingScrollDeltaX = Input.mouseScrollDelta.x;
-                    _axesRef[axisName].Last().startingScrollDeltaY = Input.mouseScrollDelta.y;
+                    StartTracking(axisName);
+                    InputDataRead[axisName].Last().startingScrollDeltaX = Input.mouseScrollDelta.x;
+                    InputDataRead[axisName].Last().startingScrollDeltaY = Input.mouseScrollDelta.y;
                 }
                 else
                 {
-                   ContinueReadAxis(axisName); 
-                    _axesRef[axisName].Last().lastScrollDeltaX = Input.mouseScrollDelta.x;
-                    _axesRef[axisName].Last().lastScrollDeltaX = Input.mouseScrollDelta.y;
+                   ContinueTracking(axisName); 
+                    InputDataRead[axisName].Last().lastScrollDeltaX = Input.mouseScrollDelta.x;
+                    InputDataRead[axisName].Last().lastScrollDeltaX = Input.mouseScrollDelta.y;
                 }  
             }
             else
             {
-                if (_axesTracking[axisName])
+                if (TrackingInputs[axisName])
                 {
-                    EndReadAxis(axisName);
+                    if(InputDataRead[axisName].Last().duration < 1f)
+                        ContinueTracking(axisName);
+                    else
+                        EndTracking(axisName);
                 }
             }
         }
@@ -93,104 +92,52 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         {
             if (Input.GetAxis(axisName) != 0)
             {
-                if (!_axesTracking[axisName])
-                    StartReadAxis(axisName);
+                if (!TrackingInputs[axisName])
+                    StartTracking(axisName);
                 else
-                {
-                   if(_axesRef[axisName].Last().duration < 1f)
-                       ContinueReadAxis(axisName);
-                   else
-                       EndReadAxis(axisName);
-                }
+                   ContinueTracking(axisName);
             }
-            else if(_axesTracking[axisName])
+            else if(TrackingInputs[axisName])
             {
-                if(_axesRef[axisName].Last().duration < 1f)
-                    ContinueReadAxis(axisName);
+                if(InputDataRead[axisName].Last().duration < 1f)
+                    ContinueTracking(axisName);
                 else
-                    EndReadAxis(axisName);
+                    EndTracking(axisName);
             }
         }
-
-        private bool CheckDistanceBetweenInputs(string axisName)
-        {
-            if (_axesRef[axisName].Count == 0) return true;
-            var distance = Vector3.Distance(
-                Input.mousePosition, _axesRef[axisName].Last().lastPosition);
-            
-            Debug.Log($"Distance between mouse movement: {distance}"); 
-            return distance >= SnifferDefinitions.MIN_DISTANCE_BETWEEN_INPUTS;
-        }
-        
 
         private void ReadAxeValue(string axisName)
         {
             var axisVal = Input.GetAxis(axisName);
             if (axisVal != 0)
             {
-                if (!_axesTracking[axisName])
-                    StartReadAxis(axisName);
+                if (!TrackingInputs[axisName])
+                    StartTracking(axisName);
                 else
-                {
-                    if(CheckTimeBetweenInputs(axisName,SnifferDefinitions.MIN_FRAMES_BETWEEN_INPUTS))
-                        ContinueReadAxis(axisName);
-                    else
-                    {
-                        EndReadAxis(axisName); 
-                        StartReadAxis(axisName);
-                    }
-                }
+                    ContinueTracking(axisName);
             }
             else 
             {
-                if (_axesTracking[axisName])
-                    EndReadAxis(axisName);
+                if (TrackingInputs[axisName])
+                    EndTracking(axisName);
             }
         }
 
-        private bool CheckTimeBetweenInputs(string axisName, float minFrames)
+        protected override void StartTracking(string axisName)
         {
-            var frameDifference = Time.frameCount -  _axesRef[axisName].Last().lastFrame;
-            return (frameDifference < minFrames);
+            base.StartTracking(axisName);
+            
+            var lastIndex = InputDataRead[axisName].Count - 1;
+            InputDataRead[axisName][lastIndex].startingAxeValue = Input.GetAxis(axisName);
+            InputDataRead[axisName][lastIndex].type = GetInputType(_axesInputType[axisName]);
         }
 
-        private void StartReadAxis(string axisName)
+        protected override void ContinueTracking(string axisName)
         {
-            _axesTracking[axisName] = true;
-            _axesRef[axisName].Add(CreateInputData(axisName));
-            var lastIndex = _axesRef[axisName].Count - 1;
-            _axesRef[axisName][lastIndex] = OnTrackStarted(_axesRef[axisName][lastIndex]);
-            _axesRef[axisName][lastIndex].startingAxeValue = Input.GetAxis(axisName);
-            _axesRef[axisName][lastIndex].duration += Time.deltaTime;
-            Debug.Log($"[{GetType()}]Starting Tracking Input : {axisName}"); 
-        }
-
-        private InputData CreateInputData(string axisName)
-        {
-            return new InputData()
-            {
-                name = axisName,
-                type = GetInputType(_axesInputType[axisName])
-            };
-        }
-
-        private void ContinueReadAxis(string axisName)
-        {
-            var lastIndex = _axesRef[axisName].Count - 1;
-            _axesRef[axisName][lastIndex].duration += Time.deltaTime;
-            _axesRef[axisName][lastIndex].lastAxeValue = Input.GetAxis(axisName);
-            _axesRef[axisName][lastIndex].lastFrame = Time.frameCount;
-            _axesRef[axisName][lastIndex].lastPosition = Input.mousePosition;
-            Debug.Log($"[{GetType()}]Tracking Input : {axisName}"); 
-        }
-
-        private void EndReadAxis(string axisName)
-        {
-            var lastIndex = _axesRef[axisName].Count - 1;
-            _axesTracking[axisName] = false;
-            _axesRef[axisName][lastIndex].duration += Time.deltaTime;
-            OnTrackEnded(_axesRef[axisName].Last());                
-            Debug.Log($"[{GetType()}]Ending Tracking Input : {axisName}"); 
+            base.ContinueTracking(axisName);
+            
+            var lastIndex = InputDataRead[axisName].Count - 1;
+            InputDataRead[axisName][lastIndex].lastAxeValue = Input.GetAxis(axisName);
         }
 
         private string GetInputType(AxeInputType type)
@@ -210,11 +157,5 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             }
             return inputType.ToString();
         }
-    }
-
-    public struct ReadInput
-    {
-        public string Name;
-        public int ReadFrame;
     }
 }
