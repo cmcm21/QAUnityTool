@@ -21,7 +21,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         public void Init()
         {
             AddKeyboardTracker();
-            //AddAxesTracker();
+            AddAxesTracker();
             foreach (var track in _trackers)
             {
                  track.TrackEnded += OnTrackEnded;

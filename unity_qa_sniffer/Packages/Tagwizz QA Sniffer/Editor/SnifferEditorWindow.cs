@@ -2,7 +2,9 @@ using TagwizzQASniffer.Core;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Button = UnityEngine.UIElements.Button;
 
 namespace TagwizzQASniffer.Editor
 {
@@ -10,8 +12,10 @@ namespace TagwizzQASniffer.Editor
     {
         private const string UxmlId = "4507d42a19f77ad448df2608e020b92c";
         private const string UssId = "072e9d94ff16a0b42ab2934590ce5ffb";
+        
         private const string InstantiateSnifferButton = "InstantiateSnifferButton";
         private const string SnifferObjectFieldName = "SnifferContainerObjField";
+        private const string RecordingTextFieldName = "RecordingTextField";
         private const string StartRecButtonName = "StartRecButton";
         private const string StopRecButtonName = "StopRecButton";
 
@@ -19,6 +23,7 @@ namespace TagwizzQASniffer.Editor
         private Button _instantiateButton;
         private Button _startRecButton;
         private Button _stopRecButton;
+        private TextField _recordingTextField;
         private ObjectField _snifferObjectField;
         private SnifferCore _snifferCore;
 
@@ -71,6 +76,12 @@ namespace TagwizzQASniffer.Editor
                 _snifferObjectField.objectType = typeof(GameObject);
                 _snifferObjectField.SetEnabled(false);
             }
+
+            _recordingTextField = _root.Q<TextField>(RecordingTextFieldName);
+            if(_recordingTextField == null)
+                ElementError(RecordingTextFieldName);
+            else
+                _recordingTextField.value = string.Empty;
         }
 
         private void SetupButtons()
@@ -116,7 +127,8 @@ namespace TagwizzQASniffer.Editor
             _snifferCore.Stop(); 
             _stopRecButton.SetEnabled(false);
             _startRecButton.SetEnabled(true);
-            _snifferCore.SaveRecord(string.Empty);
+            
+            _snifferCore.SaveRecord(_recordingTextField.value);
             AssetDatabase.Refresh();
         }
 

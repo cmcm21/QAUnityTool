@@ -3,6 +3,7 @@
         <ui:Label text="Sniffer Recorder" class="header" style="flex-grow: 0; flex-shrink: 1; -unity-text-align: upper-center; font-size: 24px; -unity-font-style: bold;" />
         <ui:Button text="Instantiate Sniffer" display-tooltip-when-elided="true" name="InstantiateSnifferButton" style="padding-top: 5px; padding-bottom: 5px;" />
         <uie:ObjectField label="Sniffer Container" name="SnifferContainerObjField" style="font-size: 14px; -unity-font-style: normal;" />
+        <ui:TextField picking-mode="Ignore" label="Recording Name" name="RecordingTextField" style="font-size: 14px; -unity-font-style: bold;" />
         <ui:VisualElement name="Options">
             <ui:Button text="Start Recording" display-tooltip-when-elided="true" name="StartRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
             <ui:Button text="Stop Recording" display-tooltip-when-elided="true" name="StopRecButton" style="padding-top: 5px; padding-bottom: 5px;" />

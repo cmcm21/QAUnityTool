@@ -60,7 +60,6 @@ namespace TagwizzQASniffer.Core.Recording
         public void Update()
         {
             _duration += Time.deltaTime;
-            Debug.Log($"RecordingTimeline time: {_duration}");
         }
 
         public RecordingData Export()

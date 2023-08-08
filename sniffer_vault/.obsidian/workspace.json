@@ -43,7 +43,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -110,7 +111,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Architecture/Sniffer Class Diagrams.md",
+                "file": "2023-08-03.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -127,7 +128,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Architecture/Sniffer Class Diagrams.md",
+                "file": "2023-08-03.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -150,7 +151,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Architecture/Sniffer Class Diagrams.md"
+                "file": "2023-08-03.md"
               }
             }
           }
@@ -171,10 +172,10 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "93648156bd284dbc",
+  "active": "27ae4081922e134d",
   "lastOpenFiles": [
-    "Sniffer Core Diagram.md",
     "Architecture/Sniffer Class Diagrams.md",
+    "Sniffer Core Diagram.md",
     "2023-08-03.md",
     "2023-08-07.md",
     "2023-08-01.md",
