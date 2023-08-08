@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TagwizzQASniffer.Core.InputSystem.NewSystemInput
 {
-    public class NewSystemInput : ISnifferInputSystem
+    public class NewInputSystem : ISnifferInputSystem
     {
         public event Action<InputData> InputStarted;
         public event Action<InputData> InputEnded;

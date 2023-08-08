@@ -21,12 +21,11 @@ namespace TagwizzQASniffer.Core.Recording
 
         public Recorder(Type inputType)
         {
-            if (inputType == typeof(OldSystemInput))
-                _inputSystem = new OldSystemInput();
+            if (inputType == typeof(OldInputSystem))
+                _inputSystem = new OldInputSystem();
             else
-                _inputSystem = new NewSystemInput();
+                _inputSystem = new NewInputSystem();
             
-            _inputSystem.Init();
             _inputSystem.InputEnded += InputSystemOnInputEnded;
             _inputSystem.InputStarted += InputSystemOnInputStarted;
 
@@ -46,6 +45,7 @@ namespace TagwizzQASniffer.Core.Recording
         public void StartRec(string recordingName = "")
         {
             _state = RecordingState.RECORDING;
+            _inputSystem.Init();
             _timeline = new RecorderTimeline(recordingName);
         }
 
@@ -71,7 +71,7 @@ namespace TagwizzQASniffer.Core.Recording
                 _inputSystem.ReadInputs();
             }
         }
-
+        
         public RecordingData GetRecordingData()
         {
             if(_state == RecordingState.STOP || _state == RecordingState.IDLE)

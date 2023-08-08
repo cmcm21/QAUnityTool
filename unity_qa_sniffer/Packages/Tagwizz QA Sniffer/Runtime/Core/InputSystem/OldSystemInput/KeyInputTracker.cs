@@ -10,6 +10,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
     public class KeyInputTracker: InputTracker
     {
         private readonly Dictionary<string, KeyCode> _keyCodesRef = new Dictionary<string, KeyCode>();
+        private HashSet<string> _keysPressedDown = new HashSet<string>();
         public KeyInputTracker()
         {
             foreach(KeyCode keycode in Enum.GetValues(typeof(KeyCode)))
@@ -30,24 +31,34 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             }
         }
 
-        public override async void CheckInputs()
+        public override void CheckInputs()
         {
-            if (!Input.anyKey) return;
-            
+            CheckAllKeys();
+        }
+
+        private void CheckAllKeys()
+        {
             foreach (var key in InputsNames)
             {
-                if (Input.GetKey(_keyCodesRef[key]))
+                if (Input.GetKeyDown(_keyCodesRef[key]) && !TrackingInputs[key])
                 {
-                    if(!TrackingInputs[key])
-                        StartTracking(key);
-                    else
-                        ContinueTracking(key);
+                    StartTracking(key);
+                    _keysPressedDown.Add(key);
                 }
-                else
+
+                if (Input.GetKeyUp(_keyCodesRef[key]) && TrackingInputs[key])
                 {
-                    if(TrackingInputs[key]) 
+                    EndTracking(key);
+                    _keysPressedDown.Remove(key);
+                }
+            }
+        
+            foreach (var key in _keysPressedDown)
+            {
+                if (Input.GetKey(_keyCodesRef[key]) && TrackingInputs[key])
+                    ContinueTracking(key);
+                else if(TrackingInputs[key])        
                         EndTracking(key);
-                }
             }
         }
 

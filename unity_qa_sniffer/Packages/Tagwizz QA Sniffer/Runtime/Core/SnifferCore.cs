@@ -26,8 +26,8 @@ namespace TagwizzQASniffer.Core
         private void InitDependencies()
         {
             var inputType = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
-                ? typeof(NewSystemInput)
-                : typeof(OldSystemInput);
+                ? typeof(NewInputSystem)
+                : typeof(OldInputSystem);
             
             _recorder = new Recorder(inputType);
         }

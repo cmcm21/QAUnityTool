@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
-    public class OldSystemInput: ISnifferInputSystem
+    public class OldInputSystem: ISnifferInputSystem
     {
         private readonly List<InputTracker> _trackers = new List<InputTracker>();
         private readonly List<InputData> _inputData = new List<InputData>();
@@ -20,21 +20,37 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 
         public void Init()
         {
-            _mouseInputTracker = new MouseInputTracker();
-            _keyInputTracker = new KeyInputTracker();
-            _axesInputTracker = new AxesInputTracker();
-            _touchInputTracker = new TouchInputTracker();
-            
-            _trackers.Add(_mouseInputTracker);
-            _trackers.Add(_keyInputTracker);
-            _trackers.Add(_axesInputTracker);
-            _trackers.Add(_touchInputTracker);
-
+            AddKeyboardTracker();
+            //AddAxesTracker();
             foreach (var track in _trackers)
             {
                  track.TrackEnded += OnTrackEnded;
                  track.TrackStarted += OnTrackStarted;
             }
+        }
+
+        private void AddKeyboardTracker()
+        {
+            _keyInputTracker = new KeyInputTracker();
+            _trackers.Add(_keyInputTracker);
+        }
+
+        private void AddAxesTracker()
+        {
+            _axesInputTracker = new AxesInputTracker();
+            _trackers.Add(_axesInputTracker);
+        }
+
+        private void AddMouseTracker()
+        {
+            _mouseInputTracker = new MouseInputTracker();
+            _trackers.Add(_mouseInputTracker);
+        }
+
+        private void AddTouchTracker()
+        {
+            _touchInputTracker = new TouchInputTracker();
+            _trackers.Add(_touchInputTracker);
         }
 
         private void OnTrackStarted(InputData inputData)
