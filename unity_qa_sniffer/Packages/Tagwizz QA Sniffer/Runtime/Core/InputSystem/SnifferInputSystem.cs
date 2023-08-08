@@ -11,6 +11,7 @@ namespace TagwizzQASniffer.Core.InputSystem
         public event Action<InputData> InputEnded;
         public void Init();
         public void ReadInputs();
+        public void Stop();
         public List<InputData> GetInputData();
     }
     

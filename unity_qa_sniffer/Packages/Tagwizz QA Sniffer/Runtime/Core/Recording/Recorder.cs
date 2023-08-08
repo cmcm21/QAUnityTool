@@ -52,8 +52,7 @@ namespace TagwizzQASniffer.Core.Recording
         public void StopRec()
         {
             _state = RecordingState.STOP;
-            _inputSystem.ReadInputs();
-            _timeline.Update();
+            _inputSystem.Stop();
         }
 
         public void OnAwake()
@@ -68,8 +67,8 @@ namespace TagwizzQASniffer.Core.Recording
         {
             if (_state == RecordingState.RECORDING)
             {
-                _inputSystem.ReadInputs();
                 _timeline.Update();
+                _inputSystem.ReadInputs();
             }
         }
 

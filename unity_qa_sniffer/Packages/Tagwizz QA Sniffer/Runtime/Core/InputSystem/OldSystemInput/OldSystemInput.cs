@@ -54,6 +54,12 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                 tracker.CheckInputs();
         }
 
+        public void Stop()
+        {
+            foreach(var tracker in _trackers)
+                tracker.StopTracker();
+        }
+
         public List<InputData> GetInputData()
         {
             return _inputData;

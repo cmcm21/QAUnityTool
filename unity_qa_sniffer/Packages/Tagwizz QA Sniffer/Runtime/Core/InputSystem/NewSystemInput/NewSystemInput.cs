@@ -15,6 +15,10 @@ namespace TagwizzQASniffer.Core.InputSystem.NewSystemInput
         {
         }
 
+        public void Stop()
+        {
+        }
+
         public List<InputData> GetInputData()
         {
             return new List<InputData>();

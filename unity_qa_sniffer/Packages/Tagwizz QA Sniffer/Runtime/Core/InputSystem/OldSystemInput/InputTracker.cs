@@ -14,7 +14,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         public event Action<InputData> TrackStarted;
         public event Action<InputData> TrackEnded;
         public virtual void CheckInputs() {}
-        
+
         protected virtual void OnTrackStarted(InputData inputData)
         {
             TrackStarted?.Invoke(inputData);
@@ -22,8 +22,6 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 
         protected virtual void OnTrackEnded(InputData inputData)
         {
-            inputData.endingPosition = Input.mousePosition;
-            inputData.endingFrame = Time.frameCount;
             TrackEnded?.Invoke(inputData);
         }
 
@@ -56,8 +54,11 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             if (!InputDataRead.ContainsKey(inputName)) return;
     
             var lastIndex = InputDataRead[inputName].Count - 1;
+            
             TrackingInputs[inputName] = false;
             InputDataRead[inputName][lastIndex].duration += Time.deltaTime;
+            InputDataRead[inputName][lastIndex].endingFrame = Time.frameCount;
+            InputDataRead[inputName][lastIndex].endingPosition = Input.mousePosition;
             InputDataRead[inputName][lastIndex].endingFrame = Time.frameCount;
             
             OnTrackEnded(InputDataRead[inputName].Last());                
@@ -71,5 +72,13 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                 name = axisName,
             };
         }
+        
+        public void StopTracker()
+        {
+            foreach(var inputName in InputsNames)
+                if(TrackingInputs[inputName])
+                    EndTracking(inputName);
+        }
+        
     }
 }

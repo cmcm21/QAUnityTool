@@ -127,9 +127,8 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
         {
             base.StartTracking(axisName);
             
-            var lastIndex = InputDataRead[axisName].Count - 1;
-            InputDataRead[axisName][lastIndex].startingAxeValue = Input.GetAxis(axisName);
-            InputDataRead[axisName][lastIndex].type = GetInputType(_axesInputType[axisName]);
+            InputDataRead[axisName].Last().startingAxeValue = Input.GetAxis(axisName);
+            InputDataRead[axisName].Last().type = GetInputType(_axesInputType[axisName]);
         }
 
         protected override void ContinueTracking(string axisName)
@@ -146,13 +145,13 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             switch (type)
             {
                 case AxeInputType.JoystickAxis:
-                    inputType =  InputType.BUTTON;
+                    inputType =  InputType.TOUCH;
                     break;
                 case AxeInputType.MouseMovement:
                     inputType =  InputType.TOUCH;
                     break;
                 case AxeInputType.KeyOrMouseButton:
-                    inputType =  InputType.KEY;
+                    inputType =  InputType.BUTTON;
                     break;
             }
             return inputType.ToString();

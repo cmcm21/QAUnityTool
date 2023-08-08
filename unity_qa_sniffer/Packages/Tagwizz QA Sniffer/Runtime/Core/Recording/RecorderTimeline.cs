@@ -8,12 +8,13 @@ namespace TagwizzQASniffer.Core.Recording
     public class RecorderTimeline
     {
         private float _duration;
-        private string _name;
+        private readonly string _name;
         private readonly Dictionary<string, RecorderClip> _clipsRefs = new Dictionary<string, RecorderClip>();
 
         public RecorderTimeline(string name)
         {
             _name = name == string.Empty ? "sniffer_rec" : name;
+            _duration = 0;
         }
         
         public void Load(RecordingData recordingData)
