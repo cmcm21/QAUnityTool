@@ -5,7 +5,7 @@ namespace TagwizzQASniffer.Core.Recording
 {
     public class NewInpSysRecorder : IRecorder
     {
-        private InputRecorder _inputRecorder;
+        private readonly InputRecorder _inputRecorder;
 
         public NewInpSysRecorder()
         {
@@ -34,7 +34,8 @@ namespace TagwizzQASniffer.Core.Recording
 
         public void StartRec()
         {
-            _inputRecorder.StartCapture();
+            if(!_inputRecorder.captureIsRunning)
+                _inputRecorder.StartCapture();
         }
 
         public void StopRec()
@@ -49,7 +50,8 @@ namespace TagwizzQASniffer.Core.Recording
 
         public void Play()
         {
-            _inputRecorder.StartReplay();
+            if(!_inputRecorder.replayIsRunning)
+                _inputRecorder.StartReplay();
         }
 
         public void StopPlay()

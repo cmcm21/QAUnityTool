@@ -1,5 +1,4 @@
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
-using TagwizzQASniffer.Core.InputSystem.NewSystemInput;
 using TagwizzQASniffer.Core.Recording;
 using UnityEngine;
 using Object = UnityEngine.Object;

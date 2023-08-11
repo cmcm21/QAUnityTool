@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
-    public class OldInputSystem: ISnifferInputSystem
+    public class OldInputSystem
     {
         private readonly List<InputTracker> _trackers = new List<InputTracker>();
         private readonly List<InputData> _inputData = new List<InputData>();
