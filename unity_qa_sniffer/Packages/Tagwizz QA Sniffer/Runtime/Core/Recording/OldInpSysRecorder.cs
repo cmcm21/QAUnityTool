@@ -3,6 +3,7 @@ using TagwizzQASniffer.Core.InputSystem;
 using TagwizzQASniffer.Core.InputSystem.NewSystemInput;
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace TagwizzQASniffer.Core.Recording
 {
@@ -12,20 +13,15 @@ namespace TagwizzQASniffer.Core.Recording
         IDLE,
         STOP
     };
-    public class Recorder: ILifeCycleSubscriber
+    public class OldInpSysRecorder: IRecorder 
     {
-        private readonly ISnifferInputSystem _inputSystem;
+        private readonly OldInputSystem _inputSystem;
         private RecordingState _state;
         private RecorderTimeline _timeline;
         
-
-        public Recorder(Type inputType)
+        public OldInpSysRecorder()
         {
-            if (inputType == typeof(OldInputSystem))
-                _inputSystem = new OldInputSystem();
-            else
-                _inputSystem = new NewInputSystem();
-            
+            _inputSystem = new OldInputSystem();
             _inputSystem.InputEnded += InputSystemOnInputEnded;
             _inputSystem.InputStarted += InputSystemOnInputStarted;
 
@@ -42,11 +38,11 @@ namespace TagwizzQASniffer.Core.Recording
             _timeline.ClipFinished(inputData);
         }
 
-        public void StartRec(string recordingName = "")
+        public void StartRec()
         {
             _state = RecordingState.RECORDING;
             _inputSystem.Init();
-            _timeline = new RecorderTimeline(recordingName);
+            _timeline = new RecorderTimeline();
         }
 
         public void StopRec()
@@ -55,13 +51,9 @@ namespace TagwizzQASniffer.Core.Recording
             _inputSystem.Stop();
         }
 
-        public void OnAwake()
-        {
-        }
+        public void OnAwake() { }
 
-        public void OnStart()
-        {
-        }
+        public void OnStart() { }
 
         public void OnUpdate()
         {
@@ -71,13 +63,26 @@ namespace TagwizzQASniffer.Core.Recording
                 _inputSystem.ReadInputs();
             }
         }
-        
-        public RecordingData GetRecordingData()
+
+        public void OnEnabled() { }
+
+        public void OnDisabled() { }
+
+        public void OnDestroy() { }
+
+        public void SaveToFile(string fileName)
         {
-            if(_state == RecordingState.STOP || _state == RecordingState.IDLE)
-              return _timeline.Export();
-            
-            return null;
-        } 
+            var recData = _timeline.Export();
+            RecordingFileManager.SaveToJson(recData,fileName); 
+        }
+
+        public void Play() {}
+        public void StopPlay()
+        {
+        }
+
+        public void LoadFromFile(string fileName)
+        {
+        }
     }
 }

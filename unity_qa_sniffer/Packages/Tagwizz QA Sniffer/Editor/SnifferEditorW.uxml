@@ -3,10 +3,16 @@
         <ui:Label text="Sniffer Recorder" class="header" style="flex-grow: 0; flex-shrink: 1; -unity-text-align: upper-center; font-size: 24px; -unity-font-style: bold;" />
         <ui:Button text="Instantiate Sniffer" display-tooltip-when-elided="true" name="InstantiateSnifferButton" style="padding-top: 5px; padding-bottom: 5px;" />
         <uie:ObjectField label="Sniffer Container" name="SnifferContainerObjField" style="font-size: 14px; -unity-font-style: normal;" />
-        <ui:TextField picking-mode="Ignore" label="Recording Name" name="RecordingTextField" style="font-size: 14px; -unity-font-style: normal;" />
-        <ui:VisualElement name="Options">
+        <ui:VisualElement name="RecOptions" style="flex-direction: row; align-items: center; justify-content: center;">
             <ui:Button text="Start Recording" display-tooltip-when-elided="true" name="StartRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
             <ui:Button text="Stop Recording" display-tooltip-when-elided="true" name="StopRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
+            <ui:Button text="Clear Recording" display-tooltip-when-elided="true" name="ClearRecording" style="padding-top: 5px; padding-bottom: 5px;" />
         </ui:VisualElement>
+        <ui:Button text="Save Recording" display-tooltip-when-elided="true" name="SaveButton" style="padding-top: 5px; padding-bottom: 5px;" />
+        <ui:VisualElement name="PlayOptions" style="flex-direction: row; align-items: center; justify-content: center;">
+            <ui:Button text="Load" display-tooltip-when-elided="true" name="LoadButton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
+            <ui:Button text="Play" display-tooltip-when-elided="true" name="Playbutton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
+        </ui:VisualElement>
+        <ui:Label display-tooltip-when-elided="true" name="messages" />
     </ui:VisualElement>
 </ui:UXML>

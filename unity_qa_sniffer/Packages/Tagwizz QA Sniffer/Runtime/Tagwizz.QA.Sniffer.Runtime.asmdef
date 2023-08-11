@@ -1,15 +1,14 @@
 {
     "name": "Tagwizz.QA.Sniffer.Runtime",
-    "references": [
-    ],
+    "rootNamespace": "",
+    "references": ["Unity.InputSystem"],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

@@ -4,14 +4,13 @@
   "displayName": "Tagwizz QA Sniffer",
   "description": "This is a QA recorder and playback package",
   "unity": "2020.3",
-  "unityRelease": "",
   "documentationUrl": "",
   "changelogUrl": "",
   "licensesUrl": "",
   "dependencies": {
- },
- "keywords": [
-  ],
+    "com.unity.inputsystem": "1.0.2"
+  },
+  "keywords": [],
   "author": {
     "name": "Carlos Miguel Correa Medina",
     "email": "miguel.correa@tagwizz.com.mx",

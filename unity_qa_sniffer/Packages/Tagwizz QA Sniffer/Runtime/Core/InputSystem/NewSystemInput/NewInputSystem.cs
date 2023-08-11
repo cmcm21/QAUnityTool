@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 namespace TagwizzQASniffer.Core.InputSystem.NewSystemInput
 {
@@ -7,6 +8,7 @@ namespace TagwizzQASniffer.Core.InputSystem.NewSystemInput
     {
         public event Action<InputData> InputStarted;
         public event Action<InputData> InputEnded;
+        
         public void Init()
         {
         }

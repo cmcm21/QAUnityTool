@@ -20,9 +20,9 @@ namespace TagwizzQASniffer.Core
       }
 
       [SerializeField] private InputSystemType inputSystemType;
-      [SerializeField] private LifeCycle lifeCycle;
+      [FormerlySerializedAs("lifeCycle")] [SerializeField] private SnifferObserver snifferObserver;
       [SerializeField] private RecordingType recordingOption;
-      public LifeCycle LifeCycle => lifeCycle;
+      public SnifferObserver SnifferObserver => snifferObserver;
       public InputSystemType InputSystem => inputSystemType;
       public RecordingType RecordingOption => recordingOption;
 

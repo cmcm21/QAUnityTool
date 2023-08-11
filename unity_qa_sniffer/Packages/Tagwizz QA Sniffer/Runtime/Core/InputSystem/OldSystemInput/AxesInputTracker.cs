@@ -51,7 +51,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             }
         }
 
-        private async void  ReadMouse(string axisName)
+        private  void  ReadMouse(string axisName)
         {
             if(axisName == "Mouse ScrollWheel")
                 TrackMouseScroll(axisName);

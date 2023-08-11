@@ -15,15 +15,21 @@ namespace TagwizzQASniffer.Editor
         
         private const string InstantiateSnifferButton = "InstantiateSnifferButton";
         private const string SnifferObjectFieldName = "SnifferContainerObjField";
-        private const string RecordingTextFieldName = "RecordingTextField";
         private const string StartRecButtonName = "StartRecButton";
         private const string StopRecButtonName = "StopRecButton";
+        private const string ClearRecButtonName = "ClearRecording";
+        private const string SaveRecButtonName = "SaveButton";
+        private const string LoadButtonName = "LoadButton";
+        private const string PlayButtonName = "Playbutton";
 
         private VisualElement _root;
         private Button _instantiateButton;
         private Button _startRecButton;
         private Button _stopRecButton;
-        private TextField _recordingTextField;
+        private Button _clearRecButton;
+        private Button _saveRecButton;
+        private Button _loadButton;
+        private Button _playButton;
         private ObjectField _snifferObjectField;
         private SnifferCore _snifferCore;
 
@@ -76,12 +82,6 @@ namespace TagwizzQASniffer.Editor
                 _snifferObjectField.objectType = typeof(GameObject);
                 _snifferObjectField.SetEnabled(false);
             }
-
-            _recordingTextField = _root.Q<TextField>(RecordingTextFieldName);
-            if(_recordingTextField == null)
-                ElementError(RecordingTextFieldName);
-            else
-                _recordingTextField.value = string.Empty;
         }
 
         private void SetupButtons()
@@ -92,44 +92,68 @@ namespace TagwizzQASniffer.Editor
             else
                 _instantiateButton.clicked += InstantiateButtonOnClicked;
              
-            _startRecButton = _root.Q<Button>(StartRecButtonName);
-            if(_startRecButton == null)
-                ElementError(SnifferObjectFieldName);
-            else
-            {
-                _startRecButton.clicked += StartRecButtonOnClicked;
-                _startRecButton.SetEnabled(false);
-            }
-
-            _stopRecButton = _root.Q<Button>(StopRecButtonName);
-            if(_stopRecButton == null)
-                ElementError(StopRecButtonName);
-            else
-            {
-                _stopRecButton.clicked += StopRecButtonOnClicked;
-                _stopRecButton.SetEnabled(false);
-            }
+            SetupRecordButtons();
+            SetupPlaybackButtons();
         }
 
-        private void InstantiateButtonOnClicked()
+        private void SetupRecordButtons()
         {
-            _instantiateButton.SetEnabled(false);
-            //Create sniffer and start it    
-            _snifferCore = new SnifferCore();
-            _snifferCore.Init();
+             _startRecButton = _root.Q<Button>(StartRecButtonName);
+             if(_startRecButton == null)
+                 ElementError(SnifferObjectFieldName);
+             else
+             {
+                 _startRecButton.clicked += StartRecButtonOnClicked;
+                 _startRecButton.SetEnabled(false);
+             }
+ 
+             _stopRecButton = _root.Q<Button>(StopRecButtonName);
+             if(_stopRecButton == null)
+                 ElementError(StopRecButtonName);
+             else
+             {
+                 _stopRecButton.clicked += StopRecButtonOnClicked;
+                 _stopRecButton.SetEnabled(false);
+             }
 
-            _snifferObjectField.value = GameObject.Find("LifeCycle");
-            _startRecButton.SetEnabled(true);
+             _clearRecButton = _root.Q<Button>(ClearRecButtonName);
+             if(_clearRecButton == null)
+                 ElementError(ClearRecButtonName);
+             else
+             {
+                 _clearRecButton.clicked += ClearRecButtonOnClicked;
+             }
+ 
+             _saveRecButton = _root.Q<Button>(SaveRecButtonName);
+             if(_saveRecButton == null)
+                 ElementError(SaveRecButtonName);
+             else
+             {
+                 _saveRecButton.SetEnabled(false);
+                 _saveRecButton.clicked += SaveRecButtonOnClicked;
+             }
         }
 
-        private void StopRecButtonOnClicked()
+
+        private void SetupPlaybackButtons()
         {
-            _snifferCore.Stop(); 
-            _stopRecButton.SetEnabled(false);
-            _startRecButton.SetEnabled(true);
-            
-            _snifferCore.SaveRecord(_recordingTextField.value);
-            AssetDatabase.Refresh();
+             _loadButton = _root.Q<Button>(LoadButtonName);
+             if(_loadButton == null)
+                 ElementError(LoadButtonName);
+             else
+             {
+                 _loadButton.clicked += LoadButtonOnClicked;
+                 _loadButton.SetEnabled(false);
+             }
+ 
+             _playButton = _root.Q<Button>(PlayButtonName);
+             if (_playButton == null)
+                 ElementError(PlayButtonName);
+             else
+             {
+                 _playButton.clicked += PlayButtonOnClicked;
+                 _playButton.SetEnabled(false);
+             }
         }
 
         private void StartRecButtonOnClicked()
@@ -139,6 +163,72 @@ namespace TagwizzQASniffer.Editor
             _stopRecButton.SetEnabled(true);
             _snifferCore.Record(); 
         }
+        
+        private void StopRecButtonOnClicked()
+        {
+            _snifferCore.Stop(); 
+            _stopRecButton.SetEnabled(false);
+            _startRecButton.SetEnabled(true);
+            _saveRecButton.SetEnabled(true);
+            _playButton.SetEnabled(true);
+            
+        }
+        
+        private void SaveRecButtonOnClicked()
+        {
+            var recordPathName = EditorUtility.SaveFilePanel(
+                "Recording file", 
+                SnifferDefinitions.RECORDINGS_PATH, 
+                "record", 
+                 GetRecordingFileExtenstion()
+                );
+            
+            _snifferCore.Save(recordPathName);
+            AssetDatabase.Refresh();
+        }
+         
+        private void ClearRecButtonOnClicked()
+        {
+        }
+
+        private void PlayButtonOnClicked()
+        {
+            _snifferCore.Play();
+        }
+
+        private void LoadButtonOnClicked()
+        {
+            var recordingFileName = EditorUtility.OpenFilePanel(
+                "Select recording File",
+                SnifferDefinitions.RECORDINGS_PATH,
+                GetRecordingFileExtenstion()
+            );
+            
+            _snifferCore.Load(recordingFileName);
+            _playButton.SetEnabled(true);
+        }
+
+
+        private string GetRecordingFileExtenstion()
+        {
+            if (_snifferCore is { SysType: SnifferSettings.InputSystemType.OLD_INPUT })
+                return "json";
+            else if(_snifferCore is {SysType: SnifferSettings.InputSystemType.NEW_INPUT})
+                return "inputtrace";
+            return "";
+        }
+
+        private void InstantiateButtonOnClicked()
+        {
+            _instantiateButton.SetEnabled(false);
+            _snifferCore = new SnifferCore();
+            _snifferCore.Init();
+
+            _snifferObjectField.value = GameObject.Find("SnifferObserver");
+            _startRecButton.SetEnabled(true);
+            _loadButton.SetEnabled(true);
+        }
+
 
         private void ElementError(string elementName)
         {

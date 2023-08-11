@@ -8,9 +8,8 @@ namespace TagwizzQASniffer.Core.Recording
     {
         public static void SaveToJson(RecordingData recordingData, string fileName = "")
         {
-            string filePath = GetFilePath(fileName == string.Empty ? recordingData.timelineName : fileName);
             var jsonfile = JsonUtility.ToJson(recordingData,true);
-            System.IO.File.WriteAllText(filePath,jsonfile); 
+            File.WriteAllText(fileName,jsonfile); 
         }
 
         public static void OverrideFile(RecordingData recordingData, string fileName = "")

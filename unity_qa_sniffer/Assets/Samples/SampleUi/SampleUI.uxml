@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="SampleUI.uss" />
+    <ui:VisualElement name="MainContainer" style="flex-direction: column; justify-content: flex-end; flex-grow: 1;">
+        <ui:VisualElement style="flex-grow: 0; flex-shrink: 1; flex-direction: row; justify-content: space-around; align-items: center; padding-bottom: 0; flex-basis: 20%;">
+            <ui:Button text="Button" display-tooltip-when-elided="true" class="button" />
+            <ui:Button text="Button" display-tooltip-when-elided="true" class="button" />
+            <ui:Button text="Button" display-tooltip-when-elided="true" class="button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

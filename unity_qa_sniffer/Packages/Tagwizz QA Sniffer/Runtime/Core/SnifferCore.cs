@@ -12,30 +12,29 @@ namespace TagwizzQASniffer.Core
         private SnifferState _state;
         public SnifferState State => _state;
 
-        private Recorder _recorder;
+        private IRecorder _recorder;
         private SnifferSettings _snifferSettings;
+        public SnifferSettings.InputSystemType SysType => _snifferSettings.InputSystem;
 
         public void Init()
         {
             _state = SnifferState.IDLE;
             _snifferSettings = Resources.Load<SnifferSettings>("SnifferSettings");
             InitDependencies();
-            InitLifeCycle();
+            InitObserver();
         }
 
         private void InitDependencies()
         {
-            var inputType = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
-                ? typeof(NewInputSystem)
-                : typeof(OldInputSystem);
-            
-            _recorder = new Recorder(inputType);
+            _recorder = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
+                ? (IRecorder)new NewInpSysRecorder()
+                : (IRecorder)new OldInpSysRecorder();
         }
         
-        private void InitLifeCycle()
+        private void InitObserver()
         {
-            var lifeCycle = Object.Instantiate(_snifferSettings.LifeCycle);
-            lifeCycle.gameObject.name = "LifeCycle";
+            var lifeCycle = Object.Instantiate(_snifferSettings.SnifferObserver);
+            lifeCycle.gameObject.name = "SnifferObserver";
             lifeCycle.Subscribe(_recorder);
         }
         
@@ -51,13 +50,28 @@ namespace TagwizzQASniffer.Core
             _recorder.StartRec();
         }
 
-        public void SaveRecord(string recordingFileName)
+        public void Load(string recordingPath)
         {
-            if (_state == SnifferState.IDLE)
-            {
-                var recData = _recorder.GetRecordingData();
-                RecordingFileManager.SaveToJson(recData,recordingFileName); 
-            }
+            _recorder.LoadFromFile(recordingPath);
+        }
+
+        public void Play()
+        {
+            if(_state == SnifferState.RECORDING)
+                Stop();
+            
+            _state = SnifferState.PLAYING_BACK;
+            _recorder.Play();
+        }
+
+        public void StopPlay()
+        {
+            _state = SnifferState.IDLE;
+        }
+
+        public void Save(string recordingFileName)
+        {
+            _recorder.SaveToFile(recordingFileName);
         }
     }
 }
