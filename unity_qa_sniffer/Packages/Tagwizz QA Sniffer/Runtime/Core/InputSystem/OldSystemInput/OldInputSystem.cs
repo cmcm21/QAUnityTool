@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
+    public enum InputType {KEY,TOUCH,BUTTON}
     public class OldInputSystem
     {
         private readonly List<InputTracker> _trackers = new List<InputTracker>();

@@ -1,8 +1,5 @@
-using System;
 using TagwizzQASniffer.Core.InputSystem;
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
-using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace TagwizzQASniffer.Core.Recording
 {
