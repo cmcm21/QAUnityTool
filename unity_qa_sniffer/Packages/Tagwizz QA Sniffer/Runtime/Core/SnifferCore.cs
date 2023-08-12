@@ -11,6 +11,7 @@ namespace TagwizzQASniffer.Core
         public SnifferState State => _state;
 
         private IRecorder _recorder;
+        public IRecorder Recorder => _recorder;
         private SnifferSettings _snifferSettings;
         public SnifferSettings.InputSystemType SysType => _snifferSettings.InputSystem;
 
@@ -70,6 +71,16 @@ namespace TagwizzQASniffer.Core
         public void Save(string recordingFileName)
         {
             _recorder.SaveToFile(recordingFileName);
+        }
+
+        public void Clear()
+        {
+            _recorder.Clear();
+        }
+        
+        public void Pause()
+        {
+            _recorder.Pause();    
         }
     }
 }

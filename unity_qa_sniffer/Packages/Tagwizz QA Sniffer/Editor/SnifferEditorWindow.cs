@@ -1,8 +1,9 @@
+using System;
+using System.Linq;
 using TagwizzQASniffer.Core;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UIElements.Button;
 
@@ -21,6 +22,9 @@ namespace TagwizzQASniffer.Editor
         private const string SaveRecButtonName = "SaveButton";
         private const string LoadButtonName = "LoadButton";
         private const string PlayButtonName = "Playbutton";
+        private const string FileNameFieldName = "FileNameField";
+        private const string PauseButtonName = "PauseButton";
+        private const string RecordSliderName = "RecorderSlider";
 
         private VisualElement _root;
         private Button _instantiateButton;
@@ -30,8 +34,11 @@ namespace TagwizzQASniffer.Editor
         private Button _saveRecButton;
         private Button _loadButton;
         private Button _playButton;
+        private Button _pauseButton;
         private ObjectField _snifferObjectField;
         private SnifferCore _snifferCore;
+        private TextField _fileNameField;
+        private Slider _recordSlider;
 
         [MenuItem("Sniffer/Recorder")]
         public static void ShowWindow()
@@ -82,6 +89,14 @@ namespace TagwizzQASniffer.Editor
                 _snifferObjectField.objectType = typeof(GameObject);
                 _snifferObjectField.SetEnabled(false);
             }
+
+            _fileNameField = _root.Q<TextField>(FileNameFieldName);
+            if(_fileNameField == null)
+                ElementError(FileNameFieldName);
+
+            _recordSlider = _root.Q<Slider>(RecordSliderName);
+            if(_recordSlider == null)
+                ElementError(RecordSliderName);
         }
 
         private void SetupButtons()
@@ -93,6 +108,25 @@ namespace TagwizzQASniffer.Editor
                 _instantiateButton.clicked += InstantiateButtonOnClicked;
              
             SetupRecordButtons();
+            
+             _saveRecButton = _root.Q<Button>(SaveRecButtonName);
+             if(_saveRecButton == null)
+                 ElementError(SaveRecButtonName);
+             else
+             {
+                 _saveRecButton.SetEnabled(false);
+                 _saveRecButton.clicked += SaveRecButtonOnClicked;
+             }
+             
+             _loadButton = _root.Q<Button>(LoadButtonName);
+             if(_loadButton == null)
+                 ElementError(LoadButtonName);
+             else
+             {
+                 _loadButton.clicked += LoadButtonOnClicked;
+                 _loadButton.SetEnabled(false);
+             }
+ 
             SetupPlaybackButtons();
         }
 
@@ -124,37 +158,29 @@ namespace TagwizzQASniffer.Editor
                  _clearRecButton.clicked += ClearRecButtonOnClicked;
              }
  
-             _saveRecButton = _root.Q<Button>(SaveRecButtonName);
-             if(_saveRecButton == null)
-                 ElementError(SaveRecButtonName);
-             else
-             {
-                 _saveRecButton.SetEnabled(false);
-                 _saveRecButton.clicked += SaveRecButtonOnClicked;
-             }
         }
-
 
         private void SetupPlaybackButtons()
         {
-             _loadButton = _root.Q<Button>(LoadButtonName);
-             if(_loadButton == null)
-                 ElementError(LoadButtonName);
-             else
-             {
-                 _loadButton.clicked += LoadButtonOnClicked;
-                 _loadButton.SetEnabled(false);
-             }
- 
-             _playButton = _root.Q<Button>(PlayButtonName);
-             if (_playButton == null)
-                 ElementError(PlayButtonName);
-             else
-             {
-                 _playButton.clicked += PlayButtonOnClicked;
-                 _playButton.SetEnabled(false);
-             }
+            _playButton = _root.Q<Button>(PlayButtonName);
+            if (_playButton == null)
+                ElementError(PlayButtonName);
+            else
+            {
+                _playButton.clicked += PlayButtonOnClicked;
+                _playButton.SetEnabled(false);
+            }
+
+            _pauseButton = _root.Q<Button>(PauseButtonName);
+            if(_pauseButton == null)
+                ElementError(PauseButtonName);
+            else
+            {
+                _pauseButton.clicked += PauseButtonOnClicked;         
+                _pauseButton.SetEnabled(false);
+            }
         }
+
 
         private void StartRecButtonOnClicked()
         {
@@ -171,7 +197,7 @@ namespace TagwizzQASniffer.Editor
             _startRecButton.SetEnabled(true);
             _saveRecButton.SetEnabled(true);
             _playButton.SetEnabled(true);
-            
+            SetSlider();
         }
         
         private void SaveRecButtonOnClicked()
@@ -180,22 +206,13 @@ namespace TagwizzQASniffer.Editor
                 "Recording file", 
                 SnifferDefinitions.RECORDINGS_PATH, 
                 "record", 
-                 GetRecordingFileExtenstion()
-                );
+                GetRecordingFileExtenstion()
+            );
             
             _snifferCore.Save(recordPathName);
+            _fileNameField.value = recordPathName.Split('/').Last();
             AssetDatabase.Refresh();
         }
-         
-        private void ClearRecButtonOnClicked()
-        {
-        }
-
-        private void PlayButtonOnClicked()
-        {
-            _snifferCore.Play();
-        }
-
         private void LoadButtonOnClicked()
         {
             var recordingFileName = EditorUtility.OpenFilePanel(
@@ -203,11 +220,31 @@ namespace TagwizzQASniffer.Editor
                 SnifferDefinitions.RECORDINGS_PATH,
                 GetRecordingFileExtenstion()
             );
-            
+             
             _snifferCore.Load(recordingFileName);
             _playButton.SetEnabled(true);
+            _fileNameField.value = recordingFileName.Split('/').Last();
+            SetSlider();
+        }
+          
+        private void ClearRecButtonOnClicked()
+        {
+            _fileNameField.value = String.Empty;
+            _snifferCore.Clear();
         }
 
+        private void PlayButtonOnClicked()
+        {
+            _snifferCore.Play();
+            _pauseButton.SetEnabled(true);
+            SceneView.lastActiveSceneView.FrameSelected();
+        }
+
+        private void PauseButtonOnClicked()
+        {
+            _snifferCore.Pause();
+            _playButton.SetEnabled(true);
+        }
 
         private string GetRecordingFileExtenstion()
         {
@@ -233,6 +270,22 @@ namespace TagwizzQASniffer.Editor
         private void ElementError(string elementName)
         {
             Debug.Log($"[{GetType()}]:: Element {elementName} doesn't found");
+        }
+
+        private void SetSlider()
+        {
+             if (_recordSlider != null)
+             {
+                 _recordSlider.highValue = _snifferCore.Recorder.GetRecLenght();
+                 _recordSlider.lowValue = 0;
+                 _recordSlider.value = _snifferCore.Recorder.GetRecPosition();
+             }
+        }
+
+        private void Update()
+        {
+            if (_recordSlider != null && _snifferCore != null && _snifferCore.Recorder != null) 
+                _recordSlider.value = (float)_snifferCore.Recorder.GetRecPosition();
         }
     }
 }

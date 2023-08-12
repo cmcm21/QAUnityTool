@@ -34,6 +34,10 @@ namespace TagwizzQASniffer.Core.Recording
             _timeline.ClipFinished(inputData);
         }
 
+        public int GetRecLenght() => 0;
+
+        public int GetRecPosition() => 0;
+
         public void StartRec()
         {
             _state = RecordingState.RECORDING;
@@ -73,12 +77,11 @@ namespace TagwizzQASniffer.Core.Recording
         }
 
         public void Play() {}
-        public void StopPlay()
-        {
-        }
+        public void StopPlay() { }
 
-        public void LoadFromFile(string fileName)
-        {
-        }
+        public void LoadFromFile(string fileName) { }
+        
+        public void Clear(){}
+        public void Pause() { }
     }
 }

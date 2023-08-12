@@ -8,11 +8,16 @@
             <ui:Button text="Stop Recording" display-tooltip-when-elided="true" name="StopRecButton" style="padding-top: 5px; padding-bottom: 5px;" />
             <ui:Button text="Clear Recording" display-tooltip-when-elided="true" name="ClearRecording" style="padding-top: 5px; padding-bottom: 5px;" />
         </ui:VisualElement>
-        <ui:Button text="Save Recording" display-tooltip-when-elided="true" name="SaveButton" style="padding-top: 5px; padding-bottom: 5px;" />
-        <ui:VisualElement name="PlayOptions" style="flex-direction: row; align-items: center; justify-content: center;">
-            <ui:Button text="Load" display-tooltip-when-elided="true" name="LoadButton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
-            <ui:Button text="Play" display-tooltip-when-elided="true" name="Playbutton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
+        <ui:VisualElement style="align-items: stretch;">
+            <ui:Button text="Save Recording" display-tooltip-when-elided="true" name="SaveButton" style="padding-top: 5px; padding-bottom: 5px;" />
+            <ui:Button text="Load Recording" display-tooltip-when-elided="true" name="LoadButton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
         </ui:VisualElement>
+        <ui:TextField picking-mode="Ignore" readonly="true" name="FileNameField" />
+        <ui:VisualElement name="PlayOptions" style="flex-direction: row; align-items: center; justify-content: center;">
+            <ui:Button text="Play" display-tooltip-when-elided="true" name="Playbutton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
+            <ui:Button text="Pause" display-tooltip-when-elided="true" name="PauseButton" style="padding-top: 5px; padding-bottom: 5px; padding-left: 30px; padding-right: 30px;" />
+        </ui:VisualElement>
+        <ui:Slider picking-mode="Ignore" value="0" high-value="100" show-input-field="false" focusable="false" name="RecorderSlider" />
         <ui:Label display-tooltip-when-elided="true" name="messages" />
     </ui:VisualElement>
 </ui:UXML>

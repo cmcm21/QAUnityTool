@@ -9,7 +9,11 @@ namespace TagwizzQASniffer.Core.Recording
         public NewInpSysRecorder()
         {
             _inputRecorder = new InputRecorder();
+            _inputRecorder.simulateOriginalTimingOnReplay = true;
+            _inputRecorder.recordFrames = true;
+            _inputRecorder.devicePath = string.Empty;
         }
+        
         public void OnAwake() { }
 
         public void OnStart() { }
@@ -31,6 +35,10 @@ namespace TagwizzQASniffer.Core.Recording
             _inputRecorder.OnDestroy();
         }
 
+        public int GetRecLenght() => _inputRecorder.replayPosition;
+
+        public int GetRecPosition() =>(int)_inputRecorder.eventCount;
+        
         public void StartRec()
         {
             if(!_inputRecorder.captureIsRunning)
@@ -57,10 +65,20 @@ namespace TagwizzQASniffer.Core.Recording
         {
             _inputRecorder.StopReplay();
         }
-
+        
         public void LoadFromFile(string fileName)
         {
             _inputRecorder.LoadCaptureFromFile(fileName);
+        }
+
+        public void Clear()
+        {
+            _inputRecorder.ClearCapture();
+        }
+
+        public void Pause() 
+        {
+            _inputRecorder.PauseReplay();
         }
     }
 }

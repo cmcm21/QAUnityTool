@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -243,7 +244,10 @@ namespace UnityEngine.InputSystem
             // Configure replay controller.
             m_ReplayController = m_EventTrace.Replay()
                 .OnFinished(StopReplay)
-                .OnEvent(_ => m_ChangeEvent?.Invoke(Change.EventPlayed));
+                .OnEvent(ptr =>
+                {
+                    m_ChangeEvent?.Invoke(Change.EventPlayed);
+                });
             if (m_ReplayOnNewDevices)
                 m_ReplayController.WithAllDevicesMappedToNewInstances();
 
