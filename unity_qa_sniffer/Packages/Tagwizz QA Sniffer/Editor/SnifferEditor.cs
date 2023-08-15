@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace TagwizzQASniffer.Editor
 {
+    #if UNITY_EDITOR
     [InitializeOnLoad]
     public class SnifferEditor
     {
@@ -52,5 +53,5 @@ namespace TagwizzQASniffer.Editor
         public static readonly string RecordingsFilesDirectory = "Assets/SnifferRecordings/";
         public static readonly string SnifferSettingsPath = "Assets/Resources/SnifferSettings.asset"; 
     }
-
+    #endif
 }

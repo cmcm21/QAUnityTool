@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Codice.Client.Common.WebApi;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput

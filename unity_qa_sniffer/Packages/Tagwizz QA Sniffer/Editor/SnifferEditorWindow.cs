@@ -9,6 +9,7 @@ using Button = UnityEngine.UIElements.Button;
 
 namespace TagwizzQASniffer.Editor
 {
+    #if UNITY_EDITOR
     public class SnifferEditorWindow : EditorWindow
     {
         private const string UxmlId = "4507d42a19f77ad448df2608e020b92c";
@@ -288,4 +289,5 @@ namespace TagwizzQASniffer.Editor
                 _recordSlider.value = (float)_snifferCore.Recorder.GetRecPosition();
         }
     }
+    #endif
 }

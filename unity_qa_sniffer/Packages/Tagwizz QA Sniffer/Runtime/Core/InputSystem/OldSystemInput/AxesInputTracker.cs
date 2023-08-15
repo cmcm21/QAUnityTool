@@ -9,9 +9,10 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
     public class AxesInputTracker: InputTracker
     {
         private readonly Dictionary<string, AxeInputType> _axesInputType = new Dictionary<string, AxeInputType>();
-
+        
         public AxesInputTracker()
         {
+        #if UNITY_EDITOR
             var inputManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset")[0];
             var inputManagerSer = new SerializedObject(inputManager);
             var axisArray = inputManagerSer.FindProperty("m_Axes");
@@ -35,6 +36,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
                 if(!InputsNames.Contains(name))
                     InputsNames.Add(name);
             }
+        #endif
         }
         
         public override void CheckInputs()
