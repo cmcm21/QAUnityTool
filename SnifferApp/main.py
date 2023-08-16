@@ -1,6 +1,6 @@
-from Network.Server import SocketServer
+import sys
+from Hub.SnifferHub import SnifferHub
 
 if __name__ == '__main__':
-    server = SocketServer()
-    server.start_listen()
-
+    snifferHub = SnifferHub()
+    sys.exit(snifferHub.app())

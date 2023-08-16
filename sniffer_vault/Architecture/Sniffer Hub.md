@@ -3,6 +3,7 @@
 title: Sniffer Hub Application
 ---
 classDiagram
+direction BT
 class HubApplication {
 	-UIManager uiManager
 	-ServerManager server
@@ -56,7 +57,7 @@ ServerManager--CommandName
 title: Command Diagram
 ---
 classDiagram
-direction TB
+direction LR
 class Command{
 <<Abstract>>
 	#HubApplication application
@@ -154,6 +155,6 @@ class ServerWidget{
 }
 
 
-UIManager<|--DeviceWidget
-UIManager<|--ServerWidget
+DeviceWidget*--UIManager
+ServerWidget*--UIManager
 ```
