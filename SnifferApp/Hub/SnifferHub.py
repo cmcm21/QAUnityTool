@@ -1,9 +1,9 @@
 from CommandPattern.Command import CommandHistory, InitServerCommand, PlayCommand
 from Network.ServerManager import ServerManager
+from Network.DeviceManager import DeviceManager
 from UI.UIManager import UIManager
 from PySide6.QtWidgets import QPushButton
 from PySide6 import QtCore
-from Utils.Events import Event
 from CommandPattern import Command
 
 Command = {
@@ -24,11 +24,22 @@ class SnifferHub:
         self._initCommands()
 
     def _connectEvents(self):
-        self.serverManager.newDeviceConnectedEvent += \
-            lambda *args, **kwargs: self.uiManager.serverWidget.addDevice(kwargs["device"])
+        self.serverManager.newDeviceConnectedEvent += self._onNewDeviceAdded
+        self.serverManager.serverInitEvent += self._onServerStarted
 
-        self.serverManager.serverInitEvent += \
-            lambda *args, **kwargs: self.uiManager.uiLogger.appendText(kwargs["message"])
+    def _onServerStarted(self, *args, **kwargs):
+        self.uiManager.uiLogger.appendText(kwargs["message"])
+        return
+
+    def _onNewDeviceAdded(self, *args, **kwargs):
+        device: DeviceManager = kwargs["device"]
+        device.msgReceivedEvent += self._onDeviceReceivedMessage
+        self.uiManager.serverWidget.addDevice(device)
+        return
+
+    def _onDeviceReceivedMessage(self, *args, **kwargs):
+        self.uiManager.uiLogger.appendText(kwargs["message"])
+        return
 
     def _initCommands(self):
         self._setButtonCommand(
