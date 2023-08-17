@@ -55,7 +55,7 @@ namespace TagwizzQASniffer.Core.Recording
             _inputRecorder.SaveCaptureToFile(fileName);
         }
 
-        public void Play()
+        public void Replay()
         {
             if(!_inputRecorder.replayIsRunning)
                 _inputRecorder.StartReplay();

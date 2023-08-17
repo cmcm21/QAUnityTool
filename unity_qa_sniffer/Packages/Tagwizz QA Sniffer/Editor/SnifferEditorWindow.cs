@@ -236,7 +236,7 @@ namespace TagwizzQASniffer.Editor
 
         private void PlayButtonOnClicked()
         {
-            _snifferCore.Play();
+            _snifferCore.Replay();
             _pauseButton.SetEnabled(true);
             SceneView.lastActiveSceneView.FrameSelected();
         }

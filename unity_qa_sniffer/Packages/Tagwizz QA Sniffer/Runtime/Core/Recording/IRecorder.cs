@@ -12,7 +12,7 @@ namespace TagwizzQASniffer.Core.Recording
 
         public void SaveToFile(string fileName);
 
-        public void Play();
+        public void Replay();
 
         public void StopPlay();
 

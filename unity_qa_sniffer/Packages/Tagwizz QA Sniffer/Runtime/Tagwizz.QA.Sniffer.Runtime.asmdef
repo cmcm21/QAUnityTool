@@ -1,7 +1,10 @@
 {
     "name": "Tagwizz.QA.Sniffer.Runtime",
     "rootNamespace": "",
-    "references": ["Unity.InputSystem"],
+    "references": [
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

@@ -1,13 +1,14 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class TextLabelManager : MonoBehaviour
 {
-    private Text _text;
+    private TextMeshProUGUI _text;
     private void Start()
     {
-        _text = GetComponent<Text>();
+        _text = GetComponent<TextMeshProUGUI>();
     }
 
     private void OnEnable()

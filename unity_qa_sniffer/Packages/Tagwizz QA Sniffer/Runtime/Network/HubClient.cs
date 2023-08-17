@@ -2,6 +2,7 @@ using System;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network
@@ -11,20 +12,27 @@ namespace TagwizzQASniffer.Network
         volatile bool _keepReading = false;
         private System.Threading.Thread _socketThread;
         private Socket _sender;
+        public event Action<string> OnReceivedMsgFromServerEvent;
+        public event Action<string> OnServerConnectionMadeEvent;
 
-        public void SendMsgToServer( string msg ) { 
-            if( _sender != null && _sender.Connected ) { 
+        public void SendMsgToServer( string msg )
+        { 
+            if( _sender != null && _sender.Connected ) 
+            { 
                 Debug.Log("SendMsgToServer");
                 byte[] messageSent = Encoding.ASCII.GetBytes(string.Format("{0}", msg)); 
                 int byteSent = _sender.Send(messageSent);    
             }
-            else { 
+            else 
+            { 
                 Debug.LogFormat("Not able to send: {0}", _sender.Connected);
             }
         }
         
-        void OnReceivedMsgFromServer( string msg ) { 
+        private void OnReceivedMsgFromServer( string msg ) 
+        { 
             Debug.LogFormat("Message from Server -> {0}", msg); 
+            OnReceivedMsgFromServerEvent?.Invoke(msg);
         }
 
         public void StartClient(string ip, int port)
@@ -63,7 +71,7 @@ namespace TagwizzQASniffer.Network
                 { 
                     _sender.Connect(localEndPoint); 
                     Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString()); 
-                        
+                    //OnServerConnectionMadeEvent?.Invoke(_sender.RemoteEndPoint.ToString());
                     while(_keepReading) 
                     { 
                         byte[] messageReceived = new byte[1024]; 

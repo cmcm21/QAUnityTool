@@ -54,16 +54,16 @@ namespace TagwizzQASniffer.Core
             _recorder.LoadFromFile(recordingPath);
         }
 
-        public void Play()
+        public void Replay()
         {
             if(_state == SnifferState.RECORDING)
                 Stop();
             
             _state = SnifferState.PLAYING_BACK;
-            _recorder.Play();
+            _recorder.Replay();
         }
 
-        public void StopPlay()
+        public void StopReplay()
         {
             _state = SnifferState.IDLE;
         }

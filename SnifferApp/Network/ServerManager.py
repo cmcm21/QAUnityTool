@@ -1,8 +1,7 @@
 import socket
 from threading import Thread
-from Network.DeviceManager import DeviceManager
 from Utils.Events import Event
-
+from Network.DeviceManager import DeviceManager
 
 bufferSize = 1024
 
@@ -16,6 +15,7 @@ class ServerManager:
         self.hostname = socket.gethostname()
         self.Ip = socket.gethostbyname(self.hostname)
         self.devices: list[DeviceManager] = []
+        self.selectedDevice: DeviceManager = None
         self.listenThread = Thread(target=self._listen, daemon=True)
         self.serverInitEvent = Event()
         self.newDeviceConnectedEvent = Event()
@@ -38,6 +38,9 @@ class ServerManager:
             device.starListening()
             self.devices.append(device)
             self.newDeviceConnectedEvent(device=device)
+
+    def setDeviceSelected(self, device: DeviceManager):
+        self.selectedDevice = device
 
     def close(self):
         self.listening = False

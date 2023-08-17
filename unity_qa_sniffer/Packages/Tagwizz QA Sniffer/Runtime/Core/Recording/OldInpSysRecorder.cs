@@ -76,7 +76,7 @@ namespace TagwizzQASniffer.Core.Recording
             RecordingFileManager.SaveToJson(recData,fileName); 
         }
 
-        public void Play() {}
+        public void Replay() {}
         public void StopPlay() { }
 
         public void LoadFromFile(string fileName) { }

@@ -13,7 +13,8 @@ namespace TagwizzQASniffer.Editor
         {
             CreateSettingFile();
             CreateRecordingsDirectory(); 
-            AssetDatabase.Refresh();
+            if(!Application.isPlaying)
+                AssetDatabase.Refresh();
         }
 
         private static void CreateSettingFile()
