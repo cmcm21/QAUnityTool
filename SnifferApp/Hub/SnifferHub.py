@@ -42,10 +42,11 @@ class SnifferHub:
         return
 
     def _initCommands(self):
-        self._setButtonCommand(
-            self.uiManager.serverWidget.initServerButton,
-            InitServerCommand(self, self.serverManager)
-        )
+        initServerCommand = InitServerCommand(self, self.serverManager)
+        initServerCommand.onCommandExecutedEvent +=\
+            lambda *args, **kwargs: self.uiManager.uiLogger.appendText(kwargs["message"])
+
+        self._setButtonCommand( self.uiManager.serverWidget.initServerButton, initServerCommand)
 
     def app(self):
         self.uiManager.execute()
@@ -57,3 +58,8 @@ class SnifferHub:
 
     def _setButtonCommand(self, button: QPushButton, command: Command):
         button.clicked.connect(lambda: self.executeCommand(command))
+
+    def __del__(self):
+        self.serverManager.newDeviceConnectedEvent -= self._onNewDeviceAdded
+        self.serverManager.serverInitEvent -= self._onServerStarted
+

@@ -1,8 +1,14 @@
 import socket
 from threading import Thread
 from Utils.Events import Event
+from enum import Enum
 
 buffer_size = 1024
+
+
+class DeviceState(Enum):
+    RECORDING = 0
+    PLAYBACK = 1
 
 
 class DeviceManager:

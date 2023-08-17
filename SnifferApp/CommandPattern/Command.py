@@ -2,7 +2,7 @@ from abc import abstractmethod
 from enum import Enum
 from Hub import SnifferHub
 from Network import ServerManager
-import asyncio
+from Utils.Events import Event
 
 
 class CommandSignal(Enum):
@@ -19,7 +19,7 @@ class Command:
     def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
         self.app = snifferHub
         self.server = serverManager
-        self.uiLogger = snifferHub.uiManager.uiLogger
+        self.onCommandExecutedEvent = Event()
 
     @abstractmethod
     def execute(self) -> bool:
@@ -44,7 +44,7 @@ class InitServerCommand(Command):
 
     def execute(self) -> bool:
         self.server.startServer()
-        self.uiLogger.appendText("Server Manager Started")
+        self.onCommandExecutedEvent(message="[Command]:: Init Server Executed")
         return True
 
 
@@ -53,5 +53,5 @@ class PlayCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
-        self.uiLogger.appendText("Sending {} signal".format(CommandSignal.PLAY))
+        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.PLAY))
         return True
