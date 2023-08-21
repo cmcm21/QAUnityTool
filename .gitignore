@@ -14,9 +14,10 @@ unity_qa_sniffer/Assets/SnifferRecordings.meta
 sniffer_vault/.obsidian/plugins/
 sniffer_vault/.obsidian/community_plugins.json
 sniffer_vault/.obsidian/appearence.json
+SnifferApp/*/__pycache__/
+SnifferApp/TestRecFiles/
 
-
-
+*.pyc
 .idea
 
 # MemoryCaptures can get excessive in size.

@@ -1,3 +1,4 @@
+using System;
 using TagwizzQASniffer.Core.InputSystem;
 using TagwizzQASniffer.Core.InputSystem.OldSystemInput;
 
@@ -34,6 +35,7 @@ namespace TagwizzQASniffer.Core.Recording
             _timeline.ClipFinished(inputData);
         }
 
+        public event Action OnReplayFinished;
         public int GetRecLenght() => 0;
 
         public int GetRecPosition() => 0;
@@ -73,7 +75,7 @@ namespace TagwizzQASniffer.Core.Recording
         public void SaveToFile(string fileName)
         {
             var recData = _timeline.Export();
-            RecordingFileManager.SaveToJson(recData,fileName); 
+            RecordingFileManager.SaveToJson(recData,fileName);
         }
 
         public void Replay() {}

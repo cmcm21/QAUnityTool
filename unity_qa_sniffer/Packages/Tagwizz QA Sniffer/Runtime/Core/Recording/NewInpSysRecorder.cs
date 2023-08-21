@@ -1,3 +1,5 @@
+using System;
+using UnityEditor;
 using UnityEngine.InputSystem;
 
 namespace TagwizzQASniffer.Core.Recording
@@ -5,13 +7,22 @@ namespace TagwizzQASniffer.Core.Recording
     public class NewInpSysRecorder : IRecorder
     {
         private readonly InputRecorder _inputRecorder;
-
+        public event Action OnReplayFinished;
+        
         public NewInpSysRecorder()
         {
-            _inputRecorder = new InputRecorder();
-            _inputRecorder.simulateOriginalTimingOnReplay = true;
-            _inputRecorder.recordFrames = true;
-            _inputRecorder.devicePath = string.Empty;
+            _inputRecorder = new InputRecorder
+            {
+                simulateOriginalTimingOnReplay = true,
+                recordFrames = true,
+                devicePath = string.Empty
+            };
+            
+            _inputRecorder.changeEvent.AddListener((state) =>
+            {
+                  if(state == InputRecorder.Change.ReplayStopped)  
+                      OnReplayFinished?.Invoke();
+            });
         }
         
         public void OnAwake() { }

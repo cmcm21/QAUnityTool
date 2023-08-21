@@ -1,8 +1,10 @@
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using TagwizzQASniffer.Core;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network
@@ -13,19 +15,17 @@ namespace TagwizzQASniffer.Network
         private System.Threading.Thread _socketThread;
         private Socket _sender;
         public event Action<string> OnReceivedMsgFromServerEvent;
-        public event Action<string> OnServerConnectionMadeEvent;
-
         public void SendMsgToServer( string msg )
         { 
             if( _sender != null && _sender.Connected ) 
             { 
                 Debug.Log("SendMsgToServer");
-                byte[] messageSent = Encoding.ASCII.GetBytes(string.Format("{0}", msg)); 
+                byte[] messageSent = Encoding.ASCII.GetBytes($"{msg}"); 
                 int byteSent = _sender.Send(messageSent);    
             }
             else 
             { 
-                Debug.LogFormat("Not able to send: {0}", _sender.Connected);
+                Debug.LogFormat("Not able to send: {0}", _sender is { Connected: true });
             }
         }
         
@@ -44,16 +44,18 @@ namespace TagwizzQASniffer.Network
             _socketThread.Start();
         }
         
-        public void StopClient() { 
+        public void StopClient() 
+        { 
             _keepReading = false;
-
             if (_socketThread != null)
-            {
                 _socketThread.Abort();
+
+            try {
+                _sender?.Shutdown(SocketShutdown.Send);
             }
-            
-            _sender?.Shutdown(SocketShutdown.Both); 
-            _sender?.Close(); 
+            finally {
+                _sender?.Close(); 
+            }
         }
         
         private void ExecuteClient(string ip, int port) 
@@ -71,7 +73,6 @@ namespace TagwizzQASniffer.Network
                 { 
                     _sender.Connect(localEndPoint); 
                     Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString()); 
-                    //OnServerConnectionMadeEvent?.Invoke(_sender.RemoteEndPoint.ToString());
                     while(_keepReading) 
                     { 
                         byte[] messageReceived = new byte[1024]; 

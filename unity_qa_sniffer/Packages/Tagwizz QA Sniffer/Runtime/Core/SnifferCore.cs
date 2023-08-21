@@ -23,11 +23,18 @@ namespace TagwizzQASniffer.Core
             InitObserver();
         }
 
+        private void RecorderOnOnReplayFinished()
+        {
+            _state = SnifferState.IDLE;
+        }
+
         private void InitDependencies()
         {
             _recorder = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
                 ? (IRecorder)new NewInpSysRecorder()
                 : (IRecorder)new OldInpSysRecorder();
+            
+            _recorder.OnReplayFinished += RecorderOnOnReplayFinished;
         }
         
         private void InitObserver()
@@ -81,6 +88,12 @@ namespace TagwizzQASniffer.Core
         public void Pause()
         {
             _recorder.Pause();    
+        }
+
+        ~SnifferCore()
+        {
+            if(_recorder != null)
+                _recorder.OnReplayFinished += RecorderOnOnReplayFinished;
         }
     }
 }

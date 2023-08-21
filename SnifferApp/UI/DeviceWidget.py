@@ -1,5 +1,5 @@
 from typing import Any
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtCore
 from Network.DeviceManager import DeviceManager, DeviceState
 from Utils.Events import Event
 
@@ -26,6 +26,33 @@ class DeviceWidget(QtWidgets.QWidget):
         self.replayBtn = QtWidgets.QPushButton("Replay")
         self.stopReplayBtn = QtWidgets.QPushButton("Stop Replay")
         self.loadFileBtn = QtWidgets.QPushButton("Load")
+
+        self.stopBtn.hide()
+        self.saveFileBtn.hide()
+        self.replayBtn.hide()
+        self.stopReplayBtn.hide()
+
+        self.recordBtn.clicked.connect(self.onRecordBtnClicked)
+        self.stopBtn.clicked.connect(self.onStopBtnClicked)
+        self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
+        self.replayBtn.clicked.connect(self.onReplayBtnClicked)
+
+    @QtCore.Slot()
+    def onRecordBtnClicked(self):
+        self.stopBtn.show()
+
+    @QtCore.Slot()
+    def onStopBtnClicked(self):
+        self.saveFileBtn.show()
+        self.replayBtn.show()
+
+    @QtCore.Slot()
+    def onLoadBtnClicked(self):
+        self.replayBtn.show()
+
+    @QtCore.Slot()
+    def onReplayBtnClicked(self):
+        self.stopReplayBtn.show()
 
     def _setButtonsLayout(self):
         self.buttonsLayout = QtWidgets.QVBoxLayout(self.container.widget())

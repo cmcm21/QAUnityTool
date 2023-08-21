@@ -1,9 +1,11 @@
+using System;
 using TagwizzQASniffer.Core;
 
 namespace TagwizzQASniffer.Core.Recording
 {
     public interface IRecorder: ISnifferObserverSubscriber
     {
+        public event Action OnReplayFinished;
         public int GetRecLenght();
         public int GetRecPosition();
         public void StartRec();

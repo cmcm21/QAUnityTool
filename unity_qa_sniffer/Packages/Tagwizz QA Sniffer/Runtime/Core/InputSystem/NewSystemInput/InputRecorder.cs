@@ -35,7 +35,6 @@ namespace UnityEngine.InputSystem
         /// </summary>
         /// <value>True if a capture is in progress.</value>
         public bool captureIsRunning => m_EventTrace != null && m_EventTrace.enabled;
-
         /// <summary>
         /// Whether a replay is currently being run by the component.
         /// </summary>

@@ -1,9 +1,10 @@
 from abc import abstractmethod
-from enum import Enum
 from Hub import SnifferHub
-from Network import ServerManager
+from Network.ServerManager import ServerManager
+from Network.FileServer import FileServer
 from Utils.Events import Event
 from Command.CommandSignals import CommandSignal
+from PySide6.QtWidgets import QFileDialog
 
 
 class Command:
@@ -35,6 +36,7 @@ class InitServerCommand(Command):
 
     def execute(self) -> bool:
         self.serverManager.startServer()
+        self.serverManager.fileServer.startServer()
         self.onCommandExecutedEvent(message="[Command]:: Init Server Executed")
         return True
 
@@ -80,4 +82,53 @@ class StopReplayCommand(Command):
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.STOP_REPLAY)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.STOP_REPLAY.value),
                                     signal=CommandSignal.STOP_REPLAY)
+        return True
+
+
+class SaveFileCommand(Command):
+    def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
+        super().__init__(snifferHub, serverManager)
+
+    def execute(self) -> bool:
+        qfileTuple: tuple = QFileDialog.getSaveFileName(
+            self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace")
+        fileName = qfileTuple[0]
+        if fileName != "":
+            self.serverManager.fileServer.setFile(fileName)
+            self.serverManager.fileServer.sendFile = True
+            self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
+            #self.serverManager.fileServer.fileReceiveFinishedEvent += self._onFileReceiveFinished
+        else:
+            print("File wasn't saved")
+
+        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
+                                    signal=CommandSignal.SAVE_FILE)
+        return True
+
+    def _onFileReceiveFinished(self, *args, **kwargs):
+        for progressEvent in self.serverManager.fileServer.progressEventsThreads:
+            if not progressEvent.is_alive():
+                progressEvent.start()
+                progressEvent.join(timeout=3)
+
+
+class LoadFileCommand(Command):
+    def __init__(self, snifferHub:SnifferHub, serverManager:ServerManager):
+        super().__init__(snifferHub, serverManager)
+
+    def execute(self) -> bool:
+        qfileTuple: tuple = QFileDialog.getOpenFileName(
+            self.app.uiManager.GetWidget(), caption="Load File", filter="*.inputtrace")
+
+        fileName = qfileTuple[0]
+        if fileName != "":
+            self.serverManager.fileServer.setFile(fileName)
+            self.serverManager.fileServer.sendFile = True
+            self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
+            #self.serverManager.fileServer.fileReceiveFinishedEvent += self._onFileReceiveFinished
+        else:
+            print("File wasn't loaded")
+
+        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.LOAD_FILE.value),
+                                    signal=CommandSignal.LOAD_FILE)
         return True

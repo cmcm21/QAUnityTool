@@ -5,7 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Samples/SnifferNetwork/Sample.unity
     guid: 77bdfc8e984a92647b09eaea6082e9c9
+  - enabled: 1
+    path: Assets/Samples/InputSniffer/NewInputSnifferSample.unity
+    guid: 98496e9eefdb09c4893a3c8f738880c8
   m_configObjects: {}
