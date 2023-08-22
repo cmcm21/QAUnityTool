@@ -5,6 +5,9 @@ namespace TagwizzQASniffer.Core.Recording
 {
     public interface IRecorder: ISnifferObserverSubscriber
     {
+        public event Action OnRecordStarted;
+        public event Action OnRecordFinished;
+        public event Action OnReplayStarted;
         public event Action OnReplayFinished;
         public int GetRecLenght();
         public int GetRecPosition();

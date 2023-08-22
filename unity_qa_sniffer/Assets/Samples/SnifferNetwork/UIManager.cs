@@ -37,9 +37,4 @@ public class UIManager : MonoBehaviour
         _client.SendMsgToServer(GetMsg);
         PutFeedbackMsg($"Message {GetMsg} was send correctly");
     }
-
-    public void OnDisable()
-    {
-        _client.StopClient();
-    }
 }

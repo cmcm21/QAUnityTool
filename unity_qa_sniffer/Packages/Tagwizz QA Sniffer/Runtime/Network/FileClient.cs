@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using TagwizzQASniffer.Core;
+using UnityEditor;
 using UnityEngine;
 
 public class FileClient
@@ -42,7 +43,7 @@ public class FileClient
     private bool SendFileThread(string ip, int port, SnifferCore snifferCore)
     {
         _ipArray = Dns.GetHostAddresses(ip);
-        _endPoint = new IPEndPoint(_ipArray[0], port + 100);
+        _endPoint = new IPEndPoint(_ipArray[0], port);
         FileStream file = null;
         _sender = new Socket(_ipArray[0].AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         //_sender.SendTimeout = 1000000; //timeout in milliseconds
@@ -87,8 +88,9 @@ public class FileClient
      private string GetFileThread(string ip, int port, SnifferCore snifferCore)
     {
         _ipArray = Dns.GetHostAddresses(ip);
-        _endPoint = new IPEndPoint(_ipArray[0], port + 100);
-        FileStream file = null;
+        _endPoint = new IPEndPoint(_ipArray[0], port);
+        BinaryWriter binaryWriter = null;
+        string filePath = string.Empty;
         _sender = new Socket(_ipArray[0].AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         //_sender.SendTimeout = 1000000; //timeout in milliseconds
         try 
@@ -98,10 +100,10 @@ public class FileClient
              byte[] fileNameBytes = new byte[1024];
              int received = _sender.Receive(fileNameBytes);
              var fileName = Encoding.ASCII.GetString(fileNameBytes, 0, received);
-             var filePath = GetFilePath(fileName);
-             file = new FileStream(filePath, FileMode.Create);;
+             filePath = GetFilePath(fileName);
+             binaryWriter = new BinaryWriter(new FileStream(filePath, FileMode.Create));
+             
              Debug.Log($"Receiving File {fileName}");
-            
              while(true)
              {
                  byte[] fileBytes = new byte[4096];
@@ -110,18 +112,20 @@ public class FileClient
                  if (bytes == 0)
                      break;
                  Debug.Log($"File data {fileBytes.Length} received");
-                 file.Write(fileBytes,0,fileBytes.Length);
+                 binaryWriter.Write(fileBytes,0,bytes);
              }    
-             Debug.Log("File sending process finished");
+             
+             Debug.Log("Received File process finished");
              _sender.Shutdown(SocketShutdown.Both);
         } catch (SocketException e) {
             Debug.LogFormat("Socket exception: {0}", e.Message.ToString());
             return "";
         } finally {
-            file?.Close();
+            binaryWriter?.Close();
             _sender.Close();
         }
-        return file.Name;
+
+        return filePath;
     }
     
     private string SetFileToSend(SnifferCore snifferCore)

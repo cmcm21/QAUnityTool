@@ -95,14 +95,13 @@ class SaveFileCommand(Command):
         fileName = qfileTuple[0]
         if fileName != "":
             self.serverManager.fileServer.setFile(fileName)
-            self.serverManager.fileServer.sendFile = True
+            self.serverManager.fileServer.sendFile = False
             self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
-            #self.serverManager.fileServer.fileReceiveFinishedEvent += self._onFileReceiveFinished
+            self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
+                                        signal=CommandSignal.SAVE_FILE)
         else:
             print("File wasn't saved")
 
-        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
-                                    signal=CommandSignal.SAVE_FILE)
         return True
 
     def _onFileReceiveFinished(self, *args, **kwargs):
@@ -125,10 +124,9 @@ class LoadFileCommand(Command):
             self.serverManager.fileServer.setFile(fileName)
             self.serverManager.fileServer.sendFile = True
             self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
-            #self.serverManager.fileServer.fileReceiveFinishedEvent += self._onFileReceiveFinished
+            self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.LOAD_FILE.value),
+                                        signal=CommandSignal.LOAD_FILE)
         else:
             print("File wasn't loaded")
 
-        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.LOAD_FILE.value),
-                                    signal=CommandSignal.LOAD_FILE)
         return True

@@ -29,7 +29,7 @@ class SnifferHub:
         self.serverManager.fileServer.fileReceiveStartedEvent += self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent += self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
-        self.serverManager.fileServer.fileSendingEndedEvent += self._onSavingEnded
+        self.serverManager.fileServer.fileSendingEndedEvent += self._onLoadingEnded
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceManager = kwargs["device"]
@@ -68,7 +68,7 @@ class SnifferHub:
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} is loading in device: {kwargs['address']}...")
 
     def _onLoadingEnded(self, *args, **kwargs):
-        self.appSate = ApplicationState.PROCESSING
+        self.appSate = ApplicationState.IDLE
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} loading completed in device {kwargs['address']}")
 
     def _initCommands(self):
@@ -111,6 +111,7 @@ class SnifferHub:
     @QtCore.Slot()
     def executeCommand(self, command: Command):
         if self.appSate == ApplicationState.PROCESSING:
+            self.uiManager.uiLogger.appendText(f"Application is working, cannot handle command: {command.__class__}")
             return
 
         if command.execute():

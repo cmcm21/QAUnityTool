@@ -11,7 +11,8 @@ namespace TagwizzQASniffer.Network
 {
     public class HubClient
     {
-        volatile bool _keepReading = false;
+        volatile bool _isReading = false;
+        public bool isReading => _isReading;
         private System.Threading.Thread _socketThread;
         private Socket _sender;
         public event Action<string> OnReceivedMsgFromServerEvent;
@@ -46,7 +47,7 @@ namespace TagwizzQASniffer.Network
         
         public void StopClient() 
         { 
-            _keepReading = false;
+            _isReading = false;
             if (_socketThread != null)
                 _socketThread.Abort();
 
@@ -62,7 +63,7 @@ namespace TagwizzQASniffer.Network
         { 
             try 
             { 
-                _keepReading = true;
+                _isReading = true;
                 IPAddress[] ipArray = Dns.GetHostAddresses(ip);
                 IPEndPoint localEndPoint = new IPEndPoint(ipArray[0], port);
         
@@ -73,7 +74,7 @@ namespace TagwizzQASniffer.Network
                 { 
                     _sender.Connect(localEndPoint); 
                     Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString()); 
-                    while(_keepReading) 
+                    while(_isReading) 
                     { 
                         byte[] messageReceived = new byte[1024]; 
                         int byteRecv = _sender.Receive(messageReceived); 

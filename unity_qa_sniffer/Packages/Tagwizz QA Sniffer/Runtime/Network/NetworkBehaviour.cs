@@ -54,12 +54,12 @@ namespace TagwizzQASniffer.Network
             else if (message == CommandSignal.STOP_REPLAY.ToString() && state == SnifferState.PLAYING_BACK)
                 _snifferCore.StopReplay();
             else if (message == CommandSignal.SAVE_FILE.ToString() && state == SnifferState.IDLE)
-                _fileClient.SaveFile(GetIp,GetPort,_snifferCore);
+                _fileClient.SaveFile(GetIp,9999,_snifferCore);
             else if(message == CommandSignal.LOAD_FILE.ToString() && state == SnifferState.IDLE)
-                _fileClient.LoadFile(GetIp,GetPort,_snifferCore);
+                _fileClient.LoadFile(GetIp,9999,_snifferCore);
             else
             {
-                Debug.Log($"Unknown command: {message} ");
+                Debug.Log($"Error trying to execute command: {message} ");
                 SendCommandErrorMsg(state,message);
             }
         }
@@ -73,8 +73,23 @@ namespace TagwizzQASniffer.Network
         {
             _snifferCore = new SnifferCore();
             _snifferCore.Init();
+            ConnectRecorderEvents();
             Show();
         }
+
+        private void ConnectRecorderEvents()
+        {
+            _snifferCore.Recorder.OnReplayStarted += SendServerSnifferCodeChangedState; 
+            _snifferCore.Recorder.OnReplayFinished += SendServerSnifferCodeChangedState;
+            _snifferCore.Recorder.OnRecordStarted += SendServerSnifferCodeChangedState;
+            _snifferCore.Recorder.OnRecordFinished += SendServerSnifferCodeChangedState;
+        }
+
+        private void SendServerSnifferCodeChangedState()
+        {
+            _client.SendMsgToServer($"Sniffer core changed state. Current state: {_snifferCore.State}");
+        }
+        
 
         private void Show()
         {
@@ -90,6 +105,7 @@ namespace TagwizzQASniffer.Network
         {
             if (GetIp == string.Empty || portInput.text == string.Empty || _canvasGroup.alpha == 0) return;
             if (!ValidateInputs()) return;
+            if (_client.isReading) return;
             
             _client.StartClient(GetIp,GetPort);
             portInput.interactable = false;
@@ -123,7 +139,8 @@ namespace TagwizzQASniffer.Network
 
         private void OnDestroy()
         {
-            _client.OnReceivedMsgFromServerEvent += ClientOnReceivedMsgFromServer;
+            _client.OnReceivedMsgFromServerEvent -= ClientOnReceivedMsgFromServer;
+            _client.StopClient();
         }
     }
 }

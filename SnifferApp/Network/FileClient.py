@@ -21,7 +21,7 @@ class FileClient:
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendStartedEvent = Event()
-        self.fileSendFinishedEvent = Event()
+        self.fileSendEndedEvent = Event()
 
     def startListening(self):
         self.listenThread.start()
@@ -43,7 +43,6 @@ class FileClient:
                     if not bytesRead:
                         break
                     f.write(bytesRead)
-                f.close()
 
         except ConnectionResetError:
             print("Error while reading file")
@@ -72,7 +71,7 @@ class FileClient:
 
                     print(f"File sending bytes {len(bytesRead)}")
                     self.client.sendall(bytesRead)
-            return
+
         except ConnectionResetError:
             print("Error while sending file")
         except ConnectionAbortedError:
@@ -82,7 +81,7 @@ class FileClient:
         except RuntimeError:
             print("Error while sending file")
         finally:
-            self.fileSendFinishedEvent(address=self.address, file=fileName)
+            self.fileSendEndedEvent(address=self.address, file=fileName)
             self.close()
 
     def close(self):

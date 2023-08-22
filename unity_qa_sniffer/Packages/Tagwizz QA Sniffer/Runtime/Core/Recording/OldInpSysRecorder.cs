@@ -35,6 +35,9 @@ namespace TagwizzQASniffer.Core.Recording
             _timeline.ClipFinished(inputData);
         }
 
+        public event Action OnRecordStarted;
+        public event Action OnRecordFinished;
+        public event Action OnReplayStarted;
         public event Action OnReplayFinished;
         public int GetRecLenght() => 0;
 

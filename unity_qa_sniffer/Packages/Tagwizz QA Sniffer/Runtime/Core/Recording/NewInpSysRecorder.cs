@@ -7,6 +7,9 @@ namespace TagwizzQASniffer.Core.Recording
     public class NewInpSysRecorder : IRecorder
     {
         private readonly InputRecorder _inputRecorder;
+        public event Action OnRecordStarted;
+        public event Action OnRecordFinished;
+        public event Action OnReplayStarted;
         public event Action OnReplayFinished;
         
         public NewInpSysRecorder()
@@ -22,6 +25,12 @@ namespace TagwizzQASniffer.Core.Recording
             {
                   if(state == InputRecorder.Change.ReplayStopped)  
                       OnReplayFinished?.Invoke();
+                  else if(state == InputRecorder.Change.ReplayStarted)
+                      OnReplayStarted?.Invoke();
+                  else if(state == InputRecorder.Change.CaptureStarted)
+                      OnRecordStarted?.Invoke();
+                  else if(state == InputRecorder.Change.CaptureStopped)
+                      OnRecordFinished?.Invoke();
             });
         }
         

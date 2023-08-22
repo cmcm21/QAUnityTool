@@ -20,7 +20,7 @@ class ServerManager:
         self.listenThread = Thread(target=self._listen, daemon=True)
         self.serverInitEvent = Event()
         self.newDeviceConnectedEvent = Event()
-        self.fileServer = FileServer(self.Ip, self.port)
+        self.fileServer = FileServer(self.Ip, 9999)
 
     def startServer(self):
         if self.listening:

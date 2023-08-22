@@ -13,7 +13,7 @@ class FileServer:
 
     def __init__(self, ip: str, port: int):
         self.ip = ip
-        self.port = port + 100
+        self.port = port
         self.address = (self.ip, self.port)
         self.filePath = None
         self.listening = False
@@ -53,8 +53,10 @@ class FileServer:
     def _connectEvents(self, fileClient: FileClient):
         fileClient.fileSendStartedEvent = self.fileSendingStartedEvent
         fileClient.fileReceiveStartedEvent = self.fileReceiveStartedEvent
-        fileClient.fileReceiveFinishedEvent += lambda *args, **kwargs: (
-            self._onClientWorkerFinished(fileClient, args, kwargs))
+        fileClient.fileReceiveFinishedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
+        fileClient.fileReceiveFinishedEvent += self.fileReceiveFinishedEvent
+        fileClient.fileSendEndedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
+        fileClient.fileSendEndedEvent += self.fileSendingEndedEvent
 
     def _onClientWorkerFinished(self, fileClient: FileClient, *args, **kwargs):
         self.fileClients.remove(fileClient)
