@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 from Utils.Events import Event
-from Network.DeviceManager import DeviceManager
+from Network.DeviceClient import DeviceClient
 from Network.FileServer import FileServer
 
 bufferSize = 1024
@@ -12,14 +12,15 @@ class ServerManager:
         self.listening = False
         self.socket = socket.socket()
         self.port = 8080
-        self.maxDevices = 15
+        self.maxDevices = 5
         self.hostname = socket.gethostname()
         self.Ip = socket.gethostbyname(self.hostname)
-        self.devices: list[DeviceManager] = []
-        self.selectedDevice: DeviceManager | None = None
+        self.devices: list[DeviceClient] = []
+        self.selectedDevice: DeviceClient | None = None
         self.listenThread = Thread(target=self._listen, daemon=True)
         self.serverInitEvent = Event()
         self.newDeviceConnectedEvent = Event()
+        self.NoMoreDevicesConnectedEvent = Event()
         self.fileServer = FileServer(self.Ip, 9999)
 
     def startServer(self):
@@ -35,16 +36,35 @@ class ServerManager:
 
     def _listen(self):
         while self.listening:
-            (client, address) = self.socket.accept()
-            device = DeviceManager(client, address)
-            device.starListening()
-            self.devices.append(device)
-            self.newDeviceConnectedEvent(device=device)
+            try:
+                (client, address) = self.socket.accept()
+                device = DeviceClient(client, address)
+                self._handleNewDevice(device)
+            except ConnectionError:
+                print("[ServerManager]::Error while listening clients")
+            except RuntimeError:
+                print("[ServerManager]::Runtime Error in Server")
 
         self.close()
 
-    def setDeviceSelected(self, device: DeviceManager):
+    def setDeviceSelected(self, device: DeviceClient):
         self.selectedDevice = device
+
+    def _handleNewDevice(self, device: DeviceClient):
+        self.devices.append(device)
+        self.newDeviceConnectedEvent(device=device)
+        device.deviceDisconnectedEvent += self._deviceDisconnected
+        device.starListening()
+
+    def _deviceDisconnected(self, *args, **kwargs):
+        device = kwargs['device']
+        if device == self.selectedDevice:
+            self.selectedDevice = None
+
+        self.devices.remove(device)
+
+        if len(self.devices) <= 0:
+            self.NoMoreDevicesConnectedEvent()
 
     def close(self):
         self.listening = False

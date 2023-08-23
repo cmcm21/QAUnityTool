@@ -32,15 +32,23 @@ class FileClient:
     def _listenClientWorker(self):
         fileName = os.path.basename(self.filePath)
         try:
-            self.client.send(fileName.encode())
-            fileSizeBytes = self.client.recv(BUFFER_SIZE).decode()
+            send = self.client.send(fileName.encode())
+            if send == b'':
+                self._handleFileClientDisconnection()
+                return
+            fileSizeBytes = self.client.recv(BUFFER_SIZE)
+
+            if fileSizeBytes == b'':
+                self._handleFileClientDisconnection()
+                return
+            fileSizeBytes = fileSizeBytes.decode()
             self.fileReceiveStartedEvent(size=int(fileSizeBytes), file=fileName)
             print(f"file size: {fileSizeBytes}")
 
             with open(self.filePath, "wb") as f:
                 while True:
                     bytesRead = self.client.recv(FILE_BUFFER_SIZE)
-                    if not bytesRead:
+                    if not bytesRead or bytesRead == b'':
                         break
                     f.write(bytesRead)
 
@@ -53,6 +61,7 @@ class FileClient:
         except RuntimeError:
             print("Error while reading file")
         finally:
+            self._handleFileClientDisconnection()
             self.fileReceiveFinishedEvent(file=fileName)
             print("File received process finished")
             self.close()
@@ -60,7 +69,11 @@ class FileClient:
     def _sendClientWorker(self):
         fileName = os.path.basename(self.filePath)
         try:
-            self.client.send(fileName.encode())
+            send = self.client.send(fileName.encode())
+            if send == b'':
+                self._handleFileClientDisconnection()
+                return
+
             self.fileSendStartedEvent(address=self.address, file=fileName)
             print(f"file {fileName} size {os.path.getsize(self.filePath)}")
             with open(self.filePath, "rb") as f:
@@ -70,7 +83,9 @@ class FileClient:
                         break
 
                     print(f"File sending bytes {len(bytesRead)}")
-                    self.client.sendall(bytesRead)
+                    send = self.client.sendall(bytesRead)
+                    if send == b'':
+                        break
 
         except ConnectionResetError:
             print("Error while sending file")
@@ -83,6 +98,10 @@ class FileClient:
         finally:
             self.fileSendEndedEvent(address=self.address, file=fileName)
             self.close()
+
+    def _handleFileClientDisconnection(self):
+        self.close()
+        return
 
     def close(self):
 

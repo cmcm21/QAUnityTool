@@ -39,16 +39,19 @@ class FileServer:
 
     def _listenThread(self):
         while self.listenThread:
-            fileSocket, address = self.socket.accept()
-            fileClient = FileClient(address, fileSocket, self.filePath)
+            try:
+                fileSocket, address = self.socket.accept()
+                fileClient = FileClient(address, fileSocket, self.filePath)
 
-            if self.sendFile:
-                fileClient.startSending()
-            else:
-                fileClient.startListening()
+                if self.sendFile:
+                    fileClient.startSending()
+                else:
+                    fileClient.startListening()
 
-            self._connectEvents(fileClient)
-            self.fileClients.append(fileClient)
+                self._connectEvents(fileClient)
+                self.fileClients.append(fileClient)
+            except ConnectionError:
+                print("File server Connection Error")
 
     def _connectEvents(self, fileClient: FileClient):
         fileClient.fileSendStartedEvent = self.fileSendingStartedEvent

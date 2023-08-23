@@ -52,7 +52,11 @@ namespace TagwizzQASniffer.Network
                 _socketThread.Abort();
 
             try {
-                _sender?.Shutdown(SocketShutdown.Send);
+                _sender?.Shutdown(SocketShutdown.Both);
+            }
+            catch (ObjectDisposedException ode)
+            {
+                Debug.Log($"Sender object is already disposed, {ode}");
             }
             finally {
                 _sender?.Close(); 
@@ -68,36 +72,47 @@ namespace TagwizzQASniffer.Network
                 IPEndPoint localEndPoint = new IPEndPoint(ipArray[0], port);
         
                 _sender = new Socket(ipArray[0].AddressFamily, 
-                        SocketType.Stream, ProtocolType.Tcp); 
-        
-                try 
-                { 
-                    _sender.Connect(localEndPoint); 
-                    Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString()); 
-                    while(_isReading) 
-                    { 
-                        byte[] messageReceived = new byte[1024]; 
-                        int byteRecv = _sender.Receive(messageReceived); 
-                        OnReceivedMsgFromServer( Encoding.ASCII.GetString(messageReceived, 0, byteRecv));
-                    }  
-                } 
+                        SocketType.Stream, ProtocolType.Tcp);
+
+                try
+                {
+                    _sender.Connect(localEndPoint);
+                    Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString());
+                    while (_isReading)
+                    {
+                        byte[] messageReceived = new byte[1024];
+                        int byteRecv = _sender.Receive(messageReceived);
+                        OnReceivedMsgFromServer(Encoding.ASCII.GetString(messageReceived, 0, byteRecv));
+                    }
+                    _sender.Shutdown(SocketShutdown.Both);
+                }
                 catch (ArgumentNullException ane)
-                { 
-                    Debug.LogFormat("ArgumentNullException : {0}", ane.ToString()); 
-                } 
+                {
+                    Debug.LogFormat("ArgumentNullException : {0}", ane.ToString());
+                }
                 catch (SocketException se)
-                { 
-                    Debug.LogFormat("SocketException : {0}", se.ToString()); 
-                } 
+                {
+                    Debug.LogFormat("SocketException : {0}", se.ToString());
+                }
                 catch (Exception e)
-                { 
-                    Debug.LogFormat("Unexpected exception : {0}", e.ToString()); 
-                } 
+                {
+                    Debug.LogFormat("Unexpected exception : {0}", e.ToString());
+                }
+                finally
+                {
+                    _sender.Close();
+                }
             } 
             catch (Exception e)
             { 
                 Debug.LogFormat(e.ToString()); 
             } 
-        } 
+        }
+
+        ~HubClient()
+        {
+            if (_sender != null)
+                StopClient();
+        }
     }
 }

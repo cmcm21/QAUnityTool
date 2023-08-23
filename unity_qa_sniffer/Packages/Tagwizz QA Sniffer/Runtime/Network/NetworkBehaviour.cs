@@ -141,6 +141,13 @@ namespace TagwizzQASniffer.Network
         {
             _client.OnReceivedMsgFromServerEvent -= ClientOnReceivedMsgFromServer;
             _client.StopClient();
+            _fileClient.StopClient();
+        }
+
+        private void OnApplicationQuit()
+        {
+            _client.StopClient();
+            _fileClient.StopClient();
         }
     }
 }

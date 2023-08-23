@@ -3,7 +3,7 @@ from UI.ServerWidget import ServerWidget
 from UI.UILogger import UILogger
 from UI.DeviceWidget import DeviceWidget
 from UI.SplashScreen import SplashScreen
-from Network.DeviceManager import DeviceManager
+from Network.DeviceClient import DeviceClient
 import platform
 
 
@@ -42,11 +42,15 @@ class UIManager:
 
     def _connectEvents(self):
         self.serverWidget.deviceSelectedChanged += self._onDeviceSelectedChanged
+        self.serverWidget.clearSelectionEvent += self._onSelectionClear
 
     def _onDeviceSelectedChanged(self, *args, **kwargs):
-        device: DeviceManager = kwargs["device"]
+        device: DeviceClient = kwargs["device"]
         self.uiLogger.appendText("Selected device {}".format(device.address))
         self.deviceWidget.deviceSelected(device)
+        return
+
+    def _onSelectionClear(self, *args, **kwargs):
         return
 
     def onFileSizeReceived(self, *args, **kwargs):

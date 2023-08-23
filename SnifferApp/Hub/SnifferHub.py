@@ -1,6 +1,6 @@
 from Command.Command import *
 from Network.ServerManager import ServerManager
-from Network.DeviceManager import DeviceManager
+from Network.DeviceClient import DeviceClient
 from UI.UIManager import UIManager
 from PySide6.QtWidgets import QPushButton
 from PySide6 import QtCore
@@ -25,29 +25,37 @@ class SnifferHub:
     def _connectEvents(self):
         self.serverManager.newDeviceConnectedEvent += self._onNewDeviceAdded
         self.serverManager.serverInitEvent += self._onServerStarted
-        self.uiManager.deviceWidget.deviceSelectedEvent += self._onDeviceSelected
+        self.serverManager.NoMoreDevicesConnectedEvent += self._onNoMoreDevices
+        self.uiManager.serverWidget.deviceSelectedChanged += self._onDeviceSelected
         self.serverManager.fileServer.fileReceiveStartedEvent += self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent += self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
         self.serverManager.fileServer.fileSendingEndedEvent += self._onLoadingEnded
 
     def _onNewDeviceAdded(self, *args, **kwargs):
-        device: DeviceManager = kwargs["device"]
+        device: DeviceClient = kwargs["device"]
         device.msgReceivedEvent += self._onDeviceReceivedMessage
-        device.stateChangedEvent += lambda: self.uiManager.deviceWidget.setWidgetState()
-        device.deviceDisconnectedEvent += \
-            lambda *args, **kwargs: self.uiManager.serverWidget.removeDevice(kwargs["device"])
+        device.deviceDisconnectedEvent += self._onDeviceDisconnected
 
         self.uiManager.serverWidget.addDevice(device)
-        self.uiManager.deviceWidget.deviceSelected(device)
         return
 
-    def _onDeviceSelected(self, *args, **kwargs):
-        self.serverManager.setDeviceSelected(kwargs["device"])
+    def _onDeviceDisconnected(self, *args, **kwargs):
+        device = kwargs['device']
+        self.uiManager.serverWidget.removeDevice(device)
+        return
 
     def _onServerStarted(self, *args, **kwargs):
         self.uiManager.uiLogger.appendText(kwargs["message"])
         return
+
+    def _onNoMoreDevices(self, *args, **kwargs):
+        self.uiManager.deviceWidget.noDevices()
+        self.uiManager.uiLogger.appendText("No Device Selected")
+        return
+
+    def _onDeviceSelected(self, *args, **kwargs):
+        self.serverManager.setDeviceSelected(kwargs["device"])
 
     def _onDeviceReceivedMessage(self, *args, **kwargs):
         self.uiManager.uiLogger.appendText(kwargs["message"])

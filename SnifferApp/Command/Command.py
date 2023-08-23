@@ -15,7 +15,8 @@ class Command:
 
     @abstractmethod
     def execute(self) -> bool:
-        return False
+        if self.serverManager.selectedDevice is None:
+            return False
 
 
 class CommandHistory:
@@ -46,6 +47,7 @@ class RecordCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.RECORD)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.RECORD.value),
                                     signal=CommandSignal.RECORD)
@@ -57,6 +59,7 @@ class StopCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.STOP_REC)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.STOP_REC),
                                     signal=CommandSignal.STOP_REC)
@@ -68,6 +71,7 @@ class ReplayCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.REPLAY)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.REPLAY.value),
                                     signal=CommandSignal.REPLAY)
@@ -79,6 +83,7 @@ class StopReplayCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.STOP_REPLAY)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.STOP_REPLAY.value),
                                     signal=CommandSignal.STOP_REPLAY)
@@ -90,6 +95,7 @@ class SaveFileCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         qfileTuple: tuple = QFileDialog.getSaveFileName(
             self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace")
         fileName = qfileTuple[0]
@@ -105,6 +111,7 @@ class SaveFileCommand(Command):
         return True
 
     def _onFileReceiveFinished(self, *args, **kwargs):
+        super().execute()
         for progressEvent in self.serverManager.fileServer.progressEventsThreads:
             if not progressEvent.is_alive():
                 progressEvent.start()
@@ -116,6 +123,7 @@ class LoadFileCommand(Command):
         super().__init__(snifferHub, serverManager)
 
     def execute(self) -> bool:
+        super().execute()
         qfileTuple: tuple = QFileDialog.getOpenFileName(
             self.app.uiManager.GetWidget(), caption="Load File", filter="*.inputtrace")
 

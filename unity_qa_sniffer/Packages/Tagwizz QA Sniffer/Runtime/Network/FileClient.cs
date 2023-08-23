@@ -149,7 +149,6 @@ public class FileClient
          #endif
     }
     
-    
     public void StopClient() 
     { 
         if (_socketThread != null)
@@ -161,5 +160,11 @@ public class FileClient
         finally {
             _sender?.Close(); 
         }
+    }
+
+    ~FileClient()
+    {
+        if(_sender != null)
+            StopClient();
     }
 }
