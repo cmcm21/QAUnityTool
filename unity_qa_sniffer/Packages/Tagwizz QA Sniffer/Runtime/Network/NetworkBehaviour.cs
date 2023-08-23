@@ -1,6 +1,7 @@
 using System;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Network;
+using TagwizzQASniffer.Core.Recording;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
@@ -11,7 +12,7 @@ namespace TagwizzQASniffer.Network
    
     enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE,GET_DEVICE_DATA, CHANGE_STATE }
 
-    public class NetworkBehaviour : MonoBehaviour
+    public class NetworkBehaviour : MonoBehaviour, IRecorderListener
     {
         [SerializeField] private TMP_InputField ipInput;
         [SerializeField] private TMP_InputField portInput;
@@ -79,10 +80,7 @@ namespace TagwizzQASniffer.Network
 
         private void ConnectRecorderEvents()
         {
-            _snifferCore.Recorder.OnReplayStarted += SendServerSnifferCodeChangedState; 
-            _snifferCore.Recorder.OnReplayFinished += SendServerSnifferCodeChangedState;
-            _snifferCore.Recorder.OnRecordStarted += SendServerSnifferCodeChangedState;
-            _snifferCore.Recorder.OnRecordFinished += SendServerSnifferCodeChangedState;
+            _snifferCore.Recorder.Subscribe(this);
         }
 
         private void SendServerSnifferCodeChangedState()
@@ -142,12 +140,32 @@ namespace TagwizzQASniffer.Network
             _client.OnReceivedMsgFromServerEvent -= ClientOnReceivedMsgFromServer;
             _client.StopClient();
             _fileClient.StopClient();
+            
+            _snifferCore.Recorder?.Unsubscribe(this);
+            _snifferCore?.Destroy();
         }
 
         private void OnApplicationQuit()
         {
             _client.StopClient();
             _fileClient.StopClient();
+        }
+        
+        // IRecorderListener
+        void IRecorderListener.OnRecordStarted() {
+            SendServerSnifferCodeChangedState();
+        }
+
+        void IRecorderListener.OnRecordFinished() {
+            SendServerSnifferCodeChangedState();
+        }
+
+        void IRecorderListener.OnReplayStarted() {
+            SendServerSnifferCodeChangedState();
+        }
+
+        void IRecorderListener.OnReplayFinished() {
+            SendServerSnifferCodeChangedState();
         }
     }
 }
