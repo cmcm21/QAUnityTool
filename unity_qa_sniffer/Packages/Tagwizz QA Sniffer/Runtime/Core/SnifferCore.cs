@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 namespace TagwizzQASniffer.Core 
 {
     public enum SnifferState {RECORDING,IDLE,PLAYING_BACK}
-    public class SnifferCore
+    public class SnifferCore : IRecorderListener
     {
         private SnifferState _state;
         public SnifferState State => _state;
@@ -23,9 +23,10 @@ namespace TagwizzQASniffer.Core
             InitObserver();
         }
 
-        private void RecorderOnOnReplayFinished()
+        public void Destroy()
         {
-            _state = SnifferState.IDLE;
+            if(_recorder != null)
+                _recorder.Unsubscribe(this);
         }
 
         private void InitDependencies()
@@ -33,8 +34,8 @@ namespace TagwizzQASniffer.Core
             _recorder = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
                 ? (IRecorder)new NewInpSysRecorder()
                 : (IRecorder)new OldInpSysRecorder();
-            
-            _recorder.OnReplayFinished += RecorderOnOnReplayFinished;
+
+            _recorder.Subscribe(this);
         }
         
         private void InitObserver()
@@ -90,10 +91,21 @@ namespace TagwizzQASniffer.Core
             _recorder.Pause();    
         }
 
-        ~SnifferCore()
-        {
-            if(_recorder != null)
-                _recorder.OnReplayFinished += RecorderOnOnReplayFinished;
+        // IRecorderListener
+        void IRecorderListener.OnRecordStarted() {
+            
+        }
+
+        void IRecorderListener.OnRecordFinished() {
+            
+        }
+
+        void IRecorderListener.OnReplayStarted() {
+            
+        }
+
+        void IRecorderListener.OnReplayFinished() {
+            _state = SnifferState.IDLE;
         }
     }
 }

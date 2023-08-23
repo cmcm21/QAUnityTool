@@ -288,6 +288,10 @@ namespace TagwizzQASniffer.Editor
             if (_recordSlider != null && _snifferCore != null && _snifferCore.Recorder != null) 
                 _recordSlider.value = (float)_snifferCore.Recorder.GetRecPosition();
         }
+
+        private void OnDestroy() {
+            _snifferCore?.Destroy();
+        }
     }
     #endif
 }

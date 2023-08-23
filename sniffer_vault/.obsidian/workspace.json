@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Architecture/Sniffer Hub.md",
-                "mode": "preview",
+                "file": "TODO/2023-08-23.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -69,8 +69,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "e3e48fb6066ee8e4",
@@ -86,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Architecture/Sniffer Hub.md",
+                "file": "TODO/2023-08-23.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Architecture/Sniffer Hub.md",
+                "file": "TODO/2023-08-23.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Architecture/Sniffer Hub.md"
+                "file": "TODO/2023-08-23.md"
               }
             }
           }
@@ -149,16 +148,17 @@
   },
   "active": "6869b7f58dfa3b0e",
   "lastOpenFiles": [
+    "2023-08-03.md",
+    "TODO/2023-08-23.md",
+    "Notes/Today Tasks.md",
+    "TODO",
+    "2023-08-01.md",
     "Architecture/Sniffer Hub.md",
     "2023-08-07.md",
     "Sniffer Core Diagram.md",
     "Architecture/Sniffer Class Diagrams.md",
     "Architecture/Input System Flow Chart.md",
-    "Untitled",
     "2023-08-11.md",
-    "2023-08-03.md",
-    "2023-08-01.md",
-    "Notes/Today Tasks.md",
     "2023-07-31.md",
     "Untitled 1.canvas",
     "Untitled.canvas",

@@ -1,5 +1,5 @@
 using System;
-using UnityEditor;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
 namespace TagwizzQASniffer.Core.Recording
@@ -7,10 +7,8 @@ namespace TagwizzQASniffer.Core.Recording
     public class NewInpSysRecorder : IRecorder
     {
         private readonly InputRecorder _inputRecorder;
-        public event Action OnRecordStarted;
-        public event Action OnRecordFinished;
-        public event Action OnReplayStarted;
-        public event Action OnReplayFinished;
+
+        private readonly List<IRecorderListener> _recorderListeners = new List<IRecorderListener>();
         
         public NewInpSysRecorder()
         {
@@ -21,19 +19,47 @@ namespace TagwizzQASniffer.Core.Recording
                 devicePath = string.Empty
             };
             
-            _inputRecorder.changeEvent.AddListener((state) =>
-            {
-                  if(state == InputRecorder.Change.ReplayStopped)  
-                      OnReplayFinished?.Invoke();
-                  else if(state == InputRecorder.Change.ReplayStarted)
-                      OnReplayStarted?.Invoke();
-                  else if(state == InputRecorder.Change.CaptureStarted)
-                      OnRecordStarted?.Invoke();
-                  else if(state == InputRecorder.Change.CaptureStopped)
-                      OnRecordFinished?.Invoke();
+            _inputRecorder.changeEvent.AddListener((state) => {
+                switch (state) {
+                    case InputRecorder.Change.ReplayStopped:
+                        _recorderListeners.ForEach(l => l.OnReplayFinished());
+                        break;
+                    case InputRecorder.Change.ReplayStarted:
+                        _recorderListeners.ForEach(l => l.OnReplayStarted());
+                        break;
+                    case InputRecorder.Change.CaptureStarted:
+                        _recorderListeners.ForEach(l => l.OnRecordStarted());
+                        break;
+                    case InputRecorder.Change.CaptureStopped:
+                        _recorderListeners.ForEach(l => l.OnRecordFinished());
+                        break;
+                    case InputRecorder.Change.None:
+                        break;
+                    case InputRecorder.Change.EventCaptured:
+                        break;
+                    case InputRecorder.Change.EventPlayed:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(state), state, null);
+                }
             });
         }
-        
+
+        public bool Subscribe(IRecorderListener listener)
+        {
+            if (_recorderListeners.Contains(listener)) 
+            {
+                return false;
+            }
+            _recorderListeners.Add(listener);
+            return true;
+        }
+
+        public void Unsubscribe(IRecorderListener listener)
+        {
+            _recorderListeners.Remove(listener);
+        }
+
         public void OnAwake() { }
 
         public void OnStart() { }

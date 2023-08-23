@@ -10,7 +10,7 @@ namespace TagwizzQASniffer.Core.Recording
         IDLE,
         STOP
     };
-    public class OldInpSysRecorder: IRecorder 
+    public class OldInpSysRecorder: IRecorder
     {
         private readonly OldInputSystem _inputSystem;
         private RecordingState _state;
@@ -23,6 +23,15 @@ namespace TagwizzQASniffer.Core.Recording
             _inputSystem.InputStarted += InputSystemOnInputStarted;
 
             _state = RecordingState.IDLE;
+        }
+        
+        //
+        bool IRecorder.Subscribe(IRecorderListener listener) {
+            throw new NotImplementedException();
+        }
+
+        void IRecorder.Unsubscribe(IRecorderListener listener) {
+            throw new NotImplementedException();
         }
 
         private void InputSystemOnInputStarted(InputData inputData)
@@ -39,6 +48,7 @@ namespace TagwizzQASniffer.Core.Recording
         public event Action OnRecordFinished;
         public event Action OnReplayStarted;
         public event Action OnReplayFinished;
+
         public int GetRecLenght() => 0;
 
         public int GetRecPosition() => 0;

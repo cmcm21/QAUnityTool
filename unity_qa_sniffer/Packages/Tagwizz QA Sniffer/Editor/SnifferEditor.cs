@@ -3,21 +3,21 @@ using TagwizzQASniffer.Core;
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
 namespace TagwizzQASniffer.Editor
 {
-    #if UNITY_EDITOR
     [InitializeOnLoad]
     public class SnifferEditor
     {
         static SnifferEditor()
         {
-            CreateSettingFile();
             CreateRecordingsDirectory(); 
+            CreateSettingsFile();
             if(!Application.isPlaying)
                 AssetDatabase.Refresh();
         }
 
-        private static void CreateSettingFile()
+        private static void CreateSettingsFile()
         {
             if (!File.Exists(SnifferEndPoints.SnifferSettingsPath))
             {
@@ -40,11 +40,11 @@ namespace TagwizzQASniffer.Editor
             if (!Directory.Exists(SnifferEndPoints.RecordingsFilesDirectory))
             {
                 Directory.CreateDirectory(SnifferEndPoints.RecordingsFilesDirectory);
-                Debug.Log($"[{typeof(SnifferEditor)}]::Directory: {SnifferEndPoints.SnifferSettingsPath} created");
+                Debug.Log($"[{typeof(SnifferEditor)}]::Directory: {SnifferEndPoints.RecordingsFilesDirectory} created");
             }
             else
             {
-                Debug.Log($"[{typeof(SnifferEditor)}]Directory: {SnifferEndPoints.SnifferSettingsPath} already exists");
+                Debug.Log($"[{typeof(SnifferEditor)}]Directory: {SnifferEndPoints.RecordingsFilesDirectory} already exists");
             }
         }
     }
@@ -54,5 +54,5 @@ namespace TagwizzQASniffer.Editor
         public static readonly string RecordingsFilesDirectory = "Assets/SnifferRecordings/";
         public static readonly string SnifferSettingsPath = "Assets/Resources/SnifferSettings.asset"; 
     }
-    #endif
 }
+#endif
