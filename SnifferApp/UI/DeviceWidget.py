@@ -33,27 +33,32 @@ class DeviceWidget(QtWidgets.QWidget):
         self.replayBtn.clicked.connect(self.onReplayBtnClicked)
 
     def _setDefaultButtons(self):
-        self.stopBtn.hide()
-        self.saveFileBtn.hide()
-        self.replayBtn.hide()
-        self.stopReplayBtn.hide()
+        self.stopBtn.setEnabled(False)
+        self.saveFileBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onRecordBtnClicked(self):
-        self.stopBtn.show()
+        self.stopBtn.setEnabled(True)
+        self.saveFileBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onStopBtnClicked(self):
-        self.saveFileBtn.show()
-        self.replayBtn.show()
+        self.saveFileBtn.setEnabled(True)
+        self.replayBtn.setEnabled(True)
+        self.loadFileBtn.setEnabled(True)
 
     @QtCore.Slot()
     def onLoadBtnClicked(self):
-        self.replayBtn.show()
+        self.replayBtn.setEnabled(True)
 
     @QtCore.Slot()
     def onReplayBtnClicked(self):
-        self.stopReplayBtn.show()
+        self.stopReplayBtn.setEnabled(True)
 
     def _setButtonsLayout(self):
         self.buttonsLayout = QtWidgets.QVBoxLayout(self.container.widget())

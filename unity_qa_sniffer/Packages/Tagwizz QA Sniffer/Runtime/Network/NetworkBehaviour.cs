@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Network;
 using TagwizzQASniffer.Core.Recording;
@@ -152,19 +153,23 @@ namespace TagwizzQASniffer.Network
         }
         
         // IRecorderListener
-        void IRecorderListener.OnRecordStarted() {
+        void IRecorderListener.OnRecordStarted()
+        {
             SendServerSnifferCodeChangedState();
         }
 
-        void IRecorderListener.OnRecordFinished() {
+        void IRecorderListener.OnRecordFinished() 
+        {
             SendServerSnifferCodeChangedState();
         }
 
-        void IRecorderListener.OnReplayStarted() {
+        void IRecorderListener.OnReplayStarted() 
+        {
             SendServerSnifferCodeChangedState();
         }
 
-        void IRecorderListener.OnReplayFinished() {
+        void IRecorderListener.OnReplayFinished() 
+        {
             SendServerSnifferCodeChangedState();
         }
     }

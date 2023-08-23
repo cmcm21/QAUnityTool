@@ -74,6 +74,7 @@ namespace TagwizzQASniffer.Core
         public void StopReplay()
         {
             _state = SnifferState.IDLE;
+            _recorder.StopPlay();
         }
 
         public void Save(string recordingFileName)
@@ -92,19 +93,23 @@ namespace TagwizzQASniffer.Core
         }
 
         // IRecorderListener
-        void IRecorderListener.OnRecordStarted() {
-            
+        void IRecorderListener.OnRecordStarted()
+        {
+            _state = SnifferState.RECORDING;
         }
 
-        void IRecorderListener.OnRecordFinished() {
-            
+        void IRecorderListener.OnRecordFinished()
+        {
+            _state = SnifferState.IDLE;
         }
 
-        void IRecorderListener.OnReplayStarted() {
-            
+        void IRecorderListener.OnReplayStarted()
+        {
+            _state = SnifferState.PLAYING_BACK;
         }
 
-        void IRecorderListener.OnReplayFinished() {
+        void IRecorderListener.OnReplayFinished() 
+        {
             _state = SnifferState.IDLE;
         }
     }

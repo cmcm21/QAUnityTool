@@ -61,7 +61,6 @@ class FileClient:
         except RuntimeError:
             print("Error while reading file")
         finally:
-            self._handleFileClientDisconnection()
             self.fileReceiveFinishedEvent(file=fileName)
             print("File received process finished")
             self.close()

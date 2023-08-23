@@ -28,6 +28,9 @@ class FileServer:
         self.fileSendingEndedEvent = Event()
 
     def startServer(self):
+        if self.listening:
+            return
+
         self.socket = socket.socket()
         self.listening = True
         self.socket.bind(self.address)

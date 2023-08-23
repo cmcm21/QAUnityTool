@@ -143,9 +143,9 @@ public class FileClient
     private string GetFilePath(string fileName)
     {
          #if UNITY_EDITOR   
-         return SnifferDefinitions.RECORDINGS_PATH + fileName;
+             return SnifferDefinitions.RECORDINGS_PATH + fileName;
          #else
-         return Application.persistentDataPath + fileName;
+             return Application.persistentDataPath + fileName;
          #endif
     }
     
