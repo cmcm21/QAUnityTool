@@ -1,19 +1,18 @@
 using System;
-using System.Linq;
+using System.IO;
 using TagwizzQASniffer.Core;
-using TagwizzQASniffer.Network;
+using TagwizzQASniffer.Core.FramesRecorder;
 using TagwizzQASniffer.Core.Recording;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace TagwizzQASniffer.Network
 {
    
     enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE,GET_DEVICE_DATA, CHANGE_STATE }
 
-    public class NetworkBehaviour : MonoBehaviour, IRecorderListener
+    public class NetworkBehaviour : MonoBehaviour, IRecorderListener, IFramesRecorderListener
     {
         [SerializeField] private TMP_InputField ipInput;
         [SerializeField] private TMP_InputField portInput;
@@ -26,11 +25,14 @@ namespace TagwizzQASniffer.Network
         private SnifferCore _snifferCore;
         private HubClient _client;
         private FileClient _fileClient;
+        private StreamingClient _streamingClient;
         private void Start()
         {
             _client = new HubClient();
             _client.OnReceivedMsgFromServerEvent += ClientOnReceivedMsgFromServer;
             _fileClient = new FileClient();
+            _streamingClient = new StreamingClient();
+             
             _canvasGroup = GetComponentInChildren<CanvasGroup>();
         }
 
@@ -75,13 +77,14 @@ namespace TagwizzQASniffer.Network
         {
             _snifferCore = new SnifferCore();
             _snifferCore.Init();
-            ConnectRecorderEvents();
+            ConnectEvents();
             Show();
         }
 
-        private void ConnectRecorderEvents()
+        private void ConnectEvents()
         {
             _snifferCore.Recorder.Subscribe(this);
+            _snifferCore.FramesRecorder.Observer.Subscribe(this);
         }
 
         private void SendServerSnifferCodeChangedState()
@@ -107,6 +110,7 @@ namespace TagwizzQASniffer.Network
             if (_client.isReading) return;
             
             _client.StartClient(GetIp,GetPort);
+            _streamingClient.SetAddress(GetIp);
             portInput.interactable = false;
             ipInput.interactable = false;
         }
@@ -141,36 +145,59 @@ namespace TagwizzQASniffer.Network
             _client.OnReceivedMsgFromServerEvent -= ClientOnReceivedMsgFromServer;
             _client.StopClient();
             _fileClient.StopClient();
-            
-            _snifferCore.Recorder?.Unsubscribe(this);
-            _snifferCore?.Destroy();
+
+            if (_snifferCore != null)
+            {
+                _snifferCore.Recorder?.Unsubscribe(this);
+                _snifferCore?.Destroy();
+            }
         }
 
         private void OnApplicationQuit()
         {
             _client.StopClient();
             _fileClient.StopClient();
+            _streamingClient.StopSocket();
         }
-        
-        // IRecorderListener
+
+        #region IRecorderListener 
+
         void IRecorderListener.OnRecordStarted()
         {
             SendServerSnifferCodeChangedState();
         }
-
+ 
         void IRecorderListener.OnRecordFinished() 
         {
             SendServerSnifferCodeChangedState();
         }
-
+ 
         void IRecorderListener.OnReplayStarted() 
         {
             SendServerSnifferCodeChangedState();
         }
-
+ 
         void IRecorderListener.OnReplayFinished() 
         {
             SendServerSnifferCodeChangedState();
         }
-    }
+       
+
+        #endregion
+
+        #region IFramesRecorderListener 
+        void IFramesRecorderListener.FrameRecorded(MemoryStream stream)
+        {
+            _streamingClient.AddFrameToSend(stream);
+        }
+ 
+        void IFramesRecorderListener.Started()
+        {
+        }
+ 
+        void IFramesRecorderListener.Stopped()
+        {
+        }
+        #endregion
+   }
 }

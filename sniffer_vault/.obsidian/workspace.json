@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TODO/2023-08-23.md",
+                "file": "TODO/2023-08-24.md",
                 "mode": "source",
                 "source": false
               }
@@ -69,7 +69,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "e3e48fb6066ee8e4",
@@ -85,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TODO/2023-08-23.md",
+                "file": "TODO/2023-08-24.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TODO/2023-08-23.md",
+                "file": "TODO/2023-08-24.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "TODO/2023-08-23.md"
+                "file": "TODO/2023-08-24.md"
               }
             }
           }
@@ -146,11 +147,12 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "6869b7f58dfa3b0e",
+  "active": "195863c140aa436a",
   "lastOpenFiles": [
-    "2023-08-03.md",
     "TODO/2023-08-23.md",
+    "TODO/2023-08-24.md",
     "Notes/Today Tasks.md",
+    "2023-08-03.md",
     "TODO",
     "2023-08-01.md",
     "Architecture/Sniffer Hub.md",

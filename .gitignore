@@ -17,7 +17,7 @@ sniffer_vault/.obsidian/appearence.json
 SnifferApp/*/__pycache__/
 SnifferApp/TestRecFiles/
 
-*.pyc
+.pyc
 .idea
 
 # MemoryCaptures can get excessive in size.

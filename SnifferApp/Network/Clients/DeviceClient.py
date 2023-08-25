@@ -17,7 +17,7 @@ class DeviceClient(GeneralSocket):
 
     def __init__(self, deviceSocket: socket.socket, address):
         super().__init__(deviceSocket, address)
-        print("client: " + str(address) + " connected")
+        print("Device client: " + str(address) + " connected")
         self.deviceState = DeviceState.IDLE
         self.msgReceivedEvent = Event()
         self.stateChangedEvent = Event()

@@ -29,6 +29,7 @@ class FileServer(GeneralSocket):
         self.listeningSocket = True
         self.socket.bind(self.address)
         self.socket.listen(5)
+        print(f"File server started at {self.address}")
         self.socketThread.start()
 
     def setFile(self, filePath: str):

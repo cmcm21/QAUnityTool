@@ -12,7 +12,7 @@ class FileClient(GeneralSocket):
 
     def __init__(self, socket: socket.socket, address, filepath: str):
         super().__init__(socket, address)
-        print("client: " + str(address) + " connected")
+        print("File client: " + str(address) + " connected")
         self.sendThread = Thread(target=self._sendClientWorker, daemon=True)
         self.filePath = filepath
         self.fileReceiveStartedEvent = Event()

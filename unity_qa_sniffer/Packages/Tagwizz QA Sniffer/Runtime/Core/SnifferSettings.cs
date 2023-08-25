@@ -19,12 +19,22 @@ namespace TagwizzQASniffer.Core
          CUSTOM_RECORDING
       }
 
+      
+      [Header("Input Recorder Settings")]
       [SerializeField] private InputSystemType inputSystemType;
-      [FormerlySerializedAs("lifeCycle")] [SerializeField] private SnifferObserver snifferObserver;
+      [SerializeField] private SnifferObserver snifferObserver;
       [SerializeField] private RecordingType recordingOption;
+
+      [Header("Frame Recorder Settings")] 
+      [SerializeField] private bool recordFrames;
+      [SerializeField] private int maxFramesPerRec;
+      [SerializeField] private int frameRate;
+      
       public SnifferObserver SnifferObserver => snifferObserver;
       public InputSystemType InputSystem => inputSystemType;
       public RecordingType RecordingOption => recordingOption;
-
+      public int MaxFramesPerRec => maxFramesPerRec;
+      public bool RecordFrames => recordFrames;
+      public int FrameRate => frameRate;
    }
 }

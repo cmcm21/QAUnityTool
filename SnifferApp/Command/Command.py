@@ -37,6 +37,7 @@ class InitServerCommand(Command):
     def execute(self) -> bool:
         self.serverManager.start()
         self.serverManager.fileServer.start()
+        self.serverManager.streamingServer.start()
         self.onCommandExecutedEvent(message="[Command]:: Init Server Executed")
         return True
 

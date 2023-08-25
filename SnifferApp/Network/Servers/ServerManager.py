@@ -4,6 +4,7 @@ from Utils.Events import Event
 from Network.Clients.DeviceClient import DeviceClient
 from Network.Servers.FileServer import FileServer
 from Network.GeneralSocket import GeneralSocket
+from Network.Servers.StreamingServer import StreamingServer
 
 bufferSize = 1024
 
@@ -18,14 +19,14 @@ class ServerManager(GeneralSocket):
         self.newDeviceConnectedEvent = Event()
         self.NoMoreDevicesConnectedEvent = Event()
         self.fileServer = FileServer(self.ip, 9999)
+        self.streamingServer = StreamingServer(self.ip, 3333)
 
     def start(self):
         if self.listeningSocket:
             return
 
         self.listeningSocket = True
-        address = (self.ip, self.port)
-        self.socket.bind(address)
+        self.socket.bind(self.address)
         self.socket.listen(self.maxDevices)
         self.serverInitEvent(message="Server started at :" + self.ip + " on port: " + str(self.port))
         self.socketThread.start()

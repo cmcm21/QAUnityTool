@@ -21,7 +21,6 @@ namespace TagwizzQASniffer.Core.Recording
             };
             
             _inputRecorder.changeEvent.AddListener((state) => {
-                Debug.Log($"Input recorder change state, new Input recorder state: {state}");
                 switch (state) {
                     case InputRecorder.Change.ReplayStopped:
                         _recorderListeners.ForEach(l => l.OnReplayFinished());
