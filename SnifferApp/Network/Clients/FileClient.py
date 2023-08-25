@@ -2,41 +2,38 @@ import os
 import socket
 from Utils.Events import Event
 from threading import Thread
+from Network.GeneralSocket import GeneralSocket
 
 BUFFER_SIZE = 1024
 FILE_BUFFER_SIZE = 4096
 
 
-class FileClient:
+class FileClient(GeneralSocket):
 
-    def __init__(self, address, fileClientSocket: socket.socket, filepath: str):
+    def __init__(self, socket: socket.socket, address, filepath: str):
+        super().__init__(socket, address)
         print("client: " + str(address) + " connected")
-        self.client = fileClientSocket
-        self.address = address
-        self.deviceIp = address[0]
-        self.listenThread = Thread(target=self._listenClientWorker, daemon=True)
         self.sendThread = Thread(target=self._sendClientWorker, daemon=True)
-        self.listeningClient = False
         self.filePath = filepath
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendStartedEvent = Event()
         self.fileSendEndedEvent = Event()
 
-    def startListening(self):
-        self.listenThread.start()
+    def start(self):
+        self.socketThread.start()
 
     def startSending(self):
         self.sendThread.start()
 
-    def _listenClientWorker(self):
+    def _socketWorker(self):
         fileName = os.path.basename(self.filePath)
         try:
-            send = self.client.send(fileName.encode())
+            send = self.socket.send(fileName.encode())
             if send == b'':
                 self._handleFileClientDisconnection()
                 return
-            fileSizeBytes = self.client.recv(BUFFER_SIZE)
+            fileSizeBytes = self.socket.recv(BUFFER_SIZE)
 
             if fileSizeBytes == b'':
                 self._handleFileClientDisconnection()
@@ -47,7 +44,7 @@ class FileClient:
 
             with open(self.filePath, "wb") as f:
                 while True:
-                    bytesRead = self.client.recv(FILE_BUFFER_SIZE)
+                    bytesRead = self.socket.recv(FILE_BUFFER_SIZE)
                     if not bytesRead or bytesRead == b'':
                         break
                     f.write(bytesRead)
@@ -68,7 +65,7 @@ class FileClient:
     def _sendClientWorker(self):
         fileName = os.path.basename(self.filePath)
         try:
-            send = self.client.send(fileName.encode())
+            send = self.socket.send(fileName.encode())
             if send == b'':
                 self._handleFileClientDisconnection()
                 return
@@ -82,7 +79,7 @@ class FileClient:
                         break
 
                     print(f"File sending bytes {len(bytesRead)}")
-                    send = self.client.sendall(bytesRead)
+                    send = self.socket.sendall(bytesRead)
                     if send == b'':
                         break
 
@@ -100,14 +97,3 @@ class FileClient:
 
     def _handleFileClientDisconnection(self):
         self.close()
-        return
-
-    def close(self):
-
-        if self.listenThread.is_alive():
-            try:
-                self.listenThread.join()
-            except RuntimeError:
-                print("Listen thread couldn't join")
-
-        self.client.close()

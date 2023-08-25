@@ -1,12 +1,10 @@
-import os.path
 import socket
-from threading import Thread
 from Utils.Events import Event
 from enum import Enum
 from Command.CommandSignals import CommandSignal
+from Network.GeneralSocket import GeneralSocket
 
 BUFFER_SIZE = 1024
-FILE_BUFFER_SIZE = 4096
 
 
 class DeviceState(Enum):
@@ -15,28 +13,28 @@ class DeviceState(Enum):
     PLAYBACK = 1
 
 
-class DeviceClient:
+class DeviceClient(GeneralSocket):
 
     def __init__(self, deviceSocket: socket.socket, address):
-        self.deviceState = DeviceState.IDLE
+        super().__init__(deviceSocket, address)
         print("client: " + str(address) + " connected")
-        self.client = deviceSocket
-        self.address = address
-        self.deviceIp = address[0]
-        self.listenThread = Thread(target=self._listenClientWorker,daemon=True)
-        self.listeningClient = False
+        self.deviceState = DeviceState.IDLE
         self.msgReceivedEvent = Event()
         self.stateChangedEvent = Event()
         self.deviceDisconnectedEvent = Event()
 
-    def _listenClientWorker(self):
-        while self.listeningClient:
+    def start(self):
+        self.listeningSocket = True
+        self.socketThread.start()
+
+    def _socketWorker(self):
+        while self.listeningSocket:
             try:
-                message = self.client.recv(BUFFER_SIZE)
+                message = self.socket.recv(BUFFER_SIZE)
                 if message == b'':
                     self._handleDeviceDisconnection()
                 else:
-                    self.msgReceivedEvent(message="Device[{}]: {}".format(self.deviceIp, message.decode()))
+                    self.msgReceivedEvent(message="Device[{}]: {}".format(self.ip, message.decode()))
                     self._decodeClientMessage(message.decode())
             except ConnectionError:
                 self._handleDeviceDisconnection()
@@ -53,28 +51,13 @@ class DeviceClient:
 
     def sendSignalToDevice(self, signal: CommandSignal):
         try:
-            send = self.client.send(signal.value.encode())
+            send = self.socket.send(signal.value.encode())
             if send == 0:
                 self._handleDeviceDisconnection()
         except ConnectionError:
             self._handleDeviceDisconnection()
 
-    def starListening(self):
-        self.listeningClient = True
-        self.listenThread.start()
-
     def changeState(self):
         newState = DeviceState.PLAYBACK if self.deviceState == DeviceState.RECORDING else DeviceState.RECORDING
         self.deviceState = newState
         self.stateChangedEvent(state=self.deviceState)
-
-    def close(self):
-        self.listeningClient = False
-
-        if self.listenThread.is_alive():
-            try:
-                self.listenThread.join()
-            except RuntimeError:
-                print(f"device {self.address} listening thread couldn't join ")
-
-        self.client.close()

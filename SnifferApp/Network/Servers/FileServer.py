@@ -1,55 +1,49 @@
-import asyncio
 import socket
 import threading
-import os
 from Utils.Events import Event
-from Network.FileClient import FileClient
+from Network.Clients.FileClient import FileClient
+from Network.GeneralSocket import GeneralSocket
+
 
 BUFFER_SIZE = 1024
 FILE_BUFFER_SIZE = 4096
 
 
-class FileServer:
+class FileServer(GeneralSocket):
 
     def __init__(self, ip: str, port: int):
-        self.ip = ip
-        self.port = port
-        self.address = (self.ip, self.port)
+        super().__init__(socket.socket(), (ip, port))
         self.filePath = None
-        self.listening = False
         self.sendFile = False
-        self.socket = None
         self.fileClients: list[FileClient] = []
-        self.listenThread = threading.Thread(target=self._listenThread, daemon=True)
         self.progressEventsThreads: list[threading.Thread] = []
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendingStartedEvent = Event()
         self.fileSendingEndedEvent = Event()
 
-    def startServer(self):
-        if self.listening:
+    def start(self):
+        if self.listeningSocket:
             return
 
-        self.socket = socket.socket()
-        self.listening = True
+        self.listeningSocket = True
         self.socket.bind(self.address)
         self.socket.listen(5)
-        self.listenThread.start()
+        self.socketThread.start()
 
     def setFile(self, filePath: str):
         self.filePath = filePath
 
-    def _listenThread(self):
-        while self.listenThread:
+    def _socketWorker(self):
+        while self.listeningSocket:
             try:
                 fileSocket, address = self.socket.accept()
-                fileClient = FileClient(address, fileSocket, self.filePath)
+                fileClient = FileClient(fileSocket, address, self.filePath)
 
                 if self.sendFile:
                     fileClient.startSending()
                 else:
-                    fileClient.startListening()
+                    fileClient.start()
 
                 self._connectEvents(fileClient)
                 self.fileClients.append(fileClient)
@@ -69,9 +63,9 @@ class FileServer:
         self.fileSendingStartedEvent(args, kwargs)
 
     def close(self):
-        self.listening = False
-        if self.listenThread.is_alive():
-            self.listenThread.join()
+        self.listeningSocket = False
+        if self.socketThread.is_alive():
+            self.socketThread.join()
 
         for fileClient in self.fileClients:
             fileClient.fileReceiveStartedEvent -= self.fileReceiveStartedEvent

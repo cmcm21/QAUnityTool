@@ -1,5 +1,5 @@
-from PySide6 import QtCore, QtGui, QtWidgets
-from Network.DeviceClient import DeviceClient
+from PySide6 import QtCore, QtWidgets
+from Network.Clients.DeviceClient import DeviceClient
 from Utils.Events import Event
 
 

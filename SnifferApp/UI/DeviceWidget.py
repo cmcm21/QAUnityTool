@@ -1,7 +1,5 @@
-from typing import Any
 from PySide6 import QtWidgets, QtCore
-from Network.DeviceClient import DeviceClient, DeviceState
-from Utils.Events import Event
+from Network.Clients.DeviceClient import DeviceClient
 
 
 class DeviceWidget(QtWidgets.QWidget):

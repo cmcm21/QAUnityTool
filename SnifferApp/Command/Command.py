@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from Hub import SnifferHub
-from Network.ServerManager import ServerManager
-from Network.FileServer import FileServer
+from Network.Servers.ServerManager import ServerManager
 from Utils.Events import Event
 from Command.CommandSignals import CommandSignal
 from PySide6.QtWidgets import QFileDialog
@@ -36,8 +35,8 @@ class InitServerCommand(Command):
         super().__init__(app, server)
 
     def execute(self) -> bool:
-        self.serverManager.startServer()
-        self.serverManager.fileServer.startServer()
+        self.serverManager.start()
+        self.serverManager.fileServer.start()
         self.onCommandExecutedEvent(message="[Command]:: Init Server Executed")
         return True
 

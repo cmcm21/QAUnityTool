@@ -1,9 +1,9 @@
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtWidgets
 from UI.ServerWidget import ServerWidget
 from UI.UILogger import UILogger
 from UI.DeviceWidget import DeviceWidget
 from UI.SplashScreen import SplashScreen
-from Network.DeviceClient import DeviceClient
+from Network.Clients.DeviceClient import DeviceClient
 import platform
 
 
