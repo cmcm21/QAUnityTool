@@ -19,6 +19,7 @@ class SnifferHub:
         self.serverManager = ServerManager()
         self.commandHistory = CommandHistory()
         self.appSate = ApplicationState.IDLE
+
         self._connectEvents()
         self._initCommands()
 
@@ -31,6 +32,7 @@ class SnifferHub:
         self.serverManager.fileServer.fileReceiveFinishedEvent += self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
         self.serverManager.fileServer.fileSendingEndedEvent += self._onLoadingEnded
+        self.serverManager.streamingServer.qSignal.connect(self.uiManager.deviceWidget.setStreamingImage)
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
@@ -131,4 +133,9 @@ class SnifferHub:
     def __del__(self):
         self.serverManager.newDeviceConnectedEvent -= self._onNewDeviceAdded
         self.serverManager.serverInitEvent -= self._onServerStarted
-        self.uiManager.deviceWidget.deviceSelectedEvent -= self._onDeviceSelected
+        self.serverManager.NoMoreDevicesConnectedEvent -= self._onNoMoreDevices
+        self.uiManager.serverWidget.deviceSelectedChanged -= self._onDeviceSelected
+        self.serverManager.fileServer.fileReceiveStartedEvent -= self._onSavingStarted
+        self.serverManager.fileServer.fileReceiveFinishedEvent -= self._onSavingEnded
+        self.serverManager.fileServer.fileSendingStartedEvent -= self._onLoadingStarted
+        self.serverManager.fileServer.fileSendingEndedEvent -= self._onLoadingEnded

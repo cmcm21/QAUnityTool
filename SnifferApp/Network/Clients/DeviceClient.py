@@ -14,7 +14,6 @@ class DeviceState(Enum):
 
 
 class DeviceClient(GeneralSocket):
-
     def __init__(self, deviceSocket: socket.socket, address):
         super().__init__(deviceSocket, address)
         print("Device client: " + str(address) + " connected")
@@ -61,3 +60,6 @@ class DeviceClient(GeneralSocket):
         newState = DeviceState.PLAYBACK if self.deviceState == DeviceState.RECORDING else DeviceState.RECORDING
         self.deviceState = newState
         self.stateChangedEvent(state=self.deviceState)
+
+    def close(self):
+        pass

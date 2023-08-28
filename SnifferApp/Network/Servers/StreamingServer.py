@@ -1,21 +1,22 @@
-import numpy as np
-
 from Network.GeneralSocket import GeneralSocket
-from Network.Clients.StreamingClient import  StreamingClient
+from Network.Clients.StreamingClient import StreamingClient
 from Utils.Events import Event
-from collections import deque
 import socket
-import cv2
-import numpy
-import pickle
+from PySide6 import QtCore
+from PySide6.QtGui import QPixmap
+from Utils.StreamingVideoHelper import StreamingVideoHelper
 
-class StreamingServer(GeneralSocket):
+
+class StreamingServer(GeneralSocket, QtCore.QObject):
+    qSignal = QtCore.Signal(QPixmap)
 
     def __init__(self, ip: str, port: int):
-        super().__init__(socket.socket(), (ip, port))
+        GeneralSocket.__init__(self, socket.socket(), (ip, port))
+        QtCore.QObject.__init__(self)
         self.maxClients = 5
-        self.clients = deque()
+        self.clients: list[StreamingClient] = []
         self.frameReceivedCompleted = Event()
+        self.streamingHelper = StreamingVideoHelper()
         self.frameNumber = 0
 
     def start(self):
@@ -44,47 +45,30 @@ class StreamingServer(GeneralSocket):
 
     def _handleClient(self, client: StreamingClient):
         client.frameReceivedCompleted += self._onStreamClientFinished
-
-        if len(self.clients) == 0:
-            client.start()
-
+        client.start()
         self.clients.append(client)
-        return
 
     def _onStreamClientFinished(self, *args, **kwargs):
-        if len(self.clients) > 0:
-            streamClient: StreamingClient = self.clients.popleft()
-            streamClient.start()
-
+        self.streamingHelper.addFrame(kwargs['frame'])
         self.frameReceivedCompleted(frame=kwargs['frame'])
-        while self.listeningSocket:
-            fileName = kwargs['fileName']
-            image = cv2.imread(fileName)
-            cv2.imshow("Streaming video", image)
+        self._processQSignal(frame=kwargs['frame'])
 
-    @staticmethod
-    def imFromBytes(bytesData, flag='color'):
-        """Read an image from bytes.
+    def _processQSignal(self, frame: bytes):
+        pixmap = QPixmap()
+        loaded = pixmap.loadFromData(frame, format=".jpg")
+        if loaded:
+            self.qSignal.emit(pixmap)
+        else:
+            print("Error trying to load frame from bytes")
 
-        Args:
-            bytes (bytes): Image bytes got from files or other streams.
-            flag (str): Same as :func:`imread`.
+    def saveStreamAsVideo(self, videoPath: str):
+        self.streamingHelper.saveFramesToVideo(videoPath)
 
-        Returns:
-            ndarray: Loaded image array.
-            :param flag:
-            :param bytesData:
-        """
-        imread_flags = {
-            'color': cv2.IMREAD_COLOR,
-            'grayscale': cv2.IMREAD_GRAYSCALE,
-            'unchanged': cv2.IMREAD_UNCHANGED
-        }
-        img_np = np.fromstring(bytesData, np.uint8)
-        flag = imread_flags[flag] if isinstance(flag, str) else flag
-        img = cv2.imdecode(img_np, flag)
-        return img
+    def resetFramesRecorded(self):
+        self.streamingHelper.restart()
 
     def close(self):
         super().close()
+        for client in self.clients:
+            client.close()
 

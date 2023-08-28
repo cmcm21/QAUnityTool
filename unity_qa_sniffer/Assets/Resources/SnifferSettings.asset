@@ -16,5 +16,5 @@ MonoBehaviour:
   snifferObserver: {fileID: 6129087749859578532, guid: 5bf0f32028dc7e545a3a80042ab35a55, type: 3}
   recordingOption: 0
   recordFrames: 1
-  maxFramesPerRec: 100
-  frameRate: 10
+  maxFramesPerRec: 5000
+  frameRate: 30

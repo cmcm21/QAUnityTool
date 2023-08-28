@@ -1,5 +1,4 @@
 import socket
-from threading import Thread
 from Utils.Events import Event
 from Network.Clients.DeviceClient import DeviceClient
 from Network.Servers.FileServer import FileServer
@@ -19,7 +18,7 @@ class ServerManager(GeneralSocket):
         self.newDeviceConnectedEvent = Event()
         self.NoMoreDevicesConnectedEvent = Event()
         self.fileServer = FileServer(self.ip, 9999)
-        self.streamingServer = StreamingServer(self.ip, 3333)
+        self.streamingServer = StreamingServer(self.ip, 55555)
 
     def start(self):
         if self.listeningSocket:
@@ -58,7 +57,8 @@ class ServerManager(GeneralSocket):
         if device == self.selectedDevice:
             self.selectedDevice = None
 
-        self.devices.remove(device)
+        if len(self.devices) > 0:
+            self.devices.remove(device)
 
         if len(self.devices) <= 0:
             self.NoMoreDevicesConnectedEvent()

@@ -1,5 +1,6 @@
 from PySide6 import QtWidgets, QtCore
 from Network.Clients.DeviceClient import DeviceClient
+from PySide6.QtGui import QPixmap
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -7,13 +8,17 @@ class DeviceWidget(QtWidgets.QWidget):
         super().__init__()
         self._initButtons()
 
-        self.stateInfo = QtWidgets.QTextBrowser(self)
+        self.streamingLabel = QtWidgets.QLabel()
         self.container = QtWidgets.QHBoxLayout(self)
 
         self._setButtonsLayout()
 
         self.container.addLayout(self.buttonsLayout)
-        self.container.addWidget(self.stateInfo)
+        self.container.addWidget(self.streamingLabel)
+
+    def setStreamingImage(self, pixmap: QPixmap):
+        pixmap = pixmap.scaled(QtCore.QSize(500, 500), aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        self.streamingLabel.setPixmap(pixmap)
 
     def _initButtons(self):
         self.recordBtn = QtWidgets.QPushButton("Record")

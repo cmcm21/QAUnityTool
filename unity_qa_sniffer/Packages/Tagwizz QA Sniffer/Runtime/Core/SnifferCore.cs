@@ -1,5 +1,4 @@
 using System.IO;
-using Codice.Client.BaseCommands;
 using TagwizzQASniffer.Core.Recording;
 using TagwizzQASniffer.Core.FramesRecorder;
 using UnityEngine;

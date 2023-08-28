@@ -57,9 +57,8 @@ class ServerWidget(QtWidgets.QWidget):
         items = self.devicesListWidget.findItems(
             "Device Connected: " + str(device.address), QtCore.Qt.MatchFlag.MatchWildcard)
 
-        if items[0].isSelected():
-            self.devicesListWidget.clearSelection()
-            self.clearSelectionEvent()
+        if len(items) <= 0:
+            return
 
         if len(items) > 0:
             itemRow = self.devicesListWidget.row(items[0])
@@ -69,3 +68,7 @@ class ServerWidget(QtWidgets.QWidget):
         if self.devicesListWidget.count() > 0:
             self.devicesListWidget.itemAt(QtCore.QPoint(0, 0)).setSelected(True)
             self._onSelectionChanged()
+
+        if items[0].isSelected():
+            self.devicesListWidget.clearSelection()
+            self.clearSelectionEvent()

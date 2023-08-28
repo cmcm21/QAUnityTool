@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using System.Threading;
 using UnityEngine;
 
@@ -81,7 +83,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		private void Start () 
 		{
 			// Set target frame rate (optional)
-			Application.targetFrameRate = frameRate;
+			//Application.targetFrameRate = frameRate;
 			_state = FrameRecorderState.IDLE;
 			Init();
 		}
@@ -93,7 +95,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			_screenHeight = GetComponent<Camera>().pixelHeight;
 		
 			tempRenderTexture = new RenderTexture(_screenWidth, _screenHeight, 0);
-			tempTexture2D = new Texture2D(_screenWidth, _screenHeight, TextureFormat.RGB24, false);
+			tempTexture2D = new Texture2D(_screenWidth,_screenHeight , TextureFormat.RGB24, false);
 			_frameQueue = new Queue<byte[]> ();
 
 			_frameNumber = 0;
@@ -124,62 +126,51 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		{
 			_terminateThreadWhenDone = true;
 			_state = FrameRecorderState.IDLE;
-			
+			Debug.Log($"<color=red>the last frame recorder was {_frameNumber} frame </color>");
 			_observer.NotifyStopped();
 		}
 
-		private void OnRenderImage(RenderTexture source, RenderTexture destination)
+		private IEnumerator OnPostRender()
 		{
-			if (_state != FrameRecorderState.RECORDING)
+			if (_state == FrameRecorderState.RECORDING)
 			{
-				Graphics.Blit (source, destination);
-				return;
-			}
-			
-			if (_frameNumber <= maxFrames)
-			{
-				// Check if render target size has changed, if so, terminate
-				if(source.width != _screenWidth || source.height != _screenHeight)
+				if (_frameNumber <= maxFrames)
 				{
-					_threadIsProcessing = false;
-					this.enabled = false;
-					throw new UnityException("FrameRecorder render target size has changed!");
+
+					// Calculate number of video frames to produce from this game frame
+					// Generate 'padding' frames if desired framerate is higher than actual framerate
+					float thisFrameTime = Time.time;
+					int framesToCapture = ((int)(thisFrameTime / _captureFrameTime)) -
+					                      ((int)(_lastFrameTime / _captureFrameTime));
+
+					// Capture the frame
+					if (framesToCapture > 0)
+					{
+						tempRenderTexture = Camera.current.activeTexture;
+						RenderTexture.active = tempRenderTexture;
+						tempTexture2D.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+						RenderTexture.active = null;
+					}
+
+					// Add the required number of copies to the queue
+					for (int i = 0; i < framesToCapture && _frameNumber <= maxFrames; ++i)
+					{
+						_frameQueue.Enqueue(tempTexture2D.EncodeToJPG());
+						_frameNumber++;
+						//if(_frameNumber % frameRate == 0)
+						//	print ("Frame " + _frameNumber);
+					}
+
+					_lastFrameTime = thisFrameTime;
 				}
-
-				// Calculate number of video frames to produce from this game frame
-				// Generate 'padding' frames if desired framerate is higher than actual framerate
-				float thisFrameTime = Time.time;
-				int framesToCapture = ((int)(thisFrameTime / _captureFrameTime)) - ((int)(_lastFrameTime / _captureFrameTime));
-
-				// Capture the frame
-				if(framesToCapture > 0)
+				else //keep making screenshots until it reaches the max frame amount
 				{
-					Graphics.Blit (source, tempRenderTexture);
-				
-					RenderTexture.active = tempRenderTexture;
-					tempTexture2D.ReadPixels(new Rect(0, 0, Screen.width, Screen.height),0,0);
-					RenderTexture.active = null;
+					_terminateThreadWhenDone = true;
 				}
-
-				// Add the required number of copies to the queue
-				for(int i = 0; i < framesToCapture && _frameNumber <= maxFrames; ++i)
-				{
-					_frameQueue.Enqueue(tempTexture2D.GetRawTextureData());
-					_frameNumber ++;
-					//if(_frameNumber % frameRate == 0)
-						//print ("Frame " + _frameNumber);
-				}
-			
-				_lastFrameTime = thisFrameTime;
 			}
-			else //keep making screenshots until it reaches the max frame amount
-			{
-				_terminateThreadWhenDone = true;
-				StopRecording();
-			}
-			Graphics.Blit (source, destination);
+			yield return null;
 		}
-	
+
 		private void Encode()
 		{
 			print ("FRAMES RECORDER IO THREAD STARTED");
@@ -187,14 +178,14 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			{
 				if(_frameQueue.Count > 0)
 				{
+					 _observer.NotifyFrameRecorded(new MemoryStream(_frameQueue.Dequeue()));
+					 /*
 					using(MemoryStream memoryStream = new MemoryStream())
 					{
 						BitmapEncoder.WriteBitmap(
-							memoryStream, _screenWidth, _screenHeight, _frameQueue.Dequeue());
+							memoryStream, _screenHeight, _screenWidth, _frameQueue.Dequeue());
 						
-						memoryStream.Close();
-						_observer.NotifyFrameRecorded(memoryStream);
-					}
+					}*/
 					_savingFrameNumber ++;
 					//print ("Saved " + _savingFrameNumber + " frames. " + _frameQueue.Count + " frames remaining.");
 				}
@@ -206,7 +197,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 					Thread.Sleep(1);
 				}
 			}
-
+			
 			_terminateThreadWhenDone = false;
 			_threadIsProcessing = false;
 			print ("FRAMES RECORDER IO THREAD FINISHED");
