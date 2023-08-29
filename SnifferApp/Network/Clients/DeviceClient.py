@@ -42,7 +42,6 @@ class DeviceClient(GeneralSocket):
         print(f"Device client {self.address} disconnected")
         self.deviceDisconnectedEvent(device=self)
         self.close()
-        return
 
     def _decodeClientMessage(self, message: str):
         if message == CommandSignal.CHANGE_STATE.value:
@@ -62,4 +61,4 @@ class DeviceClient(GeneralSocket):
         self.stateChangedEvent(state=self.deviceState)
 
     def close(self):
-        pass
+        super().close()
