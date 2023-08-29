@@ -68,8 +68,7 @@ namespace TagwizzQASniffer.Network
                 IPAddress[] ipArray = Dns.GetHostAddresses(ip);
                 IPEndPoint localEndPoint = new IPEndPoint(ipArray[0], port);
         
-                _sender = new Socket(ipArray[0].AddressFamily, 
-                        SocketType.Stream, ProtocolType.Tcp);
+                _sender = new Socket(ipArray[0].AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 try
                 {

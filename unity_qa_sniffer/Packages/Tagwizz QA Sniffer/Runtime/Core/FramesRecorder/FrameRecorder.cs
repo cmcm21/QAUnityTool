@@ -2,51 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Mime;
 using System.Threading;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace TagwizzQASniffer.Core.FramesRecorder
 {
-	class BitmapEncoder
-	{
-		public static Stream WriteBitmap(Stream stream, int width, int height, byte[] imageData)
-		{
-			using (BinaryWriter bw = new BinaryWriter(stream)) {
-
-				// define the bitmap file header
-				bw.Write ((UInt16)0x4D42); 								// bfType;
-				bw.Write ((UInt32)(14 + 40 + (width * height * 4))); 	// bfSize;
-				bw.Write ((UInt16)0);									// bfReserved1;
-				bw.Write ((UInt16)0);									// bfReserved2;
-				bw.Write ((UInt32)14 + 40);								// bfOffBits;
-	 
-				// define the bitmap information header
-				bw.Write ((UInt32)40);  								// biSize;
-				bw.Write ((Int32)width); 								// biWidth;
-				bw.Write ((Int32)height); 								// biHeight;
-				bw.Write ((UInt16)1);									// biPlanes;
-				bw.Write ((UInt16)32);									// biBitCount;
-				bw.Write ((UInt32)0);  									// biCompression;
-				bw.Write ((UInt32)(width * height * 4));  				// biSizeImage;
-				bw.Write ((Int32)0); 									// biXPelsPerMeter;
-				bw.Write ((Int32)0); 									// biYPelsPerMeter;
-				bw.Write ((UInt32)0);  									// biClrUsed;
-				bw.Write ((UInt32)0);  									// biClrImportant;
-
-				// switch the image data from RGB to BGR
-				for (int imageIdx = 0; imageIdx < imageData.Length; imageIdx += 3) {
-					bw.Write(imageData[imageIdx + 2]);
-					bw.Write(imageData[imageIdx + 1]);
-					bw.Write(imageData[imageIdx + 0]);
-					bw.Write((byte)255);
-				}
-			
-			}
-			return stream;
-		}
-
-	}
 	public enum FrameRecorderState {RECORDING,IDLE, WAITING}
 	[RequireComponent(typeof(Camera))]
 	public class FrameRecorder : MonoBehaviour 
@@ -70,8 +31,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 
 		// Encoder Thread Shared Resources
 		private Queue<byte[]> _frameQueue;
-		private int _screenWidth;
-		private int _screenHeight;
 		private bool _threadIsProcessing;
 		private bool _terminateThreadWhenDone;
 		
@@ -82,22 +41,13 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 	
 		private void Start () 
 		{
-			// Set target frame rate (optional)
-			//Application.targetFrameRate = frameRate;
 			_state = FrameRecorderState.IDLE;
 			Init();
 		}
 
 		private void Init()
 		{
-			// Prepare textures and initial values
-			_screenWidth = GetComponent<Camera>().pixelWidth;
-			_screenHeight = GetComponent<Camera>().pixelHeight;
-		
-			tempRenderTexture = new RenderTexture(_screenWidth, _screenHeight, 0);
-			tempTexture2D = new Texture2D(_screenWidth,_screenHeight , TextureFormat.RGB24, false);
 			_frameQueue = new Queue<byte[]> ();
-
 			_frameNumber = 0;
 			_savingFrameNumber = 0;
 
@@ -118,10 +68,9 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			_threadIsProcessing = true;
 			encoderThread = new Thread (Encode);
 			encoderThread.Start ();
-			
 			_observer.NotifyStarted();
 		}
-	
+
 		public void StopRecording()
 		{
 			_terminateThreadWhenDone = true;
@@ -136,71 +85,70 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			{
 				if (_frameNumber <= maxFrames)
 				{
-
 					// Calculate number of video frames to produce from this game frame
 					// Generate 'padding' frames if desired framerate is higher than actual framerate
 					float thisFrameTime = Time.time;
 					int framesToCapture = ((int)(thisFrameTime / _captureFrameTime)) -
 					                      ((int)(_lastFrameTime / _captureFrameTime));
 
-					// Capture the frame
 					if (framesToCapture > 0)
-					{
-						tempRenderTexture = Camera.current.activeTexture;
-						RenderTexture.active = tempRenderTexture;
-						tempTexture2D.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
-						RenderTexture.active = null;
-					}
+						yield return SaveFrame();
 
-					// Add the required number of copies to the queue
 					for (int i = 0; i < framesToCapture && _frameNumber <= maxFrames; ++i)
-					{
-						_frameQueue.Enqueue(tempTexture2D.EncodeToJPG());
 						_frameNumber++;
-						//if(_frameNumber % frameRate == 0)
-						//	print ("Frame " + _frameNumber);
-					}
 
 					_lastFrameTime = thisFrameTime;
+					
 				}
 				else //keep making screenshots until it reaches the max frame amount
-				{
 					_terminateThreadWhenDone = true;
-				}
 			}
-			yield return null;
+		}
+		
+		private IEnumerator SaveFrame()
+		{
+			// Read the screen buffer after rendering is complete
+			yield return new WaitForEndOfFrame();
+
+			// Create a texture in RGB24 format the size of the screen
+			int width = Screen.width;
+			int height = Screen.height;
+			Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+			// Read the screen contents into the texture
+			tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+			tex.Apply();
+
+			// Encode the bytes in JPG format
+			byte[] bytes = ImageConversion.EncodeArrayToJPG(tex.GetRawTextureData(), tex.graphicsFormat, (uint)width, (uint)height);
+			Object.Destroy(tex);
+
+			// Write the returned byte array to a file in the project folder
+			_frameQueue.Enqueue(bytes);
 		}
 
 		private void Encode()
 		{
-			print ("FRAMES RECORDER IO THREAD STARTED");
+			//print ("FRAMES RECORDER IO THREAD STARTED");
 			while (_threadIsProcessing) 
 			{
 				if(_frameQueue.Count > 0)
 				{
-					 _observer.NotifyFrameRecorded(new MemoryStream(_frameQueue.Dequeue()));
-					 /*
-					using(MemoryStream memoryStream = new MemoryStream())
-					{
-						BitmapEncoder.WriteBitmap(
-							memoryStream, _screenHeight, _screenWidth, _frameQueue.Dequeue());
-						
-					}*/
+					var memoryStream = new MemoryStream(_frameQueue.Dequeue());
+					_observer.NotifyFrameRecorded(memoryStream);
 					_savingFrameNumber ++;
-					//print ("Saved " + _savingFrameNumber + " frames. " + _frameQueue.Count + " frames remaining.");
 				}
 				else
 				{
 					if(_terminateThreadWhenDone)
 						break;
-					
 					Thread.Sleep(1);
 				}
 			}
 			
 			_terminateThreadWhenDone = false;
 			_threadIsProcessing = false;
-			print ("FRAMES RECORDER IO THREAD FINISHED");
+			//print ("FRAMES RECORDER IO THREAD FINISHED");
 		}
 	}
 }

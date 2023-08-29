@@ -110,7 +110,7 @@ namespace TagwizzQASniffer.Network
             if (_client.isReading) return;
             
             _client.StartClient(GetIp,GetPort);
-            _streamingClient.SetAddress(GetIp);
+            _streamingClient.StartClient(GetIp);
             portInput.interactable = false;
             ipInput.interactable = false;
         }

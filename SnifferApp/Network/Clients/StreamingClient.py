@@ -1,17 +1,19 @@
 from Network.GeneralSocket import GeneralSocket
 from Utils.Events import Event
+from enum import Enum
 import socket
 
 BUFFER_SIZE = 32754
-STREAMING_FRAMES_PATH = "RecFrames/"
+MSG_BUFFER_SIZE = 1024
 
 
 class StreamingClient(GeneralSocket):
 
-    def __init__(self, socket: socket.socket, address, frameNumber: int):
+    def __init__(self, socket: socket.socket, address):
         super().__init__(socket, address)
+        print(f"\nStreaming client {address} is connected\n")
         self.frameReceivedCompleted = Event()
-        self.frameNumber = frameNumber
+        self.frameNumber = 0
 
     def start(self):
         if self.listeningSocket:
@@ -22,25 +24,30 @@ class StreamingClient(GeneralSocket):
 
     def _socketWorker(self):
         frameBytes = []
-        try:
-            while True:
+        frameBytesAmount = 0
+        while self.listeningSocket:
+            try:
                 bytesRead = self.socket.recv(BUFFER_SIZE)
-                if not bytesRead or bytesRead == b'':
-                    break
-                frameBytes.append(bytesRead)
+                if bytesRead == b'':
+                    self._streamClientDisconnected()
+                try:
+                    bytesRead.decode()
+                    #print("{0}".format(bytesRead.decode()))
+                    if self.frameNumber > 0:
+                        self.frameReceivedCompleted(frame=b''.join(frameBytes))
+                        frameBytes.clear()
+                        frameBytesAmount = 0
+                    self.frameNumber += 1
+                except UnicodeDecodeError:
+                    frameBytes.append(bytesRead)
+                    frameBytesAmount += len(bytesRead)
+            except ConnectionError:
+                print("Error while reading frame")
+            except RuntimeError:
+                print("Error while reading frame")
 
-        except ConnectionResetError:
-            print("Error while reading frame")
-        except ConnectionAbortedError:
-            print("Error while reading frame")
-        except ConnectionError:
-            print("Error while reading frame")
-        except RuntimeError:
-            print("Error while reading frame")
-        finally:
-            #print("Frame received process finished")
-            self.frameReceivedCompleted(frame=b''.join(frameBytes))
-            self.close()
+    def _streamClientDisconnected(self):
+        self.close()
 
     def close(self):
-        return
+        super().close()

@@ -33,8 +33,7 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         while self.listeningSocket:
             try:
                 streamingSocket, address = self.socket.accept()
-                self.frameNumber += 1
-                streamingClient = StreamingClient(streamingSocket, address, self.frameNumber)
+                streamingClient = StreamingClient(streamingSocket, address)
                 self._handleClient(streamingClient)
             except ConnectionError:
                 print("Error while connecting to streaming client")
@@ -55,7 +54,7 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
 
     def _processQSignal(self, frame: bytes):
         pixmap = QPixmap()
-        loaded = pixmap.loadFromData(frame, format=".jpg")
+        loaded = pixmap.loadFromData(frame, format=".bmp")
         if loaded:
             self.qSignal.emit(pixmap)
         else:
