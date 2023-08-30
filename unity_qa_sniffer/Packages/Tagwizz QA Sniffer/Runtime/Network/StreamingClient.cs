@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using TagwizzQASniffer.Core;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network

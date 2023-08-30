@@ -79,7 +79,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			_observer.NotifyStopped();
 		}
 
-		private IEnumerator OnPostRender()
+		private void OnRenderImage(RenderTexture source, RenderTexture destination)
 		{
 			if (_state == FrameRecorderState.RECORDING)
 			{
@@ -92,7 +92,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 					                      ((int)(_lastFrameTime / _captureFrameTime));
 
 					if (framesToCapture > 0)
-						yield return SaveFrame();
+						StartCoroutine(nameof(SaveFrame));
 
 					for (int i = 0; i < framesToCapture && _frameNumber <= maxFrames; ++i)
 						_frameNumber++;
@@ -103,6 +103,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 				else //keep making screenshots until it reaches the max frame amount
 					_terminateThreadWhenDone = true;
 			}
+			Graphics.Blit(source, destination);
 		}
 		
 		private IEnumerator SaveFrame()

@@ -32,7 +32,6 @@ class StreamingClient(GeneralSocket):
                     self._streamClientDisconnected()
                 try:
                     bytesRead.decode()
-                    #print("{0}".format(bytesRead.decode()))
                     if self.frameNumber > 0:
                         self.frameReceivedCompleted(frame=b''.join(frameBytes))
                         frameBytes.clear()

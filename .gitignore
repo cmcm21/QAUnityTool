@@ -16,6 +16,7 @@ sniffer_vault/.obsidian/community_plugins.json
 sniffer_vault/.obsidian/appearence.json
 SnifferApp/*/__pycache__/
 SnifferApp/TestRecFiles/
+SnifferApp/TestStreamingVideos/
 
 .pyc
 .idea

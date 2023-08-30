@@ -7,7 +7,6 @@ from Network.Servers.StreamingServer import StreamingServer
 
 bufferSize = 1024
 
-
 class ServerManager(GeneralSocket):
     def __init__(self):
         super().__init__(socket.socket(), (socket.gethostbyname(socket.gethostname()), 8080))

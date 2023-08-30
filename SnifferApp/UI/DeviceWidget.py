@@ -8,17 +8,27 @@ class DeviceWidget(QtWidgets.QWidget):
         super().__init__()
         self._initButtons()
 
-        self.streamingLabel = QtWidgets.QLabel()
         self.container = QtWidgets.QHBoxLayout(self)
-
+        self._setStreamingLayout()
         self._setButtonsLayout()
 
         self.container.addLayout(self.buttonsLayout)
-        self.container.addWidget(self.streamingLabel)
+        self.container.addLayout(self.streamingContainer)
 
     def setStreamingImage(self, pixmap: QPixmap):
         pixmap = pixmap.scaled(QtCore.QSize(500, 500), aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.streamingLabel.setPixmap(pixmap)
+
+    def _setStreamingLayout(self):
+        self.streamingContainer = QtWidgets.QVBoxLayout(self)
+        self.streamingButtons = QtWidgets.QHBoxLayout(self)
+
+        self.saveStreamingBtn = QtWidgets.QPushButton("Save Stream")
+        self.streamingLabel = QtWidgets.QLabel()
+        self.streamingContainer.addWidget(self.streamingLabel)
+
+        self.streamingContainer.addLayout(self.streamingButtons)
+        self.streamingButtons.addWidget(self.saveStreamingBtn)
 
     def _initButtons(self):
         self.recordBtn = QtWidgets.QPushButton("Record")

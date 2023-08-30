@@ -23,6 +23,9 @@ class SnifferHub:
         self._connectEvents()
         self._initCommands()
 
+    def app(self):
+        self.uiManager.execute()
+
     def _connectEvents(self):
         self.serverManager.newDeviceConnectedEvent += self._onNewDeviceAdded
         self.serverManager.serverInitEvent += self._onServerStarted
@@ -33,6 +36,7 @@ class SnifferHub:
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
         self.serverManager.fileServer.fileSendingEndedEvent += self._onLoadingEnded
         self.serverManager.streamingServer.qSignal.connect(self.uiManager.deviceWidget.setStreamingImage)
+        self.serverManager.streamingServer.streamingHelper.fileSavedEvent += self._onStreamingSaved
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
@@ -81,54 +85,61 @@ class SnifferHub:
         self.appSate = ApplicationState.IDLE
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} loading completed in device {kwargs['address']}")
 
+    def _onStreamingSaved(self, *args, **kwargs):
+        self.uiManager.uiLogger.appendText(f"Streaming Video : {kwargs['fileName']} was saved correctly")
+
     def _initCommands(self):
         initServerCommand = InitServerCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(initServerCommand)
-
         recordCommand = RecordCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(recordCommand)
-
         stopCommand = StopCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(stopCommand)
-
         replayCommand = ReplayCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(replayCommand)
-
-        stopReplay = StopReplayCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(stopReplay)
-
+        stopReplayCommand = StopReplayCommand(self, self.serverManager)
         saveCommand = SaveFileCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(saveCommand)
-
+        saveStreamingCommand = SaveStreaming(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
-        self._connectCommandEventToLogger(loadCommand)
+        autoSaveCommand = AutoSaveCommand(self, self.serverManager)
+
+        self._connectCommandEventToLogger(
+            initServerCommand,
+            recordCommand,
+            stopCommand,
+            replayCommand,
+            stopReplayCommand,
+            saveCommand,
+            loadCommand,
+            autoSaveCommand
+        )
 
         self._setButtonCommand(self.uiManager.serverWidget.initServerButton, initServerCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.recordBtn, recordCommand)
-        self._setButtonCommand(self.uiManager.deviceWidget.stopBtn, stopCommand)
+        self._setButtonCommand(self.uiManager.deviceWidget.stopBtn, stopCommand, autoSaveCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.replayBtn, replayCommand)
-        self._setButtonCommand(self.uiManager.deviceWidget.stopReplayBtn, stopReplay)
+        self._setButtonCommand(self.uiManager.deviceWidget.stopReplayBtn, stopReplayCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.saveFileBtn, saveCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.loadFileBtn, loadCommand)
+        self._setButtonCommand(self.uiManager.deviceWidget.saveStreamingBtn, saveStreamingCommand)
 
-    def _connectCommandEventToLogger(self, command: Command):
-        command.onCommandExecutedEvent += \
-            lambda *args, **kwargs: self.uiManager.uiLogger.appendText(kwargs["message"])
+    def _connectCommandEventToLogger(self, *args):
+        for command in args:
+            command.onCommandExecutedEvent += \
+                lambda *args, **kwargs: self.uiManager.uiLogger.appendText(kwargs["message"])
 
-    def app(self):
-        self.uiManager.execute()
+    def _setButtonCommand(self, button: QPushButton, *args):
+        for command in args:
+            button.clicked.connect(self.executeCommandWrapper(command))
 
     @QtCore.Slot()
-    def executeCommand(self, command: Command):
-        if self.appSate == ApplicationState.PROCESSING:
-            self.uiManager.uiLogger.appendText(f"Application is working, cannot handle command: {command.__class__}")
-            return
+    def executeCommandWrapper(self, command: Command):
+        def executeCommand():
+            if self.appSate == ApplicationState.PROCESSING:
+                self.uiManager.uiLogger.appendText(
+                    f"Application is working, cannot handle command: {command.__class__}")
+                return
 
-        if command.execute():
-            self.commandHistory.push(command)
+            if command.execute():
+                self.commandHistory.push(command)
 
-    def _setButtonCommand(self, button: QPushButton, command: Command):
-        button.clicked.connect(lambda: self.executeCommand(command))
+        return executeCommand
 
     def __del__(self):
         self.serverManager.newDeviceConnectedEvent -= self._onNewDeviceAdded
@@ -139,3 +150,4 @@ class SnifferHub:
         self.serverManager.fileServer.fileReceiveFinishedEvent -= self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent -= self._onLoadingStarted
         self.serverManager.fileServer.fileSendingEndedEvent -= self._onLoadingEnded
+        self.serverManager.streamingServer.streamingHelper.fileSavedEvent -= self._onStreamingSaved
