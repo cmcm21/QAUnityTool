@@ -18,7 +18,8 @@ class FileClient(GeneralSocket):
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendStartedEvent = Event()
-        self.fileSendEndedEvent = Event()
+        self.fileSendFinishedEvent = Event()
+        self.fileTransferProgress = Event()
 
     def start(self):
         self.socketThread.start()
@@ -48,6 +49,7 @@ class FileClient(GeneralSocket):
                     if not bytesRead or bytesRead == b'':
                         break
                     f.write(bytesRead)
+                    self.fileTransferProgress(progress=len(bytesRead))
 
         except ConnectionResetError:
             print("Error while reading file")
@@ -64,13 +66,14 @@ class FileClient(GeneralSocket):
 
     def _sendClientWorker(self):
         fileName = os.path.basename(self.filePath)
+        fileSize = os.path.getsize(self.filePath)
         try:
             send = self.socket.send(fileName.encode())
             if send == b'':
                 self._handleFileClientDisconnection()
                 return
 
-            self.fileSendStartedEvent(address=self.address, file=fileName)
+            self.fileSendStartedEvent(size=fileSize, address=self.address, file=fileName)
             print(f"file {fileName} size {os.path.getsize(self.filePath)}")
             with open(self.filePath, "rb") as f:
                 while True:
@@ -78,10 +81,11 @@ class FileClient(GeneralSocket):
                     if not bytesRead:
                         break
 
-                    print(f"File sending bytes {len(bytesRead)}")
                     send = self.socket.sendall(bytesRead)
                     if send == b'':
                         break
+
+                    self.fileTransferProgress(progress=len(bytesRead))
 
         except ConnectionResetError:
             print("Error while sending file")
@@ -92,7 +96,7 @@ class FileClient(GeneralSocket):
         except RuntimeError:
             print("Error while sending file")
         finally:
-            self.fileSendEndedEvent(address=self.address, file=fileName)
+            self.fileSendFinishedEvent(address=self.address, file=fileName)
             self.close()
 
     def _handleFileClientDisconnection(self):

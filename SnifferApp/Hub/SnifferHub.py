@@ -21,6 +21,7 @@ class SnifferHub:
         self.appSate = ApplicationState.IDLE
 
         self._connectEvents()
+        self._connectQSignals()
         self._initCommands()
 
     def app(self):
@@ -34,9 +35,37 @@ class SnifferHub:
         self.serverManager.fileServer.fileReceiveStartedEvent += self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent += self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
-        self.serverManager.fileServer.fileSendingEndedEvent += self._onLoadingEnded
-        self.serverManager.streamingServer.qSignal.connect(self.uiManager.deviceWidget.setStreamingImage)
+        self.serverManager.fileServer.fileSendingFinishEvent += self._onLoadingEnded
         self.serverManager.streamingServer.streamingHelper.fileSavedEvent += self._onStreamingSaved
+
+    def _connectQSignals(self):
+        self.serverManager.streamingServer.qSignal.connect(
+            self.uiManager.deviceWidget.setStreamingImage
+        )
+
+        self.serverManager.streamingServer.streamingHelper.qRenderingStartSignal.connect(
+            self.uiManager.renderingProgressBar.init
+        )
+
+        self.serverManager.streamingServer.streamingHelper.qFrameRenderedSignal.connect(
+            self.uiManager.renderingProgressBar.updateBar
+        )
+
+        self.serverManager.streamingServer.streamingHelper.qRenderingEndSignal.connect(
+            self.uiManager.renderingProgressBar.hideBar
+        )
+
+        self.serverManager.fileServer.qFileTransferStarSignal.connect(
+            self.uiManager.fileTransferringProgressbar.init
+        )
+
+        self.serverManager.fileServer.qFileTransferUpdateSignal.connect(
+            self.uiManager.fileTransferringProgressbar.updateBar
+        )
+
+        self.serverManager.fileServer.qFileTransferEndSignal.connect(
+            self.uiManager.fileTransferringProgressbar.hideBar
+        )
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
@@ -149,5 +178,5 @@ class SnifferHub:
         self.serverManager.fileServer.fileReceiveStartedEvent -= self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent -= self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent -= self._onLoadingStarted
-        self.serverManager.fileServer.fileSendingEndedEvent -= self._onLoadingEnded
+        self.serverManager.fileServer.fileSendingFinishEvent -= self._onLoadingEnded
         self.serverManager.streamingServer.streamingHelper.fileSavedEvent -= self._onStreamingSaved

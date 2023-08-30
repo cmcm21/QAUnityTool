@@ -7,6 +7,7 @@ class DeviceWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self._initButtons()
+        self.streamingSize = QtCore.QSize(800, 500)
 
         self.container = QtWidgets.QHBoxLayout(self)
         self._setStreamingLayout()
@@ -16,7 +17,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.container.addLayout(self.streamingContainer)
 
     def setStreamingImage(self, pixmap: QPixmap):
-        pixmap = pixmap.scaled(QtCore.QSize(500, 500), aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        pixmap = pixmap.scaled(self.streamingSize, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.streamingLabel.setPixmap(pixmap)
 
     def _setStreamingLayout(self):
@@ -24,7 +25,9 @@ class DeviceWidget(QtWidgets.QWidget):
         self.streamingButtons = QtWidgets.QHBoxLayout(self)
 
         self.saveStreamingBtn = QtWidgets.QPushButton("Save Stream")
-        self.streamingLabel = QtWidgets.QLabel()
+        self.streamingLabel = QtWidgets.QLabel("Streaming Video")
+        self.streamingLabel.setPixmap(QPixmap("Assets/loadingImage.png"))
+        self.streamingLabel.resize(self.streamingSize)
         self.streamingContainer.addWidget(self.streamingLabel)
 
         self.streamingContainer.addLayout(self.streamingButtons)

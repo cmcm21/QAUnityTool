@@ -4,10 +4,16 @@ import io
 import PIL.Image as Image
 import numpy as np
 from Utils import Events
+from PySide6 import QtCore
 
 
-class StreamingVideoHelper:
+class StreamingVideoHelper(QtCore.QObject):
+    qRenderingStartSignal = QtCore.Signal(int, str)
+    qFrameRenderedSignal = QtCore.Signal(int)
+    qRenderingEndSignal = QtCore.Signal()
+
     def __init__(self):
+        super().__init__()
         self.allFrames = []
         self.startRecordingTime = 0
         self.endRecordingTime = 0
@@ -28,6 +34,7 @@ class StreamingVideoHelper:
     def saveFramesToVideo(self, fileName: str):
         if len(self.allFrames) <= 0:
             return
+        self.qRenderingStartSignal.emit(len(self.allFrames), "Rendering video...")
 
         image = Image.open(io.BytesIO(self.allFrames[0]))
         frameSize = (image.width, image.height)
@@ -40,6 +47,8 @@ class StreamingVideoHelper:
             jpgAsNp = np.frombuffer(frame, dtype=np.uint8)
             img = cv2.imdecode(jpgAsNp, flags=1)
             out.write(img)
+            self.qFrameRenderedSignal.emit(1)
 
         out.release()
         self.fileSavedEvent(fileName=fileName)
+        self.qRenderingEndSignal.emit()

@@ -70,7 +70,3 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         super().close()
         for client in self.clients:
             client.close()
-
-    def __del__(self):
-        self.qSignal.disconnect()
-

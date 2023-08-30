@@ -3,24 +3,28 @@ import threading
 from Utils.Events import Event
 from Network.Clients.FileClient import FileClient
 from Network.GeneralSocket import GeneralSocket
+from PySide6 import QtCore
 
 
 BUFFER_SIZE = 1024
 FILE_BUFFER_SIZE = 4096
 
 
-class FileServer(GeneralSocket):
+class FileServer(GeneralSocket, QtCore.QObject):
+    qFileTransferStarSignal = QtCore.Signal(int, str)
+    qFileTransferUpdateSignal = QtCore.Signal(int)
+    qFileTransferEndSignal = QtCore.Signal()
 
     def __init__(self, ip: str, port: int):
-        super().__init__(socket.socket(), (ip, port))
+        GeneralSocket.__init__(self, socket.socket(), (ip, port))
+        QtCore.QObject.__init__(self)
         self.filePath = None
         self.sendFile = False
         self.fileClients: list[FileClient] = []
-        self.progressEventsThreads: list[threading.Thread] = []
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendingStartedEvent = Event()
-        self.fileSendingEndedEvent = Event()
+        self.fileSendingFinishEvent = Event()
 
     def start(self):
         if self.listeningSocket:
@@ -52,16 +56,34 @@ class FileServer(GeneralSocket):
                 print("File server Connection Error")
 
     def _connectEvents(self, fileClient: FileClient):
-        fileClient.fileSendStartedEvent = self.fileSendingStartedEvent
         fileClient.fileReceiveStartedEvent = self.fileReceiveStartedEvent
+        fileClient.fileReceiveFinishedEvent = self.fileReceiveFinishedEvent
+        fileClient.fileReceiveStartedEvent += self._onFileReceivedStarted
+        fileClient.fileReceiveFinishedEvent += self._onFileReceivedFinished
         fileClient.fileReceiveFinishedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
-        fileClient.fileReceiveFinishedEvent += self.fileReceiveFinishedEvent
-        fileClient.fileSendEndedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
-        fileClient.fileSendEndedEvent += self.fileSendingEndedEvent
 
-    def _onClientWorkerFinished(self, fileClient: FileClient, *args, **kwargs):
-        self.fileClients.remove(fileClient)
-        self.fileSendingStartedEvent(args, kwargs)
+        fileClient.fileSendStartedEvent = self.fileSendingStartedEvent
+        fileClient.fileSendFinishedEvent = self.fileSendingFinishEvent
+        fileClient.fileSendStartedEvent += self._onFileSendStarted
+        fileClient.fileSendFinishedEvent += self._onFileSendFinished
+        fileClient.fileSendFinishedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
+
+        fileClient.fileTransferProgress += self._onFileTransferProgress
+
+    def _onFileReceivedStarted(self, *args, **kwargs):
+        self.qFileTransferStarSignal.emit(kwargs['size'], f"Saving File {kwargs['file']}")
+
+    def _onFileReceivedFinished(self, *args, **kwargs):
+        self.qFileTransferEndSignal.emit()
+
+    def _onFileSendStarted(self, *args, **kwargs):
+        self.qFileTransferStarSignal.emit(kwargs['size'], f"Loading File {kwargs['file']}")
+
+    def _onFileSendFinished(self, *args, **kwargs):
+        self.qFileTransferEndSignal.emit()
+
+    def _onFileTransferProgress(self, *args, **kwargs):
+        self.qFileTransferUpdateSignal.emit(kwargs['progress'])
 
     def close(self):
         self.listeningSocket = False
@@ -69,8 +91,11 @@ class FileServer(GeneralSocket):
             self.socketThread.join()
 
         for fileClient in self.fileClients:
-            fileClient.fileReceiveStartedEvent -= self.fileReceiveStartedEvent
-            fileClient.fileReceiveFinishedEvent -= self.fileReceiveFinishedEvent
+            fileClient.fileReceiveStartedEvent -= self._onFileReceivedStarted
+            fileClient.fileReceiveFinishedEvent -= self._onFileReceivedFinished
+            fileClient.fileSendStartedEvent -= self._onFileSendStarted
+            fileClient.fileSendFinishedEvent -= self._onFileSendFinished
+            fileClient.fileTransferProgress -= self._onFileTransferProgress
 
             fileClient.close()
         if self.socket is not None:

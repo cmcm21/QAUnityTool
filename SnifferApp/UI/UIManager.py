@@ -1,8 +1,8 @@
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtCore
 from UI.ServerWidget import ServerWidget
 from UI.UILogger import UILogger
 from UI.DeviceWidget import DeviceWidget
-from UI.SplashScreen import SplashScreen
+from UI.ProgressBar import ProgressBar
 from Network.Clients.DeviceClient import DeviceClient
 import platform
 
@@ -15,11 +15,14 @@ class UIManager:
         self.serverWidget = ServerWidget()
         self.uiLogger = UILogger()
         self.deviceWidget = DeviceWidget()
-        self.splashScreen = SplashScreen()
+        self.renderingProgressBar = ProgressBar()
+        self.fileTransferringProgressbar = ProgressBar()
 
         self._initMainWindow()
 
         self.deviceWidget.hide()
+        self.renderingProgressBar.hide()
+        self.fileTransferringProgressbar.hide()
         self._connectEvents()
 
     def _initMainWindow(self):
@@ -27,17 +30,19 @@ class UIManager:
         self.mainWindow.setWindowTitle("Sniffer Hub")
 
         self.hLayout = QtWidgets.QHBoxLayout()
-        self.hLayout.addStretch()
         self.hLayout.addWidget(self.serverWidget)
         self.hLayout.addWidget(self.deviceWidget)
+        self.hLayout.addStretch()
 
         self.vLayout = QtWidgets.QVBoxLayout()
         self.vLayout.addLayout(self.hLayout)
         self.vLayout.addWidget(self.uiLogger)
+        self.vLayout.addWidget(self.renderingProgressBar)
+        self.vLayout.addWidget(self.fileTransferringProgressbar)
 
         self.mainWindow.setCentralWidget(QtWidgets.QWidget())
         self.mainWindow.centralWidget().setLayout(self.vLayout)
-        self.hLayout.addStretch()
+        self.mainWindow.resize(QtCore.QSize(1200, 500))
         self.mainWindow.show()
 
     def _connectEvents(self):
@@ -52,14 +57,6 @@ class UIManager:
 
     def _onSelectionClear(self, *args, **kwargs):
         return
-
-    def onFileSizeReceived(self, *args, **kwargs):
-        size = kwargs["size"]
-        self.splashScreen.setSplashScreen(f"Saving File of size{size}")
-        self.splashScreen.show()
-
-    async def onFileReceivedFinished(self, *args, **kwargs):
-        await self.splashScreen.customHide(self.mainWindow)
 
     def GetWidget(self) -> QtWidgets.QWidget:
         return self.mainWindow.centralWidget()

@@ -186,12 +186,13 @@ class AutoSaveCommand(Command):
         inputFileName = self.createFileName(self.inputDirectory, self.inputFileExtension)
         streamingName = self.createFileName(self.streamingDirectory, self.streamingFileExtension)
 
+        self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(streamingName)
+
         self.serverManager.fileServer.setFile(inputFileName)
         self.serverManager.fileServer.sendFile = False
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
                                     signal=CommandSignal.SAVE_FILE)
 
-        self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(streamingName)
         return True
 
