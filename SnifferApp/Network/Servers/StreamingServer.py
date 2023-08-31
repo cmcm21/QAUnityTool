@@ -63,8 +63,8 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
     def saveStreamAsVideo(self, videoPath: str):
         self.streamingHelper.saveFramesToVideo(videoPath)
 
-    def resetFramesRecorded(self):
-        self.streamingHelper.restart()
+    def onRecordStarted(self):
+        return
 
     def close(self):
         super().close()

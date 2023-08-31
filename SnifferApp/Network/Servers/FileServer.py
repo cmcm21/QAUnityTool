@@ -60,15 +60,16 @@ class FileServer(GeneralSocket, QtCore.QObject):
         fileClient.fileReceiveFinishedEvent = self.fileReceiveFinishedEvent
         fileClient.fileReceiveStartedEvent += self._onFileReceivedStarted
         fileClient.fileReceiveFinishedEvent += self._onFileReceivedFinished
-        fileClient.fileReceiveFinishedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
+        fileClient.fileReceiveFinishedEvent += lambda *args, **kwargs: self.removeClient(fileClient)
 
         fileClient.fileSendStartedEvent = self.fileSendingStartedEvent
         fileClient.fileSendFinishedEvent = self.fileSendingFinishEvent
         fileClient.fileSendStartedEvent += self._onFileSendStarted
         fileClient.fileSendFinishedEvent += self._onFileSendFinished
-        fileClient.fileSendFinishedEvent += lambda *args, **kwargs: self.fileClients.remove(fileClient)
+        fileClient.fileSendFinishedEvent += lambda *args, **kwargs: self.removeClient(fileClient)
 
         fileClient.fileTransferProgress += self._onFileTransferProgress
+
 
     def _onFileReceivedStarted(self, *args, **kwargs):
         self.qFileTransferStarSignal.emit(kwargs['size'], f"Saving File {kwargs['file']}")
@@ -84,6 +85,12 @@ class FileServer(GeneralSocket, QtCore.QObject):
 
     def _onFileTransferProgress(self, *args, **kwargs):
         self.qFileTransferUpdateSignal.emit(kwargs['progress'])
+
+    def removeClient(self, fileClient: FileClient):
+        if fileClient not in self.fileClients:
+            pass
+        else:
+            self.fileClients.remove(fileClient)
 
     def close(self):
         self.listeningSocket = False

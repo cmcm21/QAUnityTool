@@ -1,4 +1,4 @@
-from Command.Command import *
+from Commands.Command import *
 from Network.Servers.ServerManager import ServerManager
 from Network.Clients.DeviceClient import DeviceClient
 from UI.UIManager import UIManager
@@ -115,7 +115,8 @@ class SnifferHub:
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} loading completed in device {kwargs['address']}")
 
     def _onStreamingSaved(self, *args, **kwargs):
-        self.uiManager.uiLogger.appendText(f"Streaming Video : {kwargs['fileName']} was saved correctly")
+        fileName = kwargs['fileName']
+        self.uiManager.uiLogger.appendText(f"Streaming Video : {fileName} was saved correctly")
 
     def _initCommands(self):
         initServerCommand = InitServerCommand(self, self.serverManager)
@@ -123,8 +124,6 @@ class SnifferHub:
         stopCommand = StopCommand(self, self.serverManager)
         replayCommand = ReplayCommand(self, self.serverManager)
         stopReplayCommand = StopReplayCommand(self, self.serverManager)
-        saveCommand = SaveFileCommand(self, self.serverManager)
-        saveStreamingCommand = SaveStreaming(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
         autoSaveCommand = AutoSaveCommand(self, self.serverManager)
 
@@ -134,7 +133,6 @@ class SnifferHub:
             stopCommand,
             replayCommand,
             stopReplayCommand,
-            saveCommand,
             loadCommand,
             autoSaveCommand
         )
@@ -144,9 +142,7 @@ class SnifferHub:
         self._setButtonCommand(self.uiManager.deviceWidget.stopBtn, stopCommand, autoSaveCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.replayBtn, replayCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.stopReplayBtn, stopReplayCommand)
-        self._setButtonCommand(self.uiManager.deviceWidget.saveFileBtn, saveCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.loadFileBtn, loadCommand)
-        self._setButtonCommand(self.uiManager.deviceWidget.saveStreamingBtn, saveStreamingCommand)
 
     def _connectCommandEventToLogger(self, *args):
         for command in args:

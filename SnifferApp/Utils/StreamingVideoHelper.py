@@ -1,3 +1,4 @@
+import threading
 import time
 import cv2
 import io
@@ -18,9 +19,7 @@ class StreamingVideoHelper(QtCore.QObject):
         self.startRecordingTime = 0
         self.endRecordingTime = 0
         self.fileSavedEvent = Events.Event()
-
-    def restart(self):
-        self.allFrames.clear()
+        self.fileName: str = ""
 
     def addFrame(self, frame):
         self.allFrames.append(frame)
@@ -32,6 +31,11 @@ class StreamingVideoHelper(QtCore.QObject):
         self.endRecordingTime = time.time()
 
     def saveFramesToVideo(self, fileName: str):
+        self.fileName = fileName
+        saveTask = threading.Thread(target=self._saveFramesToVideo)
+        saveTask.start()
+
+    def _saveFramesToVideo(self):
         if len(self.allFrames) <= 0:
             return
         self.qRenderingStartSignal.emit(len(self.allFrames), "Rendering video...")
@@ -41,7 +45,7 @@ class StreamingVideoHelper(QtCore.QObject):
         seconds = self.endRecordingTime - self.startRecordingTime
 
         fps = len(self.allFrames) / seconds
-        out = cv2.VideoWriter(fileName, cv2.VideoWriter_fourcc(*'MJPG'), fps, frameSize)
+        out = cv2.VideoWriter(self.fileName, cv2.VideoWriter_fourcc(*'MJPG'), fps, frameSize)
 
         for frame in self.allFrames:
             jpgAsNp = np.frombuffer(frame, dtype=np.uint8)
@@ -50,5 +54,6 @@ class StreamingVideoHelper(QtCore.QObject):
             self.qFrameRenderedSignal.emit(1)
 
         out.release()
-        self.fileSavedEvent(fileName=fileName)
+        self.allFrames.clear()
+        self.fileSavedEvent(fileName=self.fileName)
         self.qRenderingEndSignal.emit()

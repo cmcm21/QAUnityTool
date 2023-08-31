@@ -3,7 +3,7 @@ from abc import abstractmethod
 from Hub import SnifferHub
 from Network.Servers.ServerManager import ServerManager
 from Utils.Events import Event
-from Command.CommandSignals import CommandSignal
+from Commands.CommandSignals import CommandSignal
 from PySide6.QtWidgets import QFileDialog
 from datetime import date
 
@@ -40,7 +40,7 @@ class InitServerCommand(Command):
         self.serverManager.start()
         self.serverManager.fileServer.start()
         self.serverManager.streamingServer.start()
-        self.onCommandExecutedEvent(message="[Command]:: Init Server Executed")
+        self.onCommandExecutedEvent(message="[Commands]:: Init Server Executed")
         return True
 
 
@@ -50,6 +50,7 @@ class RecordCommand(Command):
 
     def execute(self) -> bool:
         super().execute()
+        self.serverManager.streamingServer.onRecordStarted()
         self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.RECORD)
         self.serverManager.streamingServer.streamingHelper.onRecordingStarted()
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.RECORD.value),
@@ -94,9 +95,13 @@ class StopReplayCommand(Command):
         return True
 
 
-class SaveFileCommand(Command):
+class SaveCommand(Command):
     def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
         super().__init__(snifferHub, serverManager)
+        self.inputDirectory = "TestRecFiles/"
+        self.streamingDirectory = "TestStreamingVideos/"
+        self.streamingFileExtension = ".avi"
+        self.inputFileExtension = ".inputtrace"
 
     def execute(self) -> bool:
         super().execute()
@@ -104,16 +109,24 @@ class SaveFileCommand(Command):
             self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace")
         fileName = qfileTuple[0]
         if fileName != "":
-            self.serverManager.fileServer.setFile(fileName)
-            self.serverManager.fileServer.sendFile = False
-            self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
-            self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
-                                        signal=CommandSignal.SAVE_FILE)
+            self.saveVideo(fileName)
+            self.saveFile(fileName)
         else:
             print("File wasn't saved")
             return False
-
         return True
+
+    def saveFile(self, fileName: str):
+        self.serverManager.fileServer.setFile(fileName)
+        self.serverManager.fileServer.sendFile = False
+        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
+        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
+                                    signal=CommandSignal.SAVE_FILE)
+
+    def saveVideo(self, fileName: str):
+        baseName = os.path.basename(fileName)
+        fullName = f"{self.streamingDirectory}{baseName}{self.streamingFileExtension}"
+        self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(fullName)
 
     def _onFileReceiveFinished(self, *args, **kwargs):
         super().execute()
@@ -145,30 +158,9 @@ class LoadFileCommand(Command):
         return True
 
 
-class SaveStreaming(Command):
+class AutoSaveCommand(SaveCommand):
     def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
         super().__init__(snifferHub, serverManager)
-
-    def execute(self) -> bool:
-        super().execute()
-        qfileTuple: tuple = QFileDialog.getSaveFileName(
-            self.app.uiManager.GetWidget(), caption="Save streaming", filter="*.avi")
-        streamingFileName = qfileTuple[0]
-        if streamingFileName != "":
-            self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(streamingFileName)
-        else:
-            print("File wasn't saved")
-
-        return True
-
-
-class AutoSaveCommand(Command):
-    def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
-        super().__init__(snifferHub, serverManager)
-        self.inputDirectory = "TestRecFiles/"
-        self.streamingDirectory = "TestStreamingVideos/"
-        self.streamingFileExtension = ".avi"
-        self.inputFileExtension = ".inputtrace"
 
     @staticmethod
     def createFileName(directory: str, fileExtension: str) -> str:
@@ -182,17 +174,10 @@ class AutoSaveCommand(Command):
         return newPath
 
     def execute(self) -> bool:
-        #super().execute()
         inputFileName = self.createFileName(self.inputDirectory, self.inputFileExtension)
         streamingName = self.createFileName(self.streamingDirectory, self.streamingFileExtension)
 
         self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(streamingName)
-
-        self.serverManager.fileServer.setFile(inputFileName)
-        self.serverManager.fileServer.sendFile = False
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
-        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
-                                    signal=CommandSignal.SAVE_FILE)
-
+        self.saveFile(inputFileName)
         return True
 

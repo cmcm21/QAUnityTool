@@ -1,7 +1,7 @@
 import socket
 from Utils.Events import Event
 from enum import Enum
-from Command.CommandSignals import CommandSignal
+from Commands.CommandSignals import CommandSignal
 from Network.GeneralSocket import GeneralSocket
 
 BUFFER_SIZE = 1024

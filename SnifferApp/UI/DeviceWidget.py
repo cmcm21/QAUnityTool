@@ -1,6 +1,7 @@
 from PySide6 import QtWidgets, QtCore
 from Network.Clients.DeviceClient import DeviceClient
 from PySide6.QtGui import QPixmap
+from UI.UIVideoPlayer import VideoPlayer
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -8,6 +9,7 @@ class DeviceWidget(QtWidgets.QWidget):
         super().__init__()
         self._initButtons()
         self.streamingSize = QtCore.QSize(800, 500)
+        self.videoPlayer = VideoPlayer()
 
         self.container = QtWidgets.QHBoxLayout(self)
         self._setStreamingLayout()
@@ -22,21 +24,18 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def _setStreamingLayout(self):
         self.streamingContainer = QtWidgets.QVBoxLayout(self)
-        self.streamingButtons = QtWidgets.QHBoxLayout(self)
 
-        self.saveStreamingBtn = QtWidgets.QPushButton("Save Stream")
+        self.defaultPixMap = QPixmap("Assets/loadingImage.png")
+        self.defaultPixMap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.IgnoreAspectRatio)
+
         self.streamingLabel = QtWidgets.QLabel("Streaming Video")
-        self.streamingLabel.setPixmap(QPixmap("Assets/loadingImage.png"))
-        self.streamingLabel.resize(self.streamingSize)
-        self.streamingContainer.addWidget(self.streamingLabel)
+        self.streamingLabel.setPixmap(self.defaultPixMap)
 
-        self.streamingContainer.addLayout(self.streamingButtons)
-        self.streamingButtons.addWidget(self.saveStreamingBtn)
+        self.streamingContainer.addWidget(self.streamingLabel)
 
     def _initButtons(self):
         self.recordBtn = QtWidgets.QPushButton("Record")
         self.stopBtn = QtWidgets.QPushButton("Stop")
-        self.saveFileBtn = QtWidgets.QPushButton("Save")
         self.replayBtn = QtWidgets.QPushButton("Replay")
         self.stopReplayBtn = QtWidgets.QPushButton("Stop Replay")
         self.loadFileBtn = QtWidgets.QPushButton("Load")
@@ -50,21 +49,18 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def _setDefaultButtons(self):
         self.stopBtn.setEnabled(False)
-        self.saveFileBtn.setEnabled(False)
         self.replayBtn.setEnabled(False)
         self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onRecordBtnClicked(self):
         self.stopBtn.setEnabled(True)
-        self.saveFileBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(False)
         self.replayBtn.setEnabled(False)
         self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onStopBtnClicked(self):
-        self.saveFileBtn.setEnabled(True)
         self.replayBtn.setEnabled(True)
         self.loadFileBtn.setEnabled(True)
 
@@ -80,7 +76,6 @@ class DeviceWidget(QtWidgets.QWidget):
         self.buttonsLayout = QtWidgets.QVBoxLayout(self.container.widget())
         self.buttonsLayout.addWidget(self.recordBtn)
         self.buttonsLayout.addWidget(self.stopBtn)
-        self.buttonsLayout.addWidget(self.saveFileBtn)
         self.buttonsLayout.addWidget(self.loadFileBtn)
         self.buttonsLayout.addWidget(self.replayBtn)
         self.buttonsLayout.addWidget(self.stopReplayBtn)
@@ -91,6 +86,21 @@ class DeviceWidget(QtWidgets.QWidget):
     def deviceSelected(self, device: DeviceClient):
         self._setDefaultButtons()
         self.show()
+
+    def initVideoPlayer(self, videPath: str):
+        self.streamingLabel.hide()
+        self.videoPlayer.loadVideo(videPath)
+        self.streamingContainer.addLayout(self.videoPlayer.vBox)
+        self.videoPlayer.setSize(self.streamingSize)
+        self.streamingContainer.replaceWidget(self.streamingLabel, self.videoPlayer)
+        self.videoPlayer.show()
+        self.videoPlayer.play()
+
+    def showStreamingLabel(self):
+        self.videoPlayer.hide()
+        self.streamingLabel.setPixmap(self.defaultPixMap)
+        self.streamingLabel.show()
+        self.streamingContainer.replaceWidget(self.videoPlayer, self.streamingLabel)
 
     def __del__(self):
         return
