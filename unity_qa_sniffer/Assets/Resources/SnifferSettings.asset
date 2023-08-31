@@ -17,4 +17,4 @@ MonoBehaviour:
   recordingOption: 0
   recordFrames: 1
   maxFramesPerRec: 5000
-  frameRate: 30
+  frameRate: 15

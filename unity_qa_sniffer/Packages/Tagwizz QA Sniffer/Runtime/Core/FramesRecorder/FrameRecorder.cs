@@ -28,6 +28,9 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		private float _lastFrameTime;
 		private int _frameNumber;
 		private int _savingFrameNumber;
+		private float _frameRate;
+		private float _startRecTime;
+		private float _endRecTime;
 
 		// Encoder Thread Shared Resources
 		private Queue<byte[]> _frameQueue;
@@ -48,15 +51,17 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		private void Init()
 		{
 			_frameQueue = new Queue<byte[]> ();
-			_frameNumber = 0;
 			_savingFrameNumber = 0;
+			_frameRate = 0;
 
 			_captureFrameTime = 1.0f / (float)frameRate;
-			_lastFrameTime = Time.time;
 		}
 		
 		public void StartRecording()
 		{
+			_frameNumber = 0;
+			_lastFrameTime = Time.time;
+			_startRecTime = Time.time;
 			// Kill the encoder thread if running from a previous execution
 			if (encoderThread != null && (_threadIsProcessing || encoderThread.IsAlive)) {
 				_threadIsProcessing = false;
@@ -75,6 +80,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		{
 			_terminateThreadWhenDone = true;
 			_state = FrameRecorderState.IDLE;
+			_endRecTime = Time.time;
 			Debug.Log($"<color=red>the last frame recorder was {_frameNumber} frame </color>");
 			_observer.NotifyStopped();
 		}
@@ -98,7 +104,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 						_frameNumber++;
 
 					_lastFrameTime = thisFrameTime;
-					
 				}
 				else //keep making screenshots until it reaches the max frame amount
 					_terminateThreadWhenDone = true;
@@ -130,7 +135,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 
 		private void Encode()
 		{
-			//print ("FRAMES RECORDER IO THREAD STARTED");
 			while (_threadIsProcessing) 
 			{
 				if(_frameQueue.Count > 0)
@@ -149,7 +153,8 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			
 			_terminateThreadWhenDone = false;
 			_threadIsProcessing = false;
-			//print ("FRAMES RECORDER IO THREAD FINISHED");
+			var seconds = _endRecTime - _startRecTime;
+			_frameRate = _frameNumber / seconds;
 		}
 	}
 }

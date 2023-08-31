@@ -88,8 +88,11 @@ namespace TagwizzQASniffer.Core.Recording
         
         public void StartRec()
         {
-            if(!_inputRecorder.captureIsRunning)
+            if (!_inputRecorder.captureIsRunning)
+            {
+                _inputRecorder.ClearCapture();
                 _inputRecorder.StartCapture();
+            }
         }
 
         public void StopRec()

@@ -5,7 +5,8 @@ from Network.Servers.ServerManager import ServerManager
 from Utils.Events import Event
 from Commands.CommandSignals import CommandSignal
 from PySide6.QtWidgets import QFileDialog
-from datetime import date
+from datetime import date, datetime
+import re
 
 
 class Command:
@@ -164,12 +165,14 @@ class AutoSaveCommand(SaveCommand):
 
     @staticmethod
     def createFileName(directory: str, fileExtension: str) -> str:
-        today = date.today()
+        now = datetime.now()
+        baseName = str(date.today()) + "_" + str(now.time())
+        baseName = re.sub(r'[^\w_. -]', '.', baseName)
         currencies = 0
-        newPath = f"{directory}{today}{fileExtension}"
+        newPath = f"{directory}{baseName}{fileExtension}"
         while os.path.isfile(newPath):
             currencies += 1
-            newPath = f"{directory}{today}_{currencies}{fileExtension}"
+            newPath = f"{directory}{baseName}_{currencies}{fileExtension}"
 
         return newPath
 
