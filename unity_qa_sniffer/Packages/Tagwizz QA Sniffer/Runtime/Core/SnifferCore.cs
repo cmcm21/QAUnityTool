@@ -81,9 +81,19 @@ namespace TagwizzQASniffer.Core
         public void Record()
         {
             _state = SnifferState.RECORDING;
+
+            PlayFrameRecorder();
             _recorder.StartRec();
-            
-            if(_framesRecorder != null) _framesRecorder.StartRecording();
+        }
+
+        private void PlayFrameRecorder()
+        {
+             if (_framesRecorder != null)
+             {
+                 if(_framesRecorder.State == FrameRecorderState.RECORDING)
+                     _framesRecorder.StopRecording();
+                 _framesRecorder.StartRecording();
+             }
         }
 
         public void Load(string recordingPath)
@@ -97,6 +107,7 @@ namespace TagwizzQASniffer.Core
                 Stop();
             
             _state = SnifferState.PLAYING_BACK;
+            PlayFrameRecorder();
             _recorder.Replay();
         }
 
@@ -104,6 +115,8 @@ namespace TagwizzQASniffer.Core
         {
             _state = SnifferState.IDLE;
             _recorder.StopPlay();
+            
+            if(_framesRecorder != null) _framesRecorder.StopRecording();
         }
 
         public void Save(string recordingFileName)

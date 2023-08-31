@@ -5,7 +5,6 @@ from Network.Clients.FileClient import FileClient
 from Network.GeneralSocket import GeneralSocket
 from PySide6 import QtCore
 
-
 BUFFER_SIZE = 1024
 FILE_BUFFER_SIZE = 4096
 
@@ -69,7 +68,6 @@ class FileServer(GeneralSocket, QtCore.QObject):
         fileClient.fileSendFinishedEvent += lambda *args, **kwargs: self.removeClient(fileClient)
 
         fileClient.fileTransferProgress += self._onFileTransferProgress
-
 
     def _onFileReceivedStarted(self, *args, **kwargs):
         self.qFileTransferStarSignal.emit(kwargs['size'], f"Saving File {kwargs['file']}")
