@@ -20,9 +20,9 @@ class StreamingVideoHelper(QtCore.QObject):
         self.endRecordingTime = 0
         self.fileSavedEvent = Events.Event()
         self.fileName: str = ""
-        self.settingsFps = 30
+        self.settingsFps = 12
 
-    def addFrame(self, frame):
+    def addFrame(self, frame, seconds: int):
         self.allFrames.append(frame)
 
     def onRecordingStarted(self):
@@ -45,9 +45,10 @@ class StreamingVideoHelper(QtCore.QObject):
         frameSize = (image.width, image.height)
         seconds = self.endRecordingTime - self.startRecordingTime
         desiredFrames = seconds * self.settingsFps
+        avgSeconds = seconds / len(self.allFrames)
 
         while len(self.allFrames) < desiredFrames:
-            self.duplicateFrames()
+            self.duplicateFrames(desiredFrames)
 
         real_fps = len(self.allFrames) / seconds
         out = cv2.VideoWriter(self.fileName, cv2.VideoWriter_fourcc(*'MJPG'), real_fps, frameSize)
@@ -63,13 +64,14 @@ class StreamingVideoHelper(QtCore.QObject):
         self.fileSavedEvent(fileName=self.fileName)
         self.qRenderingEndSignal.emit()
 
-    def duplicateFrames(self):
+    def duplicateFrames(self, desiredFrames: int):
         tempFrames = []
         for i in range(len(self.allFrames)):
-            if i % 2 == 0:
-                tempFrames.append(self.allFrames[i])
-                tempFrames.append(self.allFrames[i])
+            frames = self.allFrames[i]
+            if i % 2 == 0 and len(tempFrames) < desiredFrames:
+                tempFrames.append(frames)
+                tempFrames.append(frames)
             else:
-                tempFrames.append(self.allFrames[i])
+                tempFrames.append(frames)
 
         self.allFrames = tempFrames

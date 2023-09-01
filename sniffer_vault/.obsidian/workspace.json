@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "TODO/2023-08-24.md",
+                "file": "2023-09-01.md",
                 "mode": "source",
                 "source": false
               }
@@ -86,7 +86,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "TODO/2023-08-24.md",
+                "file": "2023-09-01.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +103,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "TODO/2023-08-24.md",
+                "file": "2023-09-01.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +126,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "TODO/2023-08-24.md"
+                "file": "2023-09-01.md"
               }
             }
           }
@@ -147,10 +147,11 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "195863c140aa436a",
+  "active": "6869b7f58dfa3b0e",
   "lastOpenFiles": [
-    "TODO/2023-08-23.md",
     "TODO/2023-08-24.md",
+    "2023-09-01.md",
+    "TODO/2023-08-23.md",
     "Notes/Today Tasks.md",
     "2023-08-03.md",
     "TODO",

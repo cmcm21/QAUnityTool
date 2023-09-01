@@ -124,7 +124,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			byte[] bytes = ImageConversion.EncodeArrayToJPG(tex.GetRawTextureData(), tex.graphicsFormat, (uint)width, (uint)height);
 			Object.Destroy(tex);
 
-			// Write the returned byte array to a file in the project folder
 			_frameQueue.Enqueue(bytes);
 		}
 

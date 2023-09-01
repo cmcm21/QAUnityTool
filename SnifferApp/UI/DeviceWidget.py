@@ -1,5 +1,5 @@
 from PySide6 import QtWidgets, QtCore
-from Network.Clients.DeviceClient import DeviceClient
+from Network.Clients.DeviceClient import DeviceClient, DeviceState
 from PySide6.QtGui import QPixmap
 from UI.UIVideoPlayer import VideoPlayer
 
@@ -10,6 +10,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self._initButtons()
         self.streamingSize = QtCore.QSize(800, 500)
         self.videoPlayer = VideoPlayer()
+        self.deviceState = DeviceState.IDLE
 
         self.container = QtWidgets.QHBoxLayout(self)
         self._setStreamingLayout()
@@ -19,6 +20,9 @@ class DeviceWidget(QtWidgets.QWidget):
         self.container.addLayout(self.streamingContainer)
 
     def setStreamingImage(self, pixmap: QPixmap):
+        if self.deviceState == DeviceState.IDLE:
+            return
+
         pixmap = pixmap.scaled(self.streamingSize, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.streamingLabel.setPixmap(pixmap)
 
@@ -26,7 +30,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.streamingContainer = QtWidgets.QVBoxLayout(self)
 
         self.defaultPixMap = QPixmap("Assets/loadingImage.png")
-        self.defaultPixMap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.IgnoreAspectRatio)
+        self.defaultPixMap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
 
         self.streamingLabel = QtWidgets.QLabel("Streaming Video")
         self.streamingLabel.setPixmap(self.defaultPixMap)
@@ -46,6 +50,11 @@ class DeviceWidget(QtWidgets.QWidget):
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
         self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
         self.replayBtn.clicked.connect(self.onReplayBtnClicked)
+
+    def setState(self, state: DeviceState):
+        self.deviceState = state
+        if self.deviceState == DeviceState.IDLE:
+            self.resetStreaming()
 
     def _setDefaultButtons(self):
         self.stopBtn.setEnabled(False)
@@ -80,8 +89,12 @@ class DeviceWidget(QtWidgets.QWidget):
         self.buttonsLayout.addWidget(self.replayBtn)
         self.buttonsLayout.addWidget(self.stopReplayBtn)
 
+    def resetStreaming(self):
+        self.streamingLabel.setPixmap(self.defaultPixMap)
+
     def noDevices(self):
         self.hide()
+        self.resetStreaming()
 
     def deviceSelected(self, device: DeviceClient):
         self._setDefaultButtons()

@@ -8,9 +8,9 @@ BUFFER_SIZE = 1024
 
 
 class DeviceState(Enum):
-    IDLE = -1
-    RECORDING = 0
-    PLAYBACK = 1
+    IDLE = "IDLE"
+    RECORDING = "RECORDING"
+    PLAYING_BACK = "PLAYING_BACK"
 
 
 class DeviceClient(GeneralSocket):
@@ -20,6 +20,7 @@ class DeviceClient(GeneralSocket):
         self.deviceState = DeviceState.IDLE
         self.msgReceivedEvent = Event()
         self.stateChangedEvent = Event()
+        self.replayFinished = Event()
         self.deviceDisconnectedEvent = Event()
 
     def start(self):
@@ -33,7 +34,7 @@ class DeviceClient(GeneralSocket):
                 if message == b'':
                     self._handleDeviceDisconnection()
                 else:
-                    self.msgReceivedEvent(message="Device[{}]: {}".format(self.ip, message.decode()))
+                    self.msgReceivedEvent(message="Device[{}]: sniffer core {}".format(self.ip, message.decode()))
                     self._decodeClientMessage(message.decode())
             except ConnectionError:
                 self._handleDeviceDisconnection()
@@ -44,8 +45,14 @@ class DeviceClient(GeneralSocket):
         self.close()
 
     def _decodeClientMessage(self, message: str):
-        if message == CommandSignal.CHANGE_STATE.value:
-            self.changeState()
+        if message == DeviceState.IDLE.value:
+            self.deviceState = DeviceState.IDLE
+        elif message == DeviceState.RECORDING.value:
+            self.deviceState = DeviceState.RECORDING
+        elif message == DeviceState.PLAYING_BACK.value:
+            self.deviceState = DeviceState.PLAYING_BACK
+
+        self.stateChangedEvent(state=self.deviceState)
 
     def sendSignalToDevice(self, signal: CommandSignal):
         try:
@@ -54,11 +61,6 @@ class DeviceClient(GeneralSocket):
                 self._handleDeviceDisconnection()
         except ConnectionError:
             self._handleDeviceDisconnection()
-
-    def changeState(self):
-        newState = DeviceState.PLAYBACK if self.deviceState == DeviceState.RECORDING else DeviceState.RECORDING
-        self.deviceState = newState
-        self.stateChangedEvent(state=self.deviceState)
 
     def close(self):
         super().close()

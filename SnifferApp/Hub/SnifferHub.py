@@ -1,6 +1,6 @@
 from Commands.Command import *
 from Network.Servers.ServerManager import ServerManager
-from Network.Clients.DeviceClient import DeviceClient
+from Network.Clients.DeviceClient import DeviceClient, DeviceState
 from UI.UIManager import UIManager
 from PySide6.QtWidgets import QPushButton
 from PySide6 import QtCore
@@ -70,41 +70,40 @@ class SnifferHub:
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
         device.msgReceivedEvent += self._onDeviceReceivedMessage
+        device.stateChangedEvent += self._onDeviceStateChangedEvent
         device.deviceDisconnectedEvent += self._onDeviceDisconnected
+        device.replayFinished += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
 
         self.uiManager.serverWidget.addDevice(device)
-        return
+
+    def _onDeviceReceivedMessage(self, *args, **kwargs):
+        self.uiManager.uiLogger.appendText(kwargs["message"])
+
+    def _onDeviceStateChangedEvent(self, *args, **kwargs):
+        state = kwargs['state']
+        self.uiManager.deviceWidget.setState(state)
 
     def _onDeviceDisconnected(self, *args, **kwargs):
         device = kwargs['device']
         self.uiManager.serverWidget.removeDevice(device)
-        return
 
     def _onServerStarted(self, *args, **kwargs):
         self.uiManager.uiLogger.appendText(kwargs["message"])
-        return
 
     def _onNoMoreDevices(self, *args, **kwargs):
         self.uiManager.deviceWidget.noDevices()
         self.uiManager.uiLogger.appendText("No Device Selected")
-        return
 
     def _onDeviceSelected(self, *args, **kwargs):
         self.serverManager.setDeviceSelected(kwargs["device"])
 
-    def _onDeviceReceivedMessage(self, *args, **kwargs):
-        self.uiManager.uiLogger.appendText(kwargs["message"])
-        return
-
     def _onSavingStarted(self, *args, **kwargs):
         self.appSate = ApplicationState.PROCESSING
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} of size {kwargs['size']} is saving...")
-        return
 
     def _onSavingEnded(self, *args, **kwargs):
         self.appSate = ApplicationState.IDLE
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} saving completed")
-        return
 
     def _onLoadingStarted(self, *args, **kwargs):
         self.appSate = ApplicationState.PROCESSING
@@ -126,6 +125,8 @@ class SnifferHub:
         stopReplayCommand = StopReplayCommand(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
         autoSaveCommand = AutoSaveCommand(self, self.serverManager)
+        stopCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
+        stopReplayCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
 
         self._connectCommandEventToLogger(
             initServerCommand,

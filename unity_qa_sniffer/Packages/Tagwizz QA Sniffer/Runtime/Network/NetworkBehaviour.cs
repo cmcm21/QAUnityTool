@@ -89,7 +89,7 @@ namespace TagwizzQASniffer.Network
 
         private void SendServerSnifferCodeChangedState()
         {
-            _client.SendMsgToServer($"Sniffer core changed state. Current state: {_snifferCore.State}");
+            _client.SendMsgToServer($"{_snifferCore.State}");
         }
         
 

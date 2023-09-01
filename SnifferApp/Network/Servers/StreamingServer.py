@@ -48,17 +48,19 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         self.clients.append(client)
 
     def _onStreamClientFinished(self, *args, **kwargs):
-        self.streamingHelper.addFrame(kwargs['frame'])
-        self.frameReceivedCompleted(frame=kwargs['frame'])
-        self._processQSignal(frame=kwargs['frame'])
+        if self._processQSignal(frame=kwargs['frame']):
+            self.streamingHelper.addFrame(kwargs['frame'], kwargs['seconds'])
+            self.frameReceivedCompleted(frame=kwargs['frame'])
 
-    def _processQSignal(self, frame: bytes):
+    def _processQSignal(self, frame: bytes) -> bool:
         pixmap = QPixmap()
-        loaded = pixmap.loadFromData(frame, format=".bmp")
+        loaded = pixmap.loadFromData(frame, format=".jpg")
         if loaded:
             self.qSignal.emit(pixmap)
+            return True
         else:
             print("Error trying to load frame from bytes")
+            return False
 
     def saveStreamAsVideo(self, videoPath: str):
         self.streamingHelper.saveFramesToVideo(videoPath)
