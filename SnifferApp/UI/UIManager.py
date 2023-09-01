@@ -20,7 +20,7 @@ class UIManager:
 
         self._initMainWindow()
 
-        #self.deviceWidget.hide()
+        self.deviceWidget.hide()
         self.renderingProgressBar.hide()
         self.fileTransferringProgressbar.hide()
         self._connectEvents()

@@ -82,8 +82,8 @@ namespace TagwizzQASniffer.Core
         {
             _state = SnifferState.RECORDING;
 
-            PlayFrameRecorder();
             _recorder.StartRec();
+            PlayFrameRecorder();
         }
 
         private void PlayFrameRecorder()
