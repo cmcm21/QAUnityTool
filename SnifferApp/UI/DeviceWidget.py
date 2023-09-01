@@ -8,9 +8,9 @@ class DeviceWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self._initButtons()
-        self.streamingSize = QtCore.QSize(800, 500)
-        self.videoPlayer = VideoPlayer()
+        self.streamingSize = QtCore.QSize(800, 400)
         self.deviceState = DeviceState.IDLE
+        self.noStreamingPath = "Assets/NoStreamingImg.png"
 
         self.container = QtWidgets.QHBoxLayout(self)
         self._setStreamingLayout()
@@ -29,11 +29,11 @@ class DeviceWidget(QtWidgets.QWidget):
     def _setStreamingLayout(self):
         self.streamingContainer = QtWidgets.QVBoxLayout(self)
 
-        self.defaultPixMap = QPixmap("Assets/loadingImage.png")
-        self.defaultPixMap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        self.noStreamingPixmap = QPixmap(self.noStreamingPath)
+        #self.noStreamingPixmap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
 
         self.streamingLabel = QtWidgets.QLabel("Streaming Video")
-        self.streamingLabel.setPixmap(self.defaultPixMap)
+        self.streamingLabel.setPixmap(self.noStreamingPixmap)
 
         self.streamingContainer.addWidget(self.streamingLabel)
 
@@ -90,7 +90,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.buttonsLayout.addWidget(self.stopReplayBtn)
 
     def resetStreaming(self):
-        self.streamingLabel.setPixmap(self.defaultPixMap)
+        self.streamingLabel.setPixmap(self.noStreamingPixmap)
 
     def noDevices(self):
         self.hide()
@@ -99,21 +99,6 @@ class DeviceWidget(QtWidgets.QWidget):
     def deviceSelected(self, device: DeviceClient):
         self._setDefaultButtons()
         self.show()
-
-    def initVideoPlayer(self, videPath: str):
-        self.streamingLabel.hide()
-        self.videoPlayer.loadVideo(videPath)
-        self.streamingContainer.addLayout(self.videoPlayer.vBox)
-        self.videoPlayer.setSize(self.streamingSize)
-        self.streamingContainer.replaceWidget(self.streamingLabel, self.videoPlayer)
-        self.videoPlayer.show()
-        self.videoPlayer.play()
-
-    def showStreamingLabel(self):
-        self.videoPlayer.hide()
-        self.streamingLabel.setPixmap(self.defaultPixMap)
-        self.streamingLabel.show()
-        self.streamingContainer.replaceWidget(self.videoPlayer, self.streamingLabel)
 
     def __del__(self):
         return

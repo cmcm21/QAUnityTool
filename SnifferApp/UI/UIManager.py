@@ -20,7 +20,7 @@ class UIManager:
 
         self._initMainWindow()
 
-        self.deviceWidget.hide()
+        #self.deviceWidget.hide()
         self.renderingProgressBar.hide()
         self.fileTransferringProgressbar.hide()
         self._connectEvents()
@@ -42,7 +42,7 @@ class UIManager:
 
         self.mainWindow.setCentralWidget(QtWidgets.QWidget())
         self.mainWindow.centralWidget().setLayout(self.vLayout)
-        self.mainWindow.resize(QtCore.QSize(1200, 500))
+        self.mainWindow.resize(QtCore.QSize(1100, 600))
         self.mainWindow.show()
 
     def _connectEvents(self):
