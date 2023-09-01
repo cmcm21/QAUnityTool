@@ -29,8 +29,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		private int _frameNumber;
 		private int _savingFrameNumber;
 		private float _frameRate;
-		private float _startRecTime;
-		private float _endRecTime;
 
 		// Encoder Thread Shared Resources
 		private Queue<byte[]> _frameQueue;
@@ -60,8 +58,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		public void StartRecording()
 		{
 			_frameNumber = 0;
-			_lastFrameTime = Time.time;
-			_startRecTime = Time.time;
 			// Kill the encoder thread if running from a previous execution
 			if (encoderThread != null && (_threadIsProcessing || encoderThread.IsAlive)) {
 				_threadIsProcessing = false;
@@ -80,7 +76,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 		{
 			_terminateThreadWhenDone = true;
 			_state = FrameRecorderState.IDLE;
-			_endRecTime = Time.time;
 			Debug.Log($"<color=red>the last frame recorder was {_frameNumber} frame </color>");
 			_observer.NotifyStopped();
 		}
@@ -153,8 +148,6 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			
 			_terminateThreadWhenDone = false;
 			_threadIsProcessing = false;
-			var seconds = _endRecTime - _startRecTime;
-			_frameRate = _frameNumber / seconds;
 		}
 	}
 }

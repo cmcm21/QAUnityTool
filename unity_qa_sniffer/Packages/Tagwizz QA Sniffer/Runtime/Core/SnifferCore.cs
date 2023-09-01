@@ -154,6 +154,8 @@ namespace TagwizzQASniffer.Core
         void IRecorderListener.OnReplayFinished() 
         {
             _state = SnifferState.IDLE;
+            if(_framesRecorder != null && _framesRecorder.State == FrameRecorderState.RECORDING)
+                _framesRecorder.StopRecording();
         }
  
 
