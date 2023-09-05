@@ -14,7 +14,7 @@ namespace TagwizzQASniffer.Network
     public enum StreamingMessages {STARTING, FINISHING}
     public class StreamingClient
     {
-        private const int STREAMING_PORT = 55555;
+        private const int STREAMING_PORT = 7777;
         private const int BUFFER_SIZE = 32754;
         private IPAddress[] _ipArray;
         private IPEndPoint _endPoint;

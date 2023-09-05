@@ -2,7 +2,7 @@ import time
 
 from Network.GeneralSocket import GeneralSocket
 from Utils.Events import Event
-from enum import Enum
+from Utils.StreamingVideoHelper import StreamingVideoHelper
 import socket
 
 BUFFER_SIZE = 32754
@@ -38,7 +38,7 @@ class StreamingClient(GeneralSocket):
                     bytesRead.decode()
                     if self.frameNumber > 0:
                         frameEndTime = time.time()
-                        self.frameReceivedCompleted(frame=b''.join(frameBytes), seconds=frameEndTime-frameStartTime)
+                        self.frameReceivedCompleted( frame=b''.join(frameBytes), id=self.id)
                         frameBytes.clear()
                         frameBytesAmount = 0
                         frameStartTime = time.time()

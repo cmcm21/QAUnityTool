@@ -17,7 +17,7 @@ class Command:
 
     @abstractmethod
     def execute(self) -> bool:
-        if self.serverManager.selectedDevice is None:
+        if self.serverManager.selectedDevices is None:
             return False
 
 
@@ -51,9 +51,12 @@ class RecordCommand(Command):
 
     def execute(self) -> bool:
         super().execute()
-        self.serverManager.streamingServer.onRecordStarted()
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.RECORD)
-        self.serverManager.streamingServer.streamingHelper.onRecordingStarted()
+
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.RECORD)
+            if selectedDevice.id in self.serverManager.streamingServer.helpers:
+                self.serverManager.streamingServer.helpers[selectedDevice.id].onRecordingStarted()
+
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.RECORD.value),
                                     signal=CommandSignal.RECORD)
         return True
@@ -65,8 +68,11 @@ class StopCommand(Command):
 
     def execute(self) -> bool:
         super().execute()
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.STOP_REC)
-        self.serverManager.streamingServer.streamingHelper.onRecordingEnded()
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.STOP_REC)
+            if selectedDevice.id in self.serverManager.streamingServer.helpers:
+                self.serverManager.streamingServer.helpers[selectedDevice.id].onRecordingEnded()
+
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.STOP_REC.value),
                                     signal=CommandSignal.STOP_REC)
         return True
@@ -78,7 +84,8 @@ class ReplayCommand(Command):
 
     def execute(self) -> bool:
         super().execute()
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.REPLAY)
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.REPLAY)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.REPLAY.value),
                                     signal=CommandSignal.REPLAY)
         return True
@@ -90,7 +97,8 @@ class StopReplayCommand(Command):
 
     def execute(self) -> bool:
         super().execute()
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.STOP_REPLAY)
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.STOP_REPLAY)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.STOP_REPLAY.value),
                                     signal=CommandSignal.STOP_REPLAY)
         return True
@@ -120,14 +128,19 @@ class SaveCommand(Command):
     def saveFile(self, fileName: str):
         self.serverManager.fileServer.setFile(fileName)
         self.serverManager.fileServer.sendFile = False
-        self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
         self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
                                     signal=CommandSignal.SAVE_FILE)
 
     def saveVideo(self, fileName: str):
         baseName = os.path.basename(fileName)
-        fullName = f"{self.streamingDirectory}{baseName}{self.streamingFileExtension}"
-        self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(fullName)
+        fullName = f"{self.streamingDirectory}{baseName}"
+        if self.streamingFileExtension not in fullName:
+            fullName += self.streamingFileExtension
+        for selectedDevice in self.serverManager.selectedDevices:
+            if selectedDevice.id in self.serverManager.streamingServer.helpers:
+                self.serverManager.streamingServer.helpers[selectedDevice.id].saveFramesToVideo(fullName)
 
     def _onFileReceiveFinished(self, *args, **kwargs):
         super().execute()
@@ -150,7 +163,8 @@ class LoadFileCommand(Command):
         if fileName != "":
             self.serverManager.fileServer.setFile(fileName)
             self.serverManager.fileServer.sendFile = True
-            self.serverManager.selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
+            for selectedDevice in self.serverManager.selectedDevices:
+                selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
             self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.LOAD_FILE.value),
                                         signal=CommandSignal.LOAD_FILE)
         else:
@@ -180,7 +194,6 @@ class AutoSaveCommand(SaveCommand):
         inputFileName = self.createFileName(self.inputDirectory, self.inputFileExtension)
         streamingName = self.createFileName(self.streamingDirectory, self.streamingFileExtension)
 
-        self.serverManager.streamingServer.streamingHelper.saveFramesToVideo(streamingName)
+        self.saveVideo(streamingName)
         self.saveFile(inputFileName)
         return True
-

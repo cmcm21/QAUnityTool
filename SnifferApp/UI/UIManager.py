@@ -7,6 +7,12 @@ from Network.Clients.DeviceClient import DeviceClient
 import platform
 
 
+def setWidgetSize(size: QtCore.QSize, *args):
+    for widget in args:
+        widget.setMinimumSize(size)
+        widget.setMaximumSize(size)
+
+
 class UIManager:
     def __init__(self):
         self.guiApp = QtWidgets.QApplication([])
@@ -15,14 +21,11 @@ class UIManager:
         self.serverWidget = ServerWidget()
         self.uiLogger = UILogger()
         self.deviceWidget = DeviceWidget()
-        self.renderingProgressBar = ProgressBar()
         self.fileTransferringProgressbar = ProgressBar()
 
         self._initMainWindow()
 
-        self.deviceWidget.hide()
-        self.renderingProgressBar.hide()
-        self.fileTransferringProgressbar.hide()
+        self.fileTransferringProgressbar.setVisible(False)
         self._connectEvents()
 
     def _initMainWindow(self):
@@ -32,28 +35,32 @@ class UIManager:
         self.hLayout = QtWidgets.QHBoxLayout()
         self.hLayout.addWidget(self.serverWidget)
         self.hLayout.addWidget(self.deviceWidget)
-        self.hLayout.addStretch()
 
         self.vLayout = QtWidgets.QVBoxLayout()
         self.vLayout.addLayout(self.hLayout)
         self.vLayout.addWidget(self.uiLogger)
-        self.vLayout.addWidget(self.renderingProgressBar)
-        self.vLayout.addWidget(self.fileTransferringProgressbar)
+        self.vLayout.addWidget(self.fileTransferringProgressbar, alignment=QtCore.Qt.AlignmentFlag.AlignJustify)
 
         self.mainWindow.setCentralWidget(QtWidgets.QWidget())
         self.mainWindow.centralWidget().setLayout(self.vLayout)
-        self.mainWindow.resize(QtCore.QSize(1100, 600))
-        self.mainWindow.show()
+        self.mainWindow.showMaximized()
+        self.mainWindow.showMaximized()
 
     def _connectEvents(self):
-        self.serverWidget.deviceSelectedChanged += self._onDeviceSelectedChanged
+        self.serverWidget.devicesSelectedChanged += self._onDeviceSelectedChanged
         self.serverWidget.clearSelectionEvent += self._onSelectionClear
 
     def _onDeviceSelectedChanged(self, *args, **kwargs):
-        device: DeviceClient = kwargs["device"]
-        self.uiLogger.appendText("Selected device {}".format(device.address))
-        self.deviceWidget.deviceSelected(device)
-        return
+        devices: list[DeviceClient] = kwargs["devices"]
+        if len(devices) <= 0:
+            return
+        allIds = ""
+        for device in devices:
+            if allIds != "":
+                allIds += ", "
+            allIds += f"{device.id}"
+        self.uiLogger.appendText("Selected devices {}".format(allIds))
+        self.deviceWidget.deviceSelected(devices)
 
     def _onSelectionClear(self, *args, **kwargs):
         return

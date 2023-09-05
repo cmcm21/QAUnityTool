@@ -74,7 +74,7 @@ class FileClient(GeneralSocket):
                 return
 
             self.fileSendStartedEvent(size=fileSize, address=self.address, file=fileName)
-            print(f"file {fileName} size {os.path.getsize(self.filePath)}")
+            print(f"sending file {fileName} size {os.path.getsize(self.filePath)}")
             with open(self.filePath, "rb") as f:
                 while True:
                     bytesRead = f.read(FILE_BUFFER_SIZE)

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using TagwizzQASniffer.Core;
+using TagwizzQASniffer.Exceptions;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network
@@ -37,8 +38,9 @@ namespace TagwizzQASniffer.Network
             if (recordingFile != string.Empty)
             {
                 snifferCore.Load(recordingFile);
-                Debug.Log($"Sniffer core file {recordingFile} loaded");
             }
+            else
+                throw new LoadFileNetworkErrorException(recordingFile);
         }
     
         private bool SendFileThread(string ip, int port, SnifferCore snifferCore)
@@ -131,14 +133,21 @@ namespace TagwizzQASniffer.Network
     
         private string SetFileToSend(SnifferCore snifferCore)
         {
-            byte[] fileNameBytes = new byte[1024];
-            int received = _sender.Receive(fileNameBytes);
-            var fileName = Encoding.ASCII.GetString(fileNameBytes, 0, received);
-            Debug.Log($"File name received: {fileName}");
-            var filePath = GetFilePath(fileName); 
-            snifferCore.Save(filePath);
-
-            return filePath;
+            try
+            {
+                byte[] fileNameBytes = new byte[1024];
+                int received = _sender.Receive(fileNameBytes);
+                var fileName = Encoding.ASCII.GetString(fileNameBytes, 0, received);
+                Debug.Log($"File name received: {fileName}");
+                var filePath = GetFilePath(fileName); 
+                snifferCore.Save(filePath);
+                return filePath;
+            }
+            catch(SocketException e)
+            {
+                throw new SaveFileNetworkErrorException(e.Message);
+            }
+            return "";
         }
 
         private string GetFilePath(string fileName)

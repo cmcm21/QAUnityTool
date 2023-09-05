@@ -1,6 +1,7 @@
 import socket
 import threading
 from Utils.Events import Event
+from Utils.Settings import *
 from Network.Clients.FileClient import FileClient
 from Network.GeneralSocket import GeneralSocket
 from PySide6 import QtCore
@@ -31,7 +32,7 @@ class FileServer(GeneralSocket, QtCore.QObject):
 
         self.listeningSocket = True
         self.socket.bind(self.address)
-        self.socket.listen(5)
+        self.socket.listen(MAX_DEVICES)
         print(f"File server started at {self.address}")
         self.socketThread.start()
 
@@ -43,13 +44,13 @@ class FileServer(GeneralSocket, QtCore.QObject):
             try:
                 fileSocket, address = self.socket.accept()
                 fileClient = FileClient(fileSocket, address, self.filePath)
+                self._connectEvents(fileClient)
 
                 if self.sendFile:
                     fileClient.startSending()
                 else:
                     fileClient.start()
 
-                self._connectEvents(fileClient)
                 self.fileClients.append(fileClient)
             except ConnectionError:
                 print("File server Connection Error")

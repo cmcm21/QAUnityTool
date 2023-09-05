@@ -1,15 +1,11 @@
 from Commands.Command import *
 from Network.Servers.ServerManager import ServerManager
-from Network.Clients.DeviceClient import DeviceClient, DeviceState
+from Network.Clients.DeviceClient import DeviceClient
 from UI.UIManager import UIManager
 from PySide6.QtWidgets import QPushButton
 from PySide6 import QtCore
-from enum import  Enum
-
-
-class ApplicationState(Enum):
-    PROCESSING = 0
-    IDLE = 1
+from Hub.SnifferState import  SnifferState
+from Utils.StreamingVideoHelper import StreamingVideoHelper
 
 
 class SnifferHub:
@@ -18,7 +14,7 @@ class SnifferHub:
         self.uiManager = UIManager()
         self.serverManager = ServerManager()
         self.commandHistory = CommandHistory()
-        self.appSate = ApplicationState.IDLE
+        self.appSate = SnifferState.IDLE
 
         self._connectEvents()
         self._connectQSignals()
@@ -31,28 +27,16 @@ class SnifferHub:
         self.serverManager.newDeviceConnectedEvent += self._onNewDeviceAdded
         self.serverManager.serverInitEvent += self._onServerStarted
         self.serverManager.NoMoreDevicesConnectedEvent += self._onNoMoreDevices
-        self.uiManager.serverWidget.deviceSelectedChanged += self._onDeviceSelected
+        self.uiManager.serverWidget.devicesSelectedChanged += self._onDevicesSelectedChanged
         self.serverManager.fileServer.fileReceiveStartedEvent += self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent += self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent += self._onLoadingStarted
         self.serverManager.fileServer.fileSendingFinishEvent += self._onLoadingEnded
-        self.serverManager.streamingServer.streamingHelper.fileSavedEvent += self._onStreamingSaved
+        self.serverManager.streamingServer.onNewStreamingClientConnected += self._onStreamingClientConnected
 
     def _connectQSignals(self):
         self.serverManager.streamingServer.qSignal.connect(
             self.uiManager.deviceWidget.setStreamingImage
-        )
-
-        self.serverManager.streamingServer.streamingHelper.qRenderingStartSignal.connect(
-            self.uiManager.renderingProgressBar.init
-        )
-
-        self.serverManager.streamingServer.streamingHelper.qFrameRenderedSignal.connect(
-            self.uiManager.renderingProgressBar.updateBar
-        )
-
-        self.serverManager.streamingServer.streamingHelper.qRenderingEndSignal.connect(
-            self.uiManager.renderingProgressBar.hideBar
         )
 
         self.serverManager.fileServer.qFileTransferStarSignal.connect(
@@ -64,24 +48,20 @@ class SnifferHub:
         )
 
         self.serverManager.fileServer.qFileTransferEndSignal.connect(
-            self.uiManager.fileTransferringProgressbar.hideBar
+            self.uiManager.fileTransferringProgressbar.endProgressBar
         )
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
         device.msgReceivedEvent += self._onDeviceReceivedMessage
-        device.stateChangedEvent += self._onDeviceStateChangedEvent
         device.deviceDisconnectedEvent += self._onDeviceDisconnected
-        device.replayFinished += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
+        device.replayFinished += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming(device.id)
 
+        self.uiManager.deviceWidget.createDeviceScreen(device)
         self.uiManager.serverWidget.addDevice(device)
 
     def _onDeviceReceivedMessage(self, *args, **kwargs):
         self.uiManager.uiLogger.appendText(kwargs["message"])
-
-    def _onDeviceStateChangedEvent(self, *args, **kwargs):
-        state = kwargs['state']
-        self.uiManager.deviceWidget.setState(state)
 
     def _onDeviceDisconnected(self, *args, **kwargs):
         device = kwargs['device']
@@ -94,24 +74,31 @@ class SnifferHub:
         self.uiManager.deviceWidget.noDevices()
         self.uiManager.uiLogger.appendText("No Device Selected")
 
-    def _onDeviceSelected(self, *args, **kwargs):
-        self.serverManager.setDeviceSelected(kwargs["device"])
+    def _onDevicesSelectedChanged(self, *args, **kwargs):
+        self.serverManager.setDeviceSelected(kwargs["devices"])
 
     def _onSavingStarted(self, *args, **kwargs):
-        self.appSate = ApplicationState.PROCESSING
+        self.appSate = SnifferState.PROCESSING
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} of size {kwargs['size']} is saving...")
 
     def _onSavingEnded(self, *args, **kwargs):
-        self.appSate = ApplicationState.IDLE
+        self.appSate = SnifferState.IDLE
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} saving completed")
 
     def _onLoadingStarted(self, *args, **kwargs):
-        self.appSate = ApplicationState.PROCESSING
+        self.appSate = SnifferState.PROCESSING
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} is loading in device: {kwargs['address']}...")
 
     def _onLoadingEnded(self, *args, **kwargs):
-        self.appSate = ApplicationState.IDLE
+        self.appSate = SnifferState.IDLE
         self.uiManager.uiLogger.appendText(f"File {kwargs['file']} loading completed in device {kwargs['address']}")
+
+    def _onStreamingClientConnected(self, *args, **kwargs):
+        if 'client' in kwargs and 'helper' in kwargs:
+            client = kwargs['client']
+            helper: StreamingVideoHelper = kwargs['helper']
+            helper.fileSavedEvent += self._onStreamingSaved
+            self.uiManager.deviceWidget.streamingClientConnected(client, helper)
 
     def _onStreamingSaved(self, *args, **kwargs):
         fileName = kwargs['fileName']
@@ -125,8 +112,8 @@ class SnifferHub:
         stopReplayCommand = StopReplayCommand(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
         autoSaveCommand = AutoSaveCommand(self, self.serverManager)
-        stopCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
-        stopReplayCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
+        #stopCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
+        #stopReplayCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
 
         self._connectCommandEventToLogger(
             initServerCommand,
@@ -157,7 +144,7 @@ class SnifferHub:
     @QtCore.Slot()
     def executeCommandWrapper(self, command: Command):
         def executeCommand():
-            if self.appSate == ApplicationState.PROCESSING:
+            if self.appSate == SnifferState.PROCESSING:
                 self.uiManager.uiLogger.appendText(
                     f"Application is working, cannot handle command: {command.__class__}")
                 return
@@ -171,9 +158,10 @@ class SnifferHub:
         self.serverManager.newDeviceConnectedEvent -= self._onNewDeviceAdded
         self.serverManager.serverInitEvent -= self._onServerStarted
         self.serverManager.NoMoreDevicesConnectedEvent -= self._onNoMoreDevices
-        self.uiManager.serverWidget.deviceSelectedChanged -= self._onDeviceSelected
+        self.uiManager.serverWidget.devicesSelectedChanged -= self._onDevicesSelectedChanged
         self.serverManager.fileServer.fileReceiveStartedEvent -= self._onSavingStarted
         self.serverManager.fileServer.fileReceiveFinishedEvent -= self._onSavingEnded
         self.serverManager.fileServer.fileSendingStartedEvent -= self._onLoadingStarted
         self.serverManager.fileServer.fileSendingFinishEvent -= self._onLoadingEnded
-        self.serverManager.streamingServer.streamingHelper.fileSavedEvent -= self._onStreamingSaved
+        for helper in self.serverManager.streamingServer.helpers:
+            helper -= self._onStreamingSaved

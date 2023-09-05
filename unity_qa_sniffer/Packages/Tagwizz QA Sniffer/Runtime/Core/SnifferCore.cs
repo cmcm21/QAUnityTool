@@ -1,6 +1,7 @@
 using System.IO;
 using TagwizzQASniffer.Core.Recording;
 using TagwizzQASniffer.Core.FramesRecorder;
+using TagwizzQASniffer.Exceptions;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -98,7 +99,15 @@ namespace TagwizzQASniffer.Core
 
         public void Load(string recordingPath)
         {
-            _recorder.LoadFromFile(recordingPath);
+            try
+            {
+                _recorder.LoadFromFile(recordingPath);
+            }
+            catch (UnityException e)
+            {
+                Debug.Log($"Exception: {e.Message}, File : {recordingPath} corrupted, it couldn't be loaded");
+                throw new SnifferCoreLoadingFileError(recordingPath);
+            }
         }
 
         public void Replay()
@@ -121,7 +130,15 @@ namespace TagwizzQASniffer.Core
 
         public void Save(string recordingFileName)
         {
-            _recorder.SaveToFile(recordingFileName);
+            try
+            {
+                _recorder.SaveToFile(recordingFileName);
+            }
+            catch (UnityException e)
+            {
+               Debug.Log($"Exception: {e.Message}, File corrupted: {recordingFileName}, it couldn't be saved");
+               throw new SnifferCoreSavingFileError(recordingFileName);
+            }
         }
 
         public void Clear()

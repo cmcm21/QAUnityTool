@@ -1,63 +1,93 @@
 from PySide6 import QtWidgets, QtCore
-from Network.Clients.DeviceClient import DeviceClient, DeviceState
+from Network.Clients.DeviceClient import DeviceClient
+from Network.Clients.StreamingClient import *
 from PySide6.QtGui import QPixmap
-from UI.UIVideoPlayer import VideoPlayer
+from UI.DeviceScreen import DeviceScreen
+from Utils.Settings import *
+from UI import UIManager
 
 
 class DeviceWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.deviceScreensRef: {str: DeviceScreen} = {}
+        self.screens = []
+        self.screensUsed = 0
+
         self._initButtons()
-        self.streamingSize = QtCore.QSize(800, 400)
-        self.deviceState = DeviceState.IDLE
-        self.noStreamingPath = "Assets/NoStreamingImg.png"
-
-        self.container = QtWidgets.QHBoxLayout(self)
-        self._setStreamingLayout()
-        self._setButtonsLayout()
-
+        self.streamingContainer = self._initStreamingScreens()
+        self.streamingScrollArea =  self._initScrollArea()
+        self.container = QtWidgets.QHBoxLayout()
+        self.buttonsLayout = self._setButtonsLayout()
         self.container.addLayout(self.buttonsLayout)
-        self.container.addLayout(self.streamingContainer)
+        self.container.addWidget(self.streamingScrollArea)
+        self.setLayout(self.container)
+        self._disableAllButtons()
 
-    def setStreamingImage(self, pixmap: QPixmap):
-        if self.deviceState == DeviceState.IDLE:
-            return
-
-        pixmap = pixmap.scaled(self.streamingSize, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-        self.streamingLabel.setPixmap(pixmap)
-
-    def _setStreamingLayout(self):
-        self.streamingContainer = QtWidgets.QVBoxLayout(self)
-
-        self.noStreamingPixmap = QPixmap(self.noStreamingPath)
-        #self.noStreamingPixmap.scaled(self.streamingSize, QtCore.Qt.AspectRatioMode.KeepAspectRatio)
-
-        self.streamingLabel = QtWidgets.QLabel("Streaming Video")
-        self.streamingLabel.setPixmap(self.noStreamingPixmap)
-
-        self.streamingContainer.addWidget(self.streamingLabel)
+    def setStreamingImage(self, pixmap: QPixmap, clientId: str):
+        if clientId in self.deviceScreensRef:
+            self.deviceScreensRef[clientId].setStreamingImage(pixmap)
 
     def _initButtons(self):
+        buttonsSize = QtCore.QSize(90, 30)
         self.recordBtn = QtWidgets.QPushButton("Record")
         self.stopBtn = QtWidgets.QPushButton("Stop")
         self.replayBtn = QtWidgets.QPushButton("Replay")
         self.stopReplayBtn = QtWidgets.QPushButton("Stop Replay")
         self.loadFileBtn = QtWidgets.QPushButton("Load")
+        UIManager.setWidgetSize(
+            buttonsSize,
+            self.replayBtn,
+            self.stopBtn, self.replayBtn,
+            self.stopReplayBtn,
+            self.loadFileBtn
+        )
 
-        self._setDefaultButtons()
-
+        self.setDefaultButtons()
         self.recordBtn.clicked.connect(self.onRecordBtnClicked)
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
         self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
         self.replayBtn.clicked.connect(self.onReplayBtnClicked)
 
-    def setState(self, state: DeviceState):
-        self.deviceState = state
-        if self.deviceState == DeviceState.IDLE:
-            self.resetStreaming()
+    def _initStreamingScreens(self) -> QtWidgets.QLayout:
+        streamingContainer = QtWidgets.QGridLayout()
+        row = 0
+        column = 0
+        for i in range(MAX_DEVICES):
+            screenDevice = DeviceScreen()
+            self.screens.append(screenDevice)
+            streamingContainer.addWidget(screenDevice, row, column)
+            column += 1
+            if column > 1:
+                row += 1
+                column = 0
 
-    def _setDefaultButtons(self):
+        streamingContainer.setSpacing(0)
+        streamingContainer.setContentsMargins(0, 0, 0, 0)
+        return streamingContainer
+
+    def _initScrollArea(self) -> QtWidgets.QScrollArea:
+        widget = QtWidgets.QWidget()
+        scrollArea = QtWidgets.QScrollArea()
+        scrollArea.setWidget(widget)
+        widget.setLayout(self.streamingContainer)
+        scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scrollArea.setWidgetResizable(True)
+
+        return scrollArea
+
+    def _disableAllButtons(self):
+        self.recordBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(False)
+
+    def setDefaultButtons(self):
+        self.recordBtn.setEnabled(True)
+        self.loadFileBtn.setEnabled(True)
+        self.stopBtn.setEnabled(True)
         self.replayBtn.setEnabled(False)
         self.stopReplayBtn.setEnabled(False)
 
@@ -81,24 +111,41 @@ class DeviceWidget(QtWidgets.QWidget):
     def onReplayBtnClicked(self):
         self.stopReplayBtn.setEnabled(True)
 
-    def _setButtonsLayout(self):
-        self.buttonsLayout = QtWidgets.QVBoxLayout(self.container.widget())
-        self.buttonsLayout.addWidget(self.recordBtn)
-        self.buttonsLayout.addWidget(self.stopBtn)
-        self.buttonsLayout.addWidget(self.loadFileBtn)
-        self.buttonsLayout.addWidget(self.replayBtn)
-        self.buttonsLayout.addWidget(self.stopReplayBtn)
+    def _setButtonsLayout(self) -> QtWidgets.QLayout:
+        buttonsLayout = QtWidgets.QVBoxLayout()
+        buttonsLayout.addWidget(self.recordBtn)
+        buttonsLayout.addWidget(self.stopBtn)
+        buttonsLayout.addWidget(self.loadFileBtn)
+        buttonsLayout.addWidget(self.replayBtn)
+        buttonsLayout.addWidget(self.stopReplayBtn)
 
-    def resetStreaming(self):
-        self.streamingLabel.setPixmap(self.noStreamingPixmap)
+        buttonsLayout.setContentsMargins(50, 10, 50, 10)
+        return buttonsLayout
 
     def noDevices(self):
-        self.hide()
-        self.resetStreaming()
+        for key, value in self.deviceScreensRef.items():
+            value.showDefaultImage()
 
-    def deviceSelected(self, device: DeviceClient):
-        self._setDefaultButtons()
-        self.show()
+    def createDeviceScreen(self, device: DeviceClient):
+        if self.screensUsed < MAX_DEVICES:
+            screenDevice: DeviceScreen = self.screens[self.screensUsed]
+            self.deviceScreensRef[device.id] = screenDevice
+            screenDevice.setDevice(device)
+            self.screensUsed += 1
+
+    def deviceSelected(self, devices: list[DeviceClient]):
+        self.setDefaultButtons()
+        for device in devices:
+            if device.id in self.deviceScreensRef:
+                self.deviceScreensRef[device.id].show()
+
+    def streamingClientConnected(self, client: StreamingClient, helper: StreamingVideoHelper):
+        if client.id in self.deviceScreensRef:
+            self.deviceScreensRef[client.id].setHelper(helper)
+
+    def resetStreaming(self, address: str):
+        if address in self.deviceScreensRef:
+            self.deviceScreensRef[address].showDefaultImage()
 
     def __del__(self):
         return

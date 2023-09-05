@@ -4,20 +4,22 @@ from Network.Clients.DeviceClient import DeviceClient
 from Network.Servers.FileServer import FileServer
 from Network.GeneralSocket import GeneralSocket
 from Network.Servers.StreamingServer import StreamingServer
+from Utils.Settings import *
 
 bufferSize = 1024
 
+
 class ServerManager(GeneralSocket):
     def __init__(self):
-        super().__init__(socket.socket(), (socket.gethostbyname(socket.gethostname()), 8080))
+        super().__init__(socket.socket(), (socket.gethostbyname(socket.gethostname()), MAIN_SERVER_PORT))
         self.maxDevices = 5
         self.devices: list[DeviceClient] = []
-        self.selectedDevice: DeviceClient | None = None
+        self.selectedDevices: list[DeviceClient] = []
         self.serverInitEvent = Event()
         self.newDeviceConnectedEvent = Event()
         self.NoMoreDevicesConnectedEvent = Event()
-        self.fileServer = FileServer(self.ip, 9999)
-        self.streamingServer = StreamingServer(self.ip, 55555)
+        self.fileServer = FileServer(self.ip, FILE_SERVER_PORT)
+        self.streamingServer = StreamingServer(self.ip, STREAMING_SERVER_PORT)
 
     def start(self):
         if self.listeningSocket:
@@ -25,7 +27,7 @@ class ServerManager(GeneralSocket):
 
         self.listeningSocket = True
         self.socket.bind(self.address)
-        self.socket.listen(self.maxDevices)
+        self.socket.listen(MAX_DEVICES)
         self.serverInitEvent(message="Server started at :" + self.ip + " on port: " + str(self.port))
         self.socketThread.start()
 
@@ -42,8 +44,8 @@ class ServerManager(GeneralSocket):
 
         self.close()
 
-    def setDeviceSelected(self, device: DeviceClient):
-        self.selectedDevice = device
+    def setDeviceSelected(self, devices: list[DeviceClient]):
+        self.selectedDevices = devices
 
     def _handleNewDevice(self, device: DeviceClient):
         self.devices.append(device)
@@ -53,8 +55,6 @@ class ServerManager(GeneralSocket):
 
     def _deviceDisconnected(self, *args, **kwargs):
         device = kwargs['device']
-        if device == self.selectedDevice:
-            self.selectedDevice = None
 
         if len(self.devices) > 0:
             self.devices.remove(device)

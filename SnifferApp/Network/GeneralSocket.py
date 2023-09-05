@@ -12,6 +12,7 @@ class GeneralSocket:
         self.port = address[1]
         self.socketThread = Thread(target=self._socketWorker, daemon=True)
         self.listeningSocket = False
+        self.id = str(self.ip)
 
     @abstractmethod
     def start(self):

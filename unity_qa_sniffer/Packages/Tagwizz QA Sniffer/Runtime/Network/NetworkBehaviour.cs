@@ -1,8 +1,8 @@
-using System;
 using System.IO;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Core.FramesRecorder;
 using TagwizzQASniffer.Core.Recording;
+using TagwizzQASniffer.Exceptions;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
@@ -58,9 +58,32 @@ namespace TagwizzQASniffer.Network
             else if (message == CommandSignal.STOP_REPLAY.ToString() && state == SnifferState.PLAYING_BACK)
                 _snifferCore.StopReplay();
             else if (message == CommandSignal.SAVE_FILE.ToString() && state == SnifferState.IDLE)
-                _fileClient.SaveFile(GetIp,9999,_snifferCore);
-            else if(message == CommandSignal.LOAD_FILE.ToString() && state == SnifferState.IDLE)
-                _fileClient.LoadFile(GetIp,9999,_snifferCore);
+            {
+                try
+                {
+                    _fileClient.SaveFile(GetIp, 44444, _snifferCore);
+                }
+                catch (SnifferCoreSavingFileError e)
+                {
+                    _client.SendMsgToServer(e.Message);
+                }
+                catch (SaveFileNetworkErrorException e)
+                {
+                   _client.SendMsgToServer(e.Message); 
+                }
+            }
+            else if (message == CommandSignal.LOAD_FILE.ToString() && state == SnifferState.IDLE)
+            {
+                try {
+                    _fileClient.LoadFile(GetIp, 44444, _snifferCore);
+                }
+                catch (SnifferCoreLoadingFileError e) {
+                    _client.SendMsgToServer(e.Message);
+                }
+                catch (LoadFileNetworkErrorException e) {
+                    _client.SendMsgToServer(e.Message);
+                }
+            }
             else
             {
                 Debug.Log($"Error trying to execute command: {message} ");

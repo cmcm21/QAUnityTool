@@ -22,7 +22,7 @@ class StreamingVideoHelper(QtCore.QObject):
         self.fileName: str = ""
         self.settingsFps = 12
 
-    def addFrame(self, frame, seconds: int):
+    def addFrame(self, frame):
         self.allFrames.append(frame)
 
     def onRecordingStarted(self):
@@ -45,7 +45,6 @@ class StreamingVideoHelper(QtCore.QObject):
         frameSize = (image.width, image.height)
         seconds = self.endRecordingTime - self.startRecordingTime
         desiredFrames = seconds * self.settingsFps
-        avgSeconds = seconds / len(self.allFrames)
 
         while len(self.allFrames) < desiredFrames:
             self.duplicateFrames(desiredFrames)
@@ -67,11 +66,11 @@ class StreamingVideoHelper(QtCore.QObject):
     def duplicateFrames(self, desiredFrames: int):
         tempFrames = []
         for i in range(len(self.allFrames)):
-            frames = self.allFrames[i]
+            frame = self.allFrames[i]
             if i % 2 == 0 and len(tempFrames) < desiredFrames:
-                tempFrames.append(frames)
-                tempFrames.append(frames)
+                tempFrames.append(frame)
+                tempFrames.append(frame)
             else:
-                tempFrames.append(frames)
+                tempFrames.append(frame)
 
         self.allFrames = tempFrames

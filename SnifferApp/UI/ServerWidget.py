@@ -1,50 +1,48 @@
 from PySide6 import QtCore, QtWidgets
 from Network.Clients.DeviceClient import DeviceClient
 from Utils.Events import Event
+from Hub.SnifferState import SnifferState
 
 
 class ServerWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self._init_widgets()
-        self._init_layout()
+        self._initWidgets()
+        self._initLayout()
         self.initServerAction = None
 
-    def _init_widgets(self):
+    def _initWidgets(self):
         self.titleLabel = QtWidgets.QLabel("Devices")
         self.initServerButton = QtWidgets.QPushButton("Init Server")
         self.devicesListWidget = QtWidgets.QListWidget()
-        self.selectedDevice = None
-        self.deviceSelectedChanged = Event()
+        self.devicesListWidget.setSelectionMode(QtWidgets.QListWidget.SelectionMode.MultiSelection)
+        self.selectedDevices = None
+        self.devicesSelectedChanged = Event()
         self.clearSelectionEvent = Event()
         self.devicesListWidget.itemSelectionChanged.connect(self._onSelectionChanged)
 
     def _onSelectionChanged(self):
-        deviceSelected = self._getFirstSelectedDevice()
+        selectedDevices = self._getSelectedDevices()
+        if len(selectedDevices) > 0 and self.selectedDevices != selectedDevices:
+            self.devicesSelectedChanged(devices=selectedDevices)
+            self.selectedDevices = selectedDevices
 
-        if deviceSelected is not None and self.selectedDevice != deviceSelected:
-            self.deviceSelectedChanged(device=deviceSelected)
-            self.selectedDevice = deviceSelected
-        return
-
-    def _getFirstSelectedDevice(self) -> DeviceClient | None:
+    def _getSelectedDevices(self) -> list[DeviceClient]:
+        selectedDevices = []
         selectedItems = self.devicesListWidget.selectedItems()
-        if len(selectedItems) == 0:
-            return None
-        return selectedItems[0].data(QtCore.Qt.ItemDataRole.UserRole)
+        for item in selectedItems:
+            selectedDevices.append(item.data(QtCore.Qt.ItemDataRole.UserRole))
 
-    def getAllSelectedDevices(self) -> list[DeviceClient]:
-        devices = []
-        for item in self.devicesListWidget.selectedItems():
-            devices.append(item.data(QtCore.Qt.ItemDataRole.UserRole))
+        return selectedDevices
 
-        return devices
-
-    def _init_layout(self):
-        self.layout = QtWidgets.QVBoxLayout(self)
+    def _initLayout(self):
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.titleLabel, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.devicesListWidget)
         self.layout.addWidget(self.initServerButton)
+        self.setMaximumSize(QtCore.QSize(300, 400))
+        self.setMinimumSize(QtCore.QSize(300, 400))
+        self.setLayout(self.layout)
 
     def addDevice(self, device: DeviceClient):
         item = QtWidgets.QListWidgetItem("Device Connected: " + str(device.address), self.devicesListWidget)
@@ -72,3 +70,7 @@ class ServerWidget(QtWidgets.QWidget):
         if items[0].isSelected():
             self.devicesListWidget.clearSelection()
             self.clearSelectionEvent()
+
+    def hubStateChanged(self, appState: SnifferState):
+        self.devicesListWidget.setEnabled(appState == SnifferState.IDLE)
+

@@ -5,10 +5,11 @@ import socket
 from PySide6 import QtCore
 from PySide6.QtGui import QPixmap
 from Utils.StreamingVideoHelper import StreamingVideoHelper
+from Utils.Settings import *
 
 
 class StreamingServer(GeneralSocket, QtCore.QObject):
-    qSignal = QtCore.Signal(QPixmap)
+    qSignal = QtCore.Signal(QPixmap, str)
 
     def __init__(self, ip: str, port: int):
         GeneralSocket.__init__(self, socket.socket(), (ip, port))
@@ -16,7 +17,8 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         self.maxClients = 5
         self.clients: list[StreamingClient] = []
         self.frameReceivedCompleted = Event()
-        self.streamingHelper = StreamingVideoHelper()
+        self.onNewStreamingClientConnected = Event()
+        self.helpers: {str: StreamingVideoHelper} = {}
         self.frameNumber = 0
 
     def start(self):
@@ -25,7 +27,7 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
 
         self.listeningSocket = True
         self.socket.bind(self.address)
-        self.socket.listen(self.maxClients)
+        self.socket.listen(MAX_DEVICES)
         print(f"Streaming Server Started at {self.address}")
         self.socketThread.start()
 
@@ -43,27 +45,29 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         self.close()
 
     def _handleClient(self, client: StreamingClient):
-        client.frameReceivedCompleted += self._onStreamClientFinished
-        client.start()
+        client.frameReceivedCompleted += self._onFrameCompleted
+        helper = StreamingVideoHelper()
+        self.helpers[client.id] = helper
         self.clients.append(client)
+        client.start()
+        self.onNewStreamingClientConnected(client=client, helper=helper)
 
-    def _onStreamClientFinished(self, *args, **kwargs):
-        if self._processQSignal(frame=kwargs['frame']):
-            self.streamingHelper.addFrame(kwargs['frame'], kwargs['seconds'])
-            self.frameReceivedCompleted(frame=kwargs['frame'])
+    def _onFrameCompleted(self, *args, **kwargs):
+        clientId = kwargs['id']
+        frame = kwargs['frame']
+        if self._processQSignal(frame, clientId):
+            self.helpers[clientId].addFrame(frame)
+            self.frameReceivedCompleted(frame=frame, id=clientId)
 
-    def _processQSignal(self, frame: bytes) -> bool:
+    def _processQSignal(self, frame: bytes, clientId: str) -> bool:
         pixmap = QPixmap()
         loaded = pixmap.loadFromData(frame, format=".jpg")
         if loaded:
-            self.qSignal.emit(pixmap)
+            self.qSignal.emit(pixmap, clientId)
             return True
         else:
             print("Error trying to load frame from bytes")
             return False
-
-    def saveStreamAsVideo(self, videoPath: str):
-        self.streamingHelper.saveFramesToVideo(videoPath)
 
     def onRecordStarted(self):
         return
