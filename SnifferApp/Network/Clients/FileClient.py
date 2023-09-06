@@ -1,5 +1,7 @@
 import os
 import socket
+import time
+
 from Utils.Events import Event
 from threading import Thread
 from Network.GeneralSocket import GeneralSocket
@@ -10,16 +12,21 @@ FILE_BUFFER_SIZE = 4096
 
 class FileClient(GeneralSocket):
 
-    def __init__(self, socket: socket.socket, address, filepath: str):
+    def __init__(self, socket: socket.socket, address):
         super().__init__(socket, address)
-        print("File client: " + str(address) + " connected")
+        print("File client: " + str(address) + f" connected")
         self.sendThread = Thread(target=self._sendClientWorker, daemon=True)
-        self.filePath = filepath
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendStartedEvent = Event()
         self.fileSendFinishedEvent = Event()
         self.fileTransferProgress = Event()
+        self.fileSet = False
+        self.filePath = None
+
+    def setFile(self, filePath: str):
+        self.filePath = filePath
+        self.fileSet = True
 
     def start(self):
         self.socketThread.start()
@@ -28,6 +35,9 @@ class FileClient(GeneralSocket):
         self.sendThread.start()
 
     def _socketWorker(self):
+        while not self.fileSet:
+            time.sleep(0.001)
+
         fileName = os.path.basename(self.filePath)
         try:
             send = self.socket.send(fileName.encode())
@@ -65,6 +75,9 @@ class FileClient(GeneralSocket):
             self.close()
 
     def _sendClientWorker(self):
+        while not self.fileSet:
+            time.sleep(0.001)
+
         fileName = os.path.basename(self.filePath)
         fileSize = os.path.getsize(self.filePath)
         try:

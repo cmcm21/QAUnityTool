@@ -20,7 +20,8 @@ class FileServer(GeneralSocket, QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.filePath = None
         self.sendFile = False
-        self.fileClients: list[FileClient] = []
+        self.files = {}
+        self.fileClients = {}
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendingStartedEvent = Event()
@@ -36,22 +37,22 @@ class FileServer(GeneralSocket, QtCore.QObject):
         print(f"File server started at {self.address}")
         self.socketThread.start()
 
-    def setFile(self, filePath: str):
-        self.filePath = filePath
+    def setFile(self, deviceId: str, filePath: str):
+        self.files[deviceId] = filePath
 
     def _socketWorker(self):
         while self.listeningSocket:
             try:
                 fileSocket, address = self.socket.accept()
-                fileClient = FileClient(fileSocket, address, self.filePath)
+                fileClient = FileClient(fileSocket, address)
                 self._connectEvents(fileClient)
+                fileClient.setFile(self.files[fileClient.id])
 
                 if self.sendFile:
                     fileClient.startSending()
                 else:
                     fileClient.start()
 
-                self.fileClients.append(fileClient)
             except ConnectionError:
                 print("File server Connection Error")
 
@@ -86,10 +87,10 @@ class FileServer(GeneralSocket, QtCore.QObject):
         self.qFileTransferUpdateSignal.emit(kwargs['progress'])
 
     def removeClient(self, fileClient: FileClient):
-        if fileClient not in self.fileClients:
+        if fileClient not in self.fileClients.keys():
             pass
         else:
-            self.fileClients.remove(fileClient)
+            del self.fileClients[fileClient.id]
 
     def close(self):
         self.listeningSocket = False

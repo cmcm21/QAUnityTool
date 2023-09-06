@@ -112,8 +112,6 @@ class SnifferHub:
         stopReplayCommand = StopReplayCommand(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
         autoSaveCommand = AutoSaveCommand(self, self.serverManager)
-        #stopCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
-        #stopReplayCommand.onCommandExecutedEvent += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming()
 
         self._connectCommandEventToLogger(
             initServerCommand,

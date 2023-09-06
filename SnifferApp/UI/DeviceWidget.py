@@ -16,13 +16,12 @@ class DeviceWidget(QtWidgets.QWidget):
 
         self._initButtons()
         self.streamingContainer = self._initStreamingScreens()
-        self.streamingScrollArea =  self._initScrollArea()
+        self.streamingScrollArea = self._initScrollArea()
         self.container = QtWidgets.QHBoxLayout()
         self.buttonsLayout = self._setButtonsLayout()
         self.container.addLayout(self.buttonsLayout)
         self.container.addWidget(self.streamingScrollArea)
         self.setLayout(self.container)
-        self._disableAllButtons()
 
     def setStreamingImage(self, pixmap: QPixmap, clientId: str):
         if clientId in self.deviceScreensRef:
@@ -43,7 +42,6 @@ class DeviceWidget(QtWidgets.QWidget):
             self.loadFileBtn
         )
 
-        self.setDefaultButtons()
         self.recordBtn.clicked.connect(self.onRecordBtnClicked)
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
         self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
@@ -71,45 +69,27 @@ class DeviceWidget(QtWidgets.QWidget):
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(widget)
         widget.setLayout(self.streamingContainer)
-        scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scrollArea.setWidgetResizable(True)
 
         return scrollArea
 
-    def _disableAllButtons(self):
-        self.recordBtn.setEnabled(False)
-        self.stopBtn.setEnabled(False)
-        self.replayBtn.setEnabled(False)
-        self.stopReplayBtn.setEnabled(False)
-        self.loadFileBtn.setEnabled(False)
-
-    def setDefaultButtons(self):
-        self.recordBtn.setEnabled(True)
-        self.loadFileBtn.setEnabled(True)
-        self.stopBtn.setEnabled(True)
-        self.replayBtn.setEnabled(False)
-        self.stopReplayBtn.setEnabled(False)
-
     @QtCore.Slot()
     def onRecordBtnClicked(self):
-        self.stopBtn.setEnabled(True)
-        self.loadFileBtn.setEnabled(False)
-        self.replayBtn.setEnabled(False)
-        self.stopReplayBtn.setEnabled(False)
+        pass
 
     @QtCore.Slot()
     def onStopBtnClicked(self):
-        self.replayBtn.setEnabled(True)
-        self.loadFileBtn.setEnabled(True)
+        return
 
     @QtCore.Slot()
     def onLoadBtnClicked(self):
-        self.replayBtn.setEnabled(True)
+        return
 
     @QtCore.Slot()
     def onReplayBtnClicked(self):
-        self.stopReplayBtn.setEnabled(True)
+        return
 
     def _setButtonsLayout(self) -> QtWidgets.QLayout:
         buttonsLayout = QtWidgets.QVBoxLayout()
@@ -134,7 +114,6 @@ class DeviceWidget(QtWidgets.QWidget):
             self.screensUsed += 1
 
     def deviceSelected(self, devices: list[DeviceClient]):
-        self.setDefaultButtons()
         for device in devices:
             if device.id in self.deviceScreensRef:
                 self.deviceScreensRef[device.id].show()

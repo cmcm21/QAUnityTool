@@ -2,6 +2,7 @@ import os.path
 from abc import abstractmethod
 from Hub import SnifferHub
 from Network.Servers.ServerManager import ServerManager
+from Network.Clients.DeviceClient import DeviceClient
 from Utils.Events import Event
 from Commands.CommandSignals import CommandSignal
 from PySide6.QtWidgets import QFileDialog
@@ -118,29 +119,33 @@ class SaveCommand(Command):
             self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace")
         fileName = qfileTuple[0]
         if fileName != "":
-            self.saveVideo(fileName)
-            self.saveFile(fileName)
+            for device in self.serverManager.selectedDevices:
+                self.saveVideo(fileName, device)
+                self.saveFile(fileName, device)
         else:
             print("File wasn't saved")
             return False
         return True
 
-    def saveFile(self, fileName: str):
-        self.serverManager.fileServer.setFile(fileName)
-        self.serverManager.fileServer.sendFile = False
-        for selectedDevice in self.serverManager.selectedDevices:
-            selectedDevice.sendSignalToDevice(CommandSignal.SAVE_FILE)
-        self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.SAVE_FILE.value),
-                                    signal=CommandSignal.SAVE_FILE)
+    def saveFile(self, fileName: str, device: DeviceClient):
+        extPosition = fileName.find(self.inputFileExtension)
+        realName = fileName[:extPosition] + f"_{device.id}_" + fileName[extPosition:]
 
-    def saveVideo(self, fileName: str):
+        self.serverManager.fileServer.sendFile = False
+        self.serverManager.fileServer.setFile(device.id, realName)
+        device.sendSignalToDevice(CommandSignal.SAVE_FILE)
+        self.onCommandExecutedEvent(message="Sending {} signal to {}".format(
+                CommandSignal.SAVE_FILE.value, device.id), signal=CommandSignal.SAVE_FILE)
+
+    def saveVideo(self, fileName: str, device: DeviceClient):
         baseName = os.path.basename(fileName)
         fullName = f"{self.streamingDirectory}{baseName}"
         if self.streamingFileExtension not in fullName:
             fullName += self.streamingFileExtension
-        for selectedDevice in self.serverManager.selectedDevices:
-            if selectedDevice.id in self.serverManager.streamingServer.helpers:
-                self.serverManager.streamingServer.helpers[selectedDevice.id].saveFramesToVideo(fullName)
+        extPosition = fileName.find(self.streamingFileExtension)
+        realName = fullName[:extPosition] + f"_{device.id}_" + fullName[extPosition:]
+
+        self.serverManager.streamingServer.helpers[device.id].saveFramesToVideo(realName)
 
     def _onFileReceiveFinished(self, *args, **kwargs):
         super().execute()
@@ -161,12 +166,12 @@ class LoadFileCommand(Command):
 
         fileName = qfileTuple[0]
         if fileName != "":
-            self.serverManager.fileServer.setFile(fileName)
             self.serverManager.fileServer.sendFile = True
             for selectedDevice in self.serverManager.selectedDevices:
+                self.serverManager.fileServer.setFile(selectedDevice.id, fileName)
                 selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
-            self.onCommandExecutedEvent(message="Sending {} signal".format(CommandSignal.LOAD_FILE.value),
-                                        signal=CommandSignal.LOAD_FILE)
+                self.onCommandExecutedEvent(message="Sending {} signal to {}".format(
+                    CommandSignal.LOAD_FILE.value, selectedDevice.id), signal=CommandSignal.LOAD_FILE)
         else:
             print("File wasn't loaded")
 
@@ -180,8 +185,8 @@ class AutoSaveCommand(SaveCommand):
     @staticmethod
     def createFileName(directory: str, fileExtension: str) -> str:
         now = datetime.now()
-        baseName = str(date.today()) + "_" + str(now.time())
-        baseName = re.sub(r'[^\w_. -]', '.', baseName)
+        baseName = str(date.today()) + "__" + str(now.time())
+        baseName = re.sub(r'[^\w_. -]', '_', baseName)
         currencies = 0
         newPath = f"{directory}{baseName}{fileExtension}"
         while os.path.isfile(newPath):
@@ -193,7 +198,7 @@ class AutoSaveCommand(SaveCommand):
     def execute(self) -> bool:
         inputFileName = self.createFileName(self.inputDirectory, self.inputFileExtension)
         streamingName = self.createFileName(self.streamingDirectory, self.streamingFileExtension)
-
-        self.saveVideo(streamingName)
-        self.saveFile(inputFileName)
+        for device in self.serverManager.selectedDevices:
+            self.saveVideo(streamingName, device)
+            self.saveFile(inputFileName, device)
         return True
