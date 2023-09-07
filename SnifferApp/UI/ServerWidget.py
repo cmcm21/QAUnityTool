@@ -45,15 +45,21 @@ class ServerWidget(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def addDevice(self, device: DeviceClient):
-        item = QtWidgets.QListWidgetItem("Device Connected: " + str(device.address), self.devicesListWidget)
+        itemText = f"[ {str(device.hostname)}, {device.address} ]"
+        item = QtWidgets.QListWidgetItem(itemText, self.devicesListWidget)
         item.setData(QtCore.Qt.ItemDataRole.UserRole, device)
         if self.devicesListWidget.count() == 1:
             item.setSelected(True)
             self._onSelectionChanged()
 
+    def updateDevice(self, *args, **kwargs):
+        if 'device' in kwargs:
+            device = kwargs['device']
+            self.removeDevice(device)
+            self.addDevice(device)
+
     def removeDevice(self, device: DeviceClient):
-        items = self.devicesListWidget.findItems(
-            "Device Connected: " + str(device.address), QtCore.Qt.MatchFlag.MatchWildcard)
+        items = self.findItems(device)
 
         if len(items) <= 0:
             return
@@ -71,6 +77,10 @@ class ServerWidget(QtWidgets.QWidget):
             self.devicesListWidget.clearSelection()
             self.clearSelectionEvent()
 
+    def findItems(self, device: DeviceClient):
+        items = self.devicesListWidget.findItems(f"{device.address}", QtCore.Qt.MatchFlag.MatchContains)
+
+        return items
+
     def hubStateChanged(self, appState: SnifferState):
         self.devicesListWidget.setEnabled(appState == SnifferState.IDLE)
-

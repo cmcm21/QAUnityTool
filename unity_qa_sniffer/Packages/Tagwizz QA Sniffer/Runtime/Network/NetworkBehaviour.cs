@@ -15,7 +15,7 @@ using UnityEngine.Serialization;
 namespace TagwizzQASniffer.Network
 {
    
-    enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE,GET_DEVICE_DATA, CHANGE_STATE }
+    enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE, SET_HOSTNAME}
     public enum NetworkState {CONNECTED, DISCONNECTED}
 
     public class NetworkBehaviour : MonoBehaviour, IRecorderListener, IFramesRecorderListener, IClientListener
@@ -26,8 +26,9 @@ namespace TagwizzQASniffer.Network
         private HubClient _hubClient;
         private FileClient _fileClient;
         private StreamingClient _streamingClient;
-        private readonly string _serverIp = "";
+        private string _serverIp = "";
         private NetworkState _state;
+        private string _deviceName;
         public NetworkState State => _state;
 
         public HubClient HubClient => _hubClient;
@@ -37,6 +38,7 @@ namespace TagwizzQASniffer.Network
 
         private void Awake()
         {
+            _deviceName = SystemInfo.deviceName;
             InitNetworkComponents();
         }
 
@@ -57,6 +59,8 @@ namespace TagwizzQASniffer.Network
             _hubClient.OnReceivedMsgFromServerEvent += HubClientOnReceivedMsgFromServer;
             _canvasGroup = GetComponentInChildren<CanvasGroup>();
             _state = NetworkState.DISCONNECTED;
+            
+            Debug.Log($"System Information: {SystemInfo.deviceName}");
         }
 
         private void HubClientOnReceivedMsgFromServer(string message)
@@ -77,36 +81,43 @@ namespace TagwizzQASniffer.Network
             else if (message == CommandSignal.STOP_REPLAY.ToString() && state == SnifferState.PLAYING_BACK)
                 _snifferCore.StopReplay();
             else if (message == CommandSignal.SAVE_FILE.ToString() && state == SnifferState.IDLE)
-            {
-                try
-                {
-                    _fileClient.SaveFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
-                }
-                catch (SnifferCoreSaveFileException e)
-                {
-                    _hubClient.SendMsgToServer(e.Message);
-                }
-                catch (SaveFileNetworkErrorException e)
-                {
-                   _hubClient.SendMsgToServer(e.Message); 
-                }
-            }
+                ProcessSaveCommand();
             else if (message == CommandSignal.LOAD_FILE.ToString() && state == SnifferState.IDLE)
-            {
-                try {
-                    _fileClient.LoadFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
-                }
-                catch (SnifferCoreLoadFileException e) {
-                    _hubClient.SendMsgToServer(e.Message);
-                }
-                catch (LoadFileNetworkErrorException e) {
-                    _hubClient.SendMsgToServer(e.Message);
-                }
-            }
+                ProcessLoadCommand();
             else
             {
                 Debug.Log($"Error trying to execute command: {message} ");
                 SendCommandErrorMsg(state,message);
+            }
+        }
+
+        private void ProcessSaveCommand()
+        {
+             try
+             {
+                 _fileClient.SaveFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
+             }
+             catch (SnifferCoreSaveFileException e)
+             {
+                 _hubClient.SendMsgToServer(e.Message);
+             }
+             catch (SaveFileNetworkErrorException e)
+             {
+                 _hubClient.SendMsgToServer(e.Message); 
+             }
+        }
+
+        private void ProcessLoadCommand()
+        {
+            try 
+            {
+                _fileClient.LoadFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
+            }
+            catch (SnifferCoreLoadFileException e) {
+                _hubClient.SendMsgToServer(e.Message);
+            }
+            catch (LoadFileNetworkErrorException e) {
+                _hubClient.SendMsgToServer(e.Message);
             }
         }
 
@@ -151,7 +162,20 @@ namespace TagwizzQASniffer.Network
             if (serverIp == string.Empty || port == 0 || _canvasGroup.alpha == 0) return false;
             if (!ValidateInputs()) return false;
             if (_hubClient.isReading) return false;
-            
+            _serverIp = serverIp;
+ 
+            try
+            {
+                _hubClient.StartClient(serverIp, port);
+                _state = NetworkState.CONNECTED;
+                StartCoroutine(SendHostname());
+            }
+            catch (NetworkServerConnectionErrorException exp)
+            {
+                Debug.Log($"Error trying to connect hub client: {exp.Message}");
+                _state = NetworkState.DISCONNECTED;
+            }
+           
             try {
                 _streamingClient.StartClient(serverIp, NetworkDefinitions.STREAMING_PORT);
                 _state = NetworkState.CONNECTED;
@@ -161,17 +185,13 @@ namespace TagwizzQASniffer.Network
                 _state = NetworkState.DISCONNECTED;
             }
 
-            try {
-                _hubClient.StartClient(serverIp, port);
-                _state = NetworkState.CONNECTED;
-            }
-            catch (NetworkServerConnectionErrorException exp) {
-                Debug.Log($"Error trying to connect hub client: {exp.Message}");
-                _state = NetworkState.DISCONNECTED;
-            }
-
-
             return _state == NetworkState.CONNECTED;
+        }
+
+        private IEnumerator SendHostname()
+        {
+            yield return new WaitForSeconds(0.5f);
+            _hubClient.SendMsgToServer($"{CommandSignal.SET_HOSTNAME}:{_deviceName}");
         }
 
         public void Disconnect()

@@ -88,8 +88,8 @@ namespace TagwizzQASniffer.Network
                     while (_isReading)
                     {
                         byte[] messageReceived = new byte[1024];
-                        int byteRecv = _sender.Receive(messageReceived);
-                        OnReceivedMsgFromServer(Encoding.ASCII.GetString(messageReceived, 0, byteRecv));
+                        int bytesReceive = _sender.Receive(messageReceived);
+                        OnReceivedMsgFromServer(Encoding.ASCII.GetString(messageReceived, 0, bytesReceive));
                     }
                     _sender.Shutdown(SocketShutdown.Both);
                 }

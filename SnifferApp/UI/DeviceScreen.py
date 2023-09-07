@@ -24,13 +24,13 @@ class DeviceScreen(QtWidgets.QWidget):
         self.qvBox.setContentsMargins(5, 5, 5, 5)
         self.progressBar.setVisible(False)
 
-        self.showDefaultImage()
+        self._showDefaultImage()
         self.setLayout(self.qvBox)
 
     def setDevice(self, device: DeviceClient):
         self.device = device
         self.address = device.address
-        self.qNameLabel.setText(str(self.address))
+        self.qNameLabel.setText(str(device.hostname))
         self.device.stateChangedEvent += self._onDeviceChangedState
 
     def setHelper(self, helper: StreamingVideoHelper):
@@ -42,9 +42,13 @@ class DeviceScreen(QtWidgets.QWidget):
 
         state = kwargs['state']
         if state == DeviceState.IDLE:
-            self.showDefaultImage()
+            self._showDefaultImage()
 
-    def showDefaultImage(self):
+    def reset(self):
+        self._showDefaultImage()
+        self.qNameLabel.setText("None")
+
+    def _showDefaultImage(self):
         pixmap = QtGui.QPixmap(self.noStreamingPath)
         pixmap = pixmap.scaled(self.size, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
         self.qStreamingLabel.setPixmap(pixmap)

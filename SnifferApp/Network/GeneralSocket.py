@@ -5,14 +5,15 @@ import socket
 
 
 class GeneralSocket:
-    def __init__(self, socket: socket.socket, address):
-        self.socket = socket
+    def __init__(self, ownSocket: socket.socket, address):
+        self.socket = ownSocket
         self.address = address
         self.ip = address[0]
         self.port = address[1]
         self.socketThread = Thread(target=self._socketWorker, daemon=True)
         self.listeningSocket = False
         self.id = str(self.ip)
+        self.hostname = None
 
     @abstractmethod
     def start(self):

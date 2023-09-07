@@ -12,8 +12,8 @@ FILE_BUFFER_SIZE = 4096
 
 class FileClient(GeneralSocket):
 
-    def __init__(self, socket: socket.socket, address):
-        super().__init__(socket, address)
+    def __init__(self, ownSocket: socket.socket, address):
+        super().__init__(ownSocket, address)
         print("File client: " + str(address) + f" connected")
         self.sendThread = Thread(target=self._sendClientWorker, daemon=True)
         self.fileReceiveStartedEvent = Event()
