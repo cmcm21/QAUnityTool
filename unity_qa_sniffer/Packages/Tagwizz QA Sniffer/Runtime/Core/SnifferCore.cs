@@ -106,7 +106,7 @@ namespace TagwizzQASniffer.Core
             catch (UnityException e)
             {
                 Debug.Log($"Exception: {e.Message}, File : {recordingPath} corrupted, it couldn't be loaded");
-                throw new SnifferCoreLoadingFileError(recordingPath);
+                throw new SnifferCoreLoadFileException(recordingPath);
             }
         }
 
@@ -137,7 +137,7 @@ namespace TagwizzQASniffer.Core
             catch (UnityException e)
             {
                Debug.Log($"Exception: {e.Message}, File corrupted: {recordingFileName}, it couldn't be saved");
-               throw new SnifferCoreSavingFileError(recordingFileName);
+               throw new SnifferCoreSaveFileException(recordingFileName);
             }
         }
 

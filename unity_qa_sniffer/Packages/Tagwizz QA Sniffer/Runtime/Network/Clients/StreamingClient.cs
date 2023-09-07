@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using TagwizzQASniffer.Exceptions;
+using TagwizzQASniffer.Network.Clients;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network
@@ -14,7 +16,6 @@ namespace TagwizzQASniffer.Network
     public enum StreamingMessages {STARTING, FINISHING}
     public class StreamingClient
     {
-        private const int STREAMING_PORT = 7777;
         private const int BUFFER_SIZE = 32754;
         private IPAddress[] _ipArray;
         private IPEndPoint _endPoint;
@@ -25,15 +26,20 @@ namespace TagwizzQASniffer.Network
         private bool _canSend = false;
         private string _ip;
         private int _frameCounter = 0;
+        private ClientObserver _observer;
+        public ClientObserver Observer => _observer;
 
         public StreamingClient()
         {
             _state = StreamingClientState.IDLE;
+            _observer = new ClientObserver();
         }
 
-        public void StartClient(string ip)
+        public void StartClient(string ip, int streamingPort)
         {
-            _socketThread = new Thread(o => ConnectToStreamingServer(ip,STREAMING_PORT))
+            _ip = ip;
+            
+            _socketThread = new Thread(o => ConnectToStreamingServer(ip,streamingPort))
             {
                 IsBackground = true
             };
@@ -56,7 +62,7 @@ namespace TagwizzQASniffer.Network
                 _sender.Connect(_endPoint);
                 Debug.LogFormat("File Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString());
                 _state = StreamingClientState.IDLE;
- 
+                _observer.ConnectedNotify(); 
                 while (_canSend)
                 {
                     if (_framesToSend.Count > 0 && _state == StreamingClientState.IDLE)
@@ -66,58 +72,73 @@ namespace TagwizzQASniffer.Network
             }
             catch (SocketException e) {
                 Debug.LogFormat("Socket exception: {0}", e.Message.ToString());
+                _observer.ExceptionThrownNotify();
             } 
             finally {
                 _sender.Close();
+                _observer.DisconnectedNotify();
             } 
         }
         
-        private bool SendFrame(MemoryStream stream)
+        private void SendFrame(MemoryStream stream)
         {
             try
             {
-               _state = StreamingClientState.SENDING_FRAME;
-               using var newStream = new MemoryStream(stream.ToArray());
-               int lastStatus = 0;
-               long totalBytes = newStream.Length, bytesSoFar = 0;
-               byte[] frameChunk = new byte[BUFFER_SIZE];
-               int numBytes;
-               var encodeMsg = Encoding.ASCII.GetBytes(StreamingMessages.STARTING.ToString());
-               _sender.Send(encodeMsg);
-               
-               while ((numBytes = newStream.Read(frameChunk, 0, BUFFER_SIZE)) > 0)
-               {
-                   if (_sender.Send(frameChunk, numBytes, SocketFlags.None) != numBytes) {
-                       throw new Exception("Error in sending the frame data");
-                   }
-                   bytesSoFar += numBytes;
-                   Byte progress = (byte)(bytesSoFar * 100 / totalBytes);
-                   if (progress > lastStatus && progress != 100) {
-                       //Debug.LogFormat("Frame sending progress:{0}", lastStatus);
-                       lastStatus = progress;
-                   }
-               }
-               //Debug.Log($"Frame {_frameCounter} sending process finished");
-            } 
+                _state = StreamingClientState.SENDING_FRAME;
+                using var newStream = new MemoryStream(stream.ToArray());
+                int lastStatus = 0;
+                long totalBytes = newStream.Length, bytesSoFar = 0;
+                byte[] frameChunk = new byte[BUFFER_SIZE];
+                int numBytes;
+                var encodeMsg = Encoding.ASCII.GetBytes(StreamingMessages.STARTING.ToString());
+                _sender.Send(encodeMsg);
+
+                while ((numBytes = newStream.Read(frameChunk, 0, BUFFER_SIZE)) > 0)
+                {
+                    if (_sender.Send(frameChunk, numBytes, SocketFlags.None) != numBytes)
+                        throw new Exception("Error in sending the frame data");
+
+                    bytesSoFar += numBytes;
+                    Byte progress = (byte)(bytesSoFar * 100 / totalBytes);
+                    if (progress > lastStatus && progress != 100)
+                    {
+                        lastStatus = progress;
+                    }
+                }
+            }
             catch (SocketException e)
             {
                 Debug.LogFormat("Socket exception: {0}", e.Message.ToString());
-                return false;
-            } 
+                _observer.ExceptionThrownNotify();
+            }
+            catch (Exception e)
+            {
+                Debug.LogFormat("Exception sending data");
+                _observer.ExceptionThrownNotify();
+            }
             finally 
             { 
                 stream?.Close();
                 _frameCounter++;
                _state = StreamingClientState.IDLE;
             }
-            return true;
         }
 
-        public void StopSocket()
+        public void StopClient()
         {
             _canSend = false;
             if(_socketThread != null)
                 _socketThread.Abort();
+            
+            try {
+                _sender?.Shutdown(SocketShutdown.Send);
+            }
+            finally {
+                _sender?.Close(); 
+                _observer.DisconnectedNotify();
+            }
+            
+            _state = StreamingClientState.IDLE;
         }
     }
 }

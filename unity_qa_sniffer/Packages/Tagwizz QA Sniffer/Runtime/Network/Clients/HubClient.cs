@@ -2,6 +2,9 @@ using System;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Threading;
+using TagwizzQASniffer.Exceptions;
+using TagwizzQASniffer.Network.Clients;
 using UnityEngine;
 
 namespace TagwizzQASniffer.Network
@@ -13,6 +16,9 @@ namespace TagwizzQASniffer.Network
         private System.Threading.Thread _socketThread;
         private Socket _sender;
         public event Action<string> OnReceivedMsgFromServerEvent;
+        private readonly ClientObserver _observer = new ClientObserver();
+        public ClientObserver Observer => _observer;
+
         public void SendMsgToServer( string msg )
         { 
             if( _sender != null && _sender.Connected ) 
@@ -35,7 +41,7 @@ namespace TagwizzQASniffer.Network
 
         public void StartClient(string ip, int port)
         {
-            _socketThread = new System.Threading.Thread(o => ExecuteClient(ip,port))
+            _socketThread = new Thread(o => ExecuteClient(ip,port))
             {
                 IsBackground = true
             };
@@ -56,7 +62,11 @@ namespace TagwizzQASniffer.Network
                 Debug.Log($"Sender object is already disposed, {ode}");
             }
             finally {
-                _sender?.Close(); 
+                if (_sender != null)
+                {
+                    _sender.Close(); 
+                    _observer.DisconnectedNotify(); 
+                }
             }
         }
         
@@ -74,6 +84,7 @@ namespace TagwizzQASniffer.Network
                 {
                     _sender.Connect(localEndPoint);
                     Debug.LogFormat("Socket connected to -> {0} ", _sender.RemoteEndPoint.ToString());
+                    _observer.ConnectedNotify();
                     while (_isReading)
                     {
                         byte[] messageReceived = new byte[1024];
@@ -85,23 +96,28 @@ namespace TagwizzQASniffer.Network
                 catch (ArgumentNullException ane)
                 {
                     Debug.LogFormat("ArgumentNullException : {0}", ane.ToString());
+                    _observer.ExceptionThrownNotify();
                 }
                 catch (SocketException se)
                 {
                     Debug.LogFormat("SocketException : {0}", se.ToString());
+                    _observer.ExceptionThrownNotify();
                 }
                 catch (Exception e)
                 {
                     Debug.LogFormat("Unexpected exception : {0}", e.ToString());
+                    _observer.ExceptionThrownNotify();
                 }
                 finally
                 {
                     _sender.Close();
+                    _observer.DisconnectedNotify();
                 }
             } 
             catch (Exception e)
             { 
                 Debug.LogFormat(e.ToString()); 
+                _observer.ExceptionThrownNotify();
             } 
         }
 

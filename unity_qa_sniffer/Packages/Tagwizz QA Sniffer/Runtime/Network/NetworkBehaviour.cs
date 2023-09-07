@@ -1,50 +1,69 @@
+using System;
+using System.Collections;
 using System.IO;
+using System.Net.Sockets;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Core.FramesRecorder;
 using TagwizzQASniffer.Core.Recording;
 using TagwizzQASniffer.Exceptions;
+using TagwizzQASniffer.Network.Clients;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace TagwizzQASniffer.Network
 {
    
     enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE,GET_DEVICE_DATA, CHANGE_STATE }
+    public enum NetworkState {CONNECTED, DISCONNECTED}
 
-    public class NetworkBehaviour : MonoBehaviour, IRecorderListener, IFramesRecorderListener
+    public class NetworkBehaviour : MonoBehaviour, IRecorderListener, IFramesRecorderListener, IClientListener
     {
-        [SerializeField] private TMP_InputField ipInput;
-        [SerializeField] private TMP_InputField portInput;
-        [SerializeField] private TextMeshProUGUI logger;
         
         private CanvasGroup _canvasGroup;
-        private string GetIp => ipInput.text;
-        private int GetPort => int.Parse(portInput.text);
-        
         private SnifferCore _snifferCore;
-        private HubClient _client;
+        private HubClient _hubClient;
         private FileClient _fileClient;
         private StreamingClient _streamingClient;
-        private void Start()
+        private readonly string _serverIp = "";
+        private NetworkState _state;
+        public NetworkState State => _state;
+
+        public HubClient HubClient => _hubClient;
+        public StreamingClient StreamingClient => _streamingClient;
+        public Action networkInitialized;
+        
+
+        private void Awake()
         {
-            _client = new HubClient();
-            _client.OnReceivedMsgFromServerEvent += ClientOnReceivedMsgFromServer;
-            _fileClient = new FileClient();
-            _streamingClient = new StreamingClient();
-             
-            _canvasGroup = GetComponentInChildren<CanvasGroup>();
+            InitNetworkComponents();
         }
 
-        private void ClientOnReceivedMsgFromServer(string message)
+        private void InitNetworkComponents()
+        {
+            _hubClient = new HubClient();
+            _fileClient = new FileClient();
+            _streamingClient = new StreamingClient();
+            
+            _hubClient.Observer.Subscribe(this);
+            _streamingClient.Observer.Subscribe(this);
+            _state = NetworkState.DISCONNECTED;
+            networkInitialized?.Invoke();
+        }
+
+        private void Start()
+        {
+            _hubClient.OnReceivedMsgFromServerEvent += HubClientOnReceivedMsgFromServer;
+            _canvasGroup = GetComponentInChildren<CanvasGroup>();
+            _state = NetworkState.DISCONNECTED;
+        }
+
+        private void HubClientOnReceivedMsgFromServer(string message)
         {
            DecodeMessage(message); 
         }
 
-        private void ClientOnServerConnectionMadeEvent(string server)
-        {
-            logger.SetText($"Connected to {server}");
-        }
 
         private void DecodeMessage(string message)
         {
@@ -61,27 +80,27 @@ namespace TagwizzQASniffer.Network
             {
                 try
                 {
-                    _fileClient.SaveFile(GetIp, 44444, _snifferCore);
+                    _fileClient.SaveFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
                 }
-                catch (SnifferCoreSavingFileError e)
+                catch (SnifferCoreSaveFileException e)
                 {
-                    _client.SendMsgToServer(e.Message);
+                    _hubClient.SendMsgToServer(e.Message);
                 }
                 catch (SaveFileNetworkErrorException e)
                 {
-                   _client.SendMsgToServer(e.Message); 
+                   _hubClient.SendMsgToServer(e.Message); 
                 }
             }
             else if (message == CommandSignal.LOAD_FILE.ToString() && state == SnifferState.IDLE)
             {
                 try {
-                    _fileClient.LoadFile(GetIp, 44444, _snifferCore);
+                    _fileClient.LoadFile(_serverIp, NetworkDefinitions.FILE_PORT, _snifferCore);
                 }
-                catch (SnifferCoreLoadingFileError e) {
-                    _client.SendMsgToServer(e.Message);
+                catch (SnifferCoreLoadFileException e) {
+                    _hubClient.SendMsgToServer(e.Message);
                 }
                 catch (LoadFileNetworkErrorException e) {
-                    _client.SendMsgToServer(e.Message);
+                    _hubClient.SendMsgToServer(e.Message);
                 }
             }
             else
@@ -93,7 +112,7 @@ namespace TagwizzQASniffer.Network
 
         private void SendCommandErrorMsg(SnifferState state, string action)
         {
-            _client.SendMsgToServer($"Sniffer cannot perform a {action} action. Sniffer core state: {state}");
+            _hubClient.SendMsgToServer($"Sniffer cannot perform a {action} action. Sniffer core state: {state}");
         }
 
         private void Init()
@@ -112,7 +131,7 @@ namespace TagwizzQASniffer.Network
 
         private void SendServerSnifferCodeChangedState()
         {
-            _client.SendMsgToServer($"{_snifferCore.State}");
+            _hubClient.SendMsgToServer($"{_snifferCore.State}");
         }
         
 
@@ -126,18 +145,42 @@ namespace TagwizzQASniffer.Network
             _canvasGroup.alpha = 0;
         } 
 
-        public void Connect()
+        public bool Connect(string serverIp, int port)
         {
-            if (GetIp == string.Empty || portInput.text == string.Empty || _canvasGroup.alpha == 0) return;
-            if (!ValidateInputs()) return;
-            if (_client.isReading) return;
             
-            _client.StartClient(GetIp,GetPort);
-            _streamingClient.StartClient(GetIp);
-            portInput.interactable = false;
-            ipInput.interactable = false;
+            if (serverIp == string.Empty || port == 0 || _canvasGroup.alpha == 0) return false;
+            if (!ValidateInputs()) return false;
+            if (_hubClient.isReading) return false;
+            
+            try {
+                _streamingClient.StartClient(serverIp, NetworkDefinitions.STREAMING_PORT);
+                _state = NetworkState.CONNECTED;
+            }
+            catch (NetworkServerConnectionErrorException exp) {
+                Debug.Log($"Error trying to connect streaming client: {exp.Message}");
+                _state = NetworkState.DISCONNECTED;
+            }
+
+            try {
+                _hubClient.StartClient(serverIp, port);
+                _state = NetworkState.CONNECTED;
+            }
+            catch (NetworkServerConnectionErrorException exp) {
+                Debug.Log($"Error trying to connect hub client: {exp.Message}");
+                _state = NetworkState.DISCONNECTED;
+            }
+
+
+            return _state == NetworkState.CONNECTED;
         }
 
+        public void Disconnect()
+        {
+           _hubClient.StopClient(); 
+           _streamingClient.StopClient();
+           _fileClient.StopClient();
+        }
+        
         private bool ValidateInputs()
         {
             return true;
@@ -160,13 +203,13 @@ namespace TagwizzQASniffer.Network
 
         private bool IsActivated()
         {
-            return Input.touches.Length >= 4 || Keyboard.current.f1Key.wasPressedThisFrame;
+            return Input.touchCount >= 4 || Keyboard.current.f1Key.wasPressedThisFrame;
         }
 
         private void OnDestroy()
         {
-            _client.OnReceivedMsgFromServerEvent -= ClientOnReceivedMsgFromServer;
-            _client.StopClient();
+            _hubClient.OnReceivedMsgFromServerEvent -= HubClientOnReceivedMsgFromServer;
+            _hubClient.StopClient();
             _fileClient.StopClient();
 
             if (_snifferCore != null)
@@ -178,9 +221,9 @@ namespace TagwizzQASniffer.Network
 
         private void OnApplicationQuit()
         {
-            _client.StopClient();
+            _hubClient.StopClient();
             _fileClient.StopClient();
-            _streamingClient.StopSocket();
+            _streamingClient.StopClient();
         }
 
         #region IRecorderListener 
@@ -222,5 +265,19 @@ namespace TagwizzQASniffer.Network
         {
         }
         #endregion
-   }
+
+        void IClientListener.Connected()
+        {
+        }
+
+        void IClientListener.Disconnected()
+        {
+        }
+
+        void IClientListener.ExceptionThrown()
+        {
+            Debug.Log($"Connection exception occured");
+            InitNetworkComponents();
+        }
+    }
 }

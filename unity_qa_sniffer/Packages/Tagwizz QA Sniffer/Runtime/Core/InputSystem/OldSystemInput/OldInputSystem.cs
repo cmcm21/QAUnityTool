@@ -3,14 +3,20 @@ using System.Collections.Generic;
 
 namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 {
-    public enum InputType {KEY,TOUCH,BUTTON}
+    public enum InputType
+    {
+        KEY,
+        TOUCH,
+        BUTTON
+    }
+
     public class OldInputSystem
     {
-        private readonly List<InputTracker> _trackers = new List<InputTracker>();
         private readonly List<InputData> _inputData = new List<InputData>();
-        private MouseInputTracker _mouseInputTracker;
-        private KeyInputTracker _keyInputTracker;
+        private readonly List<InputTracker> _trackers = new List<InputTracker>();
         private AxesInputTracker _axesInputTracker;
+        private KeyInputTracker _keyInputTracker;
+        private MouseInputTracker _mouseInputTracker;
         private TouchInputTracker _touchInputTracker;
 
         public event Action<InputData> InputStarted;
@@ -22,8 +28,8 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
             AddAxesTracker();
             foreach (var track in _trackers)
             {
-                 track.TrackEnded += OnTrackEnded;
-                 track.TrackStarted += OnTrackStarted;
+                track.TrackEnded += OnTrackEnded;
+                track.TrackStarted += OnTrackStarted;
             }
         }
 
@@ -70,7 +76,7 @@ namespace TagwizzQASniffer.Core.InputSystem.OldSystemInput
 
         public void Stop()
         {
-            foreach(var tracker in _trackers)
+            foreach (var tracker in _trackers)
                 tracker.StopTracker();
         }
 
