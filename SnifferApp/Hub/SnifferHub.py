@@ -55,6 +55,7 @@ class SnifferHub:
         device: DeviceClient = kwargs["device"]
         device.msgReceivedEvent += self._onDeviceReceivedMessage
         device.deviceDisconnectedEvent += self._onDeviceDisconnected
+        device.deviceDisconnectedEvent += self.uiManager.deviceWidget.onDeviceDisconnected
         device.replayFinished += lambda *args, **kwargs: self.uiManager.deviceWidget.resetStreaming(device.id)
         device.hostnameUpdatedEvent += self.uiManager.deviceWidget.updateDeviceScreen
         device.hostnameUpdatedEvent += self.uiManager.serverWidget.updateDevice

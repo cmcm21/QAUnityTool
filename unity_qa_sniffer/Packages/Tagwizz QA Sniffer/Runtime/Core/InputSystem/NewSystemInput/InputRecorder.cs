@@ -426,7 +426,11 @@ namespace UnityEngine.InputSystem
             if (m_EventTrace == null || m_EventTrace.maxSizeInBytes == 0)
             {
                 m_EventTrace?.Dispose();
-                m_EventTrace = new InputEventTrace(m_CaptureMemoryDefaultSize, growBuffer: true, maxBufferSizeInBytes: m_CaptureMemoryMaxSize);
+                m_EventTrace = new InputEventTrace(
+                    m_CaptureMemoryDefaultSize, 
+                    growBuffer: true, 
+                    maxBufferSizeInBytes: m_CaptureMemoryMaxSize
+                );
             }
 
             m_EventTrace.recordFrameMarkers = m_RecordFrames;

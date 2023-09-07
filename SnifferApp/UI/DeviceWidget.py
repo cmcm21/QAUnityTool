@@ -102,6 +102,10 @@ class DeviceWidget(QtWidgets.QWidget):
         buttonsLayout.setContentsMargins(50, 10, 50, 10)
         return buttonsLayout
 
+    def onDeviceDisconnected(self, *args, **kwargs):
+        if self.screensUsed > 0:
+            self.screensUsed -= 1
+
     def noDevices(self):
         for key, value in self.deviceScreensRef.items():
             value.reset()

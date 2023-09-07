@@ -15,10 +15,9 @@ namespace TagwizzQASniffer.Core.Recording
         {
             _inputRecorder = new InputRecorder
             {
-                simulateOriginalTimingOnReplay = true,
+                simulateOriginalTimingOnReplay = false,
                 recordFrames = true,
                 devicePath = string.Empty,
-                replayOnNewDevices = true,
             };
             
             _inputRecorder.changeEvent.AddListener((state) => {

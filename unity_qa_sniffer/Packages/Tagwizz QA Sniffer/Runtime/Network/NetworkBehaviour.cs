@@ -47,6 +47,7 @@ namespace TagwizzQASniffer.Network
             _hubClient = new HubClient();
             _fileClient = new FileClient();
             _streamingClient = new StreamingClient();
+            _hubClient.OnReceivedMsgFromServerEvent += HubClientOnReceivedMsgFromServer;
             
             _hubClient.Observer.Subscribe(this);
             _streamingClient.Observer.Subscribe(this);
@@ -56,7 +57,6 @@ namespace TagwizzQASniffer.Network
 
         private void Start()
         {
-            _hubClient.OnReceivedMsgFromServerEvent += HubClientOnReceivedMsgFromServer;
             _canvasGroup = GetComponentInChildren<CanvasGroup>();
             _state = NetworkState.DISCONNECTED;
             
