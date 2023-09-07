@@ -104,7 +104,7 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def noDevices(self):
         for key, value in self.deviceScreensRef.items():
-            value.showDefaultImage()
+            value.reset()
 
     def createDeviceScreen(self, device: DeviceClient):
         if self.screensUsed < MAX_DEVICES:
@@ -112,6 +112,12 @@ class DeviceWidget(QtWidgets.QWidget):
             self.deviceScreensRef[device.id] = screenDevice
             screenDevice.setDevice(device)
             self.screensUsed += 1
+
+    def updateDeviceScreen(self, *args, **kwargs):
+        if 'device' in kwargs:
+            device: DeviceClient = kwargs['device']
+            if device.id in self.deviceScreensRef:
+                self.deviceScreensRef[device.id].setDevice(device)
 
     def deviceSelected(self, devices: list[DeviceClient]):
         for device in devices:
@@ -124,7 +130,7 @@ class DeviceWidget(QtWidgets.QWidget):
 
     def resetStreaming(self, address: str):
         if address in self.deviceScreensRef:
-            self.deviceScreensRef[address].showDefaultImage()
+            self.deviceScreensRef[address].reset()
 
     def __del__(self):
         return

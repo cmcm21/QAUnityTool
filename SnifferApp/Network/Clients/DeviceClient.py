@@ -22,6 +22,7 @@ class DeviceClient(GeneralSocket):
         self.stateChangedEvent = Event()
         self.replayFinished = Event()
         self.deviceDisconnectedEvent = Event()
+        self.hostnameUpdatedEvent = Event()
 
     def start(self):
         self.listeningSocket = True
@@ -51,6 +52,12 @@ class DeviceClient(GeneralSocket):
             self.deviceState = DeviceState.RECORDING
         elif message == DeviceState.PLAYING_BACK.value:
             self.deviceState = DeviceState.PLAYING_BACK
+
+        elif CommandSignal.SET_HOSTNAME.value in message:
+            splitMsg = message.split(':')
+            hostname = splitMsg.pop()
+            self.hostname = hostname
+            self.hostnameUpdatedEvent(device=self)
 
         self.stateChangedEvent(state=self.deviceState)
 

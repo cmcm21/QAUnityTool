@@ -11,8 +11,8 @@ MSG_BUFFER_SIZE = 1024
 
 class StreamingClient(GeneralSocket):
 
-    def __init__(self, socket: socket.socket, address):
-        super().__init__(socket, address)
+    def __init__(self, ownSocket: socket.socket, address):
+        super().__init__(ownSocket, address)
         print(f"\nStreaming client {address} is connected\n")
         self.frameReceivedCompleted = Event()
         self.frameNumber = 0
