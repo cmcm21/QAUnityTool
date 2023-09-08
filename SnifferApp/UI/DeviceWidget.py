@@ -70,7 +70,7 @@ class DeviceWidget(QtWidgets.QWidget):
         scrollArea.setWidget(widget)
         widget.setLayout(self.streamingContainer)
         scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scrollArea.setWidgetResizable(True)
 
         return scrollArea
@@ -103,6 +103,10 @@ class DeviceWidget(QtWidgets.QWidget):
         return buttonsLayout
 
     def onDeviceDisconnected(self, *args, **kwargs):
+        if 'device' in kwargs:
+            device = kwargs['device']
+            if device.id in self.deviceScreensRef:
+                self.deviceScreensRef[device.id].reset()
         if self.screensUsed > 0:
             self.screensUsed -= 1
 
