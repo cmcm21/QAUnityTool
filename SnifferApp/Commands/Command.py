@@ -128,8 +128,7 @@ class SaveCommand(Command):
         return True
 
     def saveFile(self, fileName: str, device: DeviceClient):
-        extPosition = fileName.find(self.inputFileExtension)
-        realName = fileName[:extPosition] + f"_{device.id}_" + fileName[extPosition:]
+        realName = self.inputDirectory + f"{device.hostname}_{device.ip}__" + fileName
 
         self.serverManager.fileServer.sendFile = False
         self.serverManager.fileServer.setFile(device.id, realName)
@@ -139,13 +138,11 @@ class SaveCommand(Command):
 
     def saveVideo(self, fileName: str, device: DeviceClient):
         baseName = os.path.basename(fileName)
-        fullName = f"{self.streamingDirectory}{baseName}"
+        fullName = f"{self.streamingDirectory}{device.hostname}_{device.ip}__{baseName}"
         if self.streamingFileExtension not in fullName:
             fullName += self.streamingFileExtension
-        extPosition = fileName.find(self.streamingFileExtension)
-        realName = fullName[:extPosition] + f"_{device.id}_" + fullName[extPosition:]
 
-        self.serverManager.streamingServer.helpers[device.id].saveFramesToVideo(realName)
+        self.serverManager.streamingServer.helpers[device.id].saveFramesToVideo(fullName)
 
     def _onFileReceiveFinished(self, *args, **kwargs):
         super().execute()
@@ -183,21 +180,21 @@ class AutoSaveCommand(SaveCommand):
         super().__init__(snifferHub, serverManager)
 
     @staticmethod
-    def createFileName(directory: str, fileExtension: str) -> str:
+    def createFileName(fileExtension: str) -> str:
         now = datetime.now()
         baseName = str(date.today()) + "__" + str(now.time())
         baseName = re.sub(r'[^\w_. -]', '_', baseName)
         currencies = 0
-        newPath = f"{directory}{baseName}{fileExtension}"
+        newPath = f"{baseName}{fileExtension}"
         while os.path.isfile(newPath):
             currencies += 1
-            newPath = f"{directory}{baseName}_{currencies}{fileExtension}"
+            newPath = f"{baseName}_{currencies}{fileExtension}"
 
         return newPath
 
     def execute(self) -> bool:
-        inputFileName = self.createFileName(self.inputDirectory, self.inputFileExtension)
-        streamingName = self.createFileName(self.streamingDirectory, self.streamingFileExtension)
+        inputFileName = self.createFileName(self.inputFileExtension)
+        streamingName = self.createFileName(self.streamingFileExtension)
         for device in self.serverManager.selectedDevices:
             self.saveVideo(streamingName, device)
             self.saveFile(inputFileName, device)

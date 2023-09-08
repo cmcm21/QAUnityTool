@@ -3,8 +3,10 @@ from Network.Clients.DeviceClient import DeviceClient
 from Network.Clients.StreamingClient import *
 from PySide6.QtGui import QPixmap
 from UI.DeviceScreen import DeviceScreen
+from UI.UIVideoPlayer import VideoPlayer
 from Utils.Settings import *
 from UI import UIManager
+from Utils.UIOrientation import Orientation
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -15,12 +17,19 @@ class DeviceWidget(QtWidgets.QWidget):
         self.screensUsed = 0
 
         self._initButtons()
-        self.streamingContainer = self._initStreamingScreens()
+        self.streamingScreens = self._initStreamingScreens()
         self.streamingScrollArea = self._initScrollArea()
-        self.container = QtWidgets.QHBoxLayout()
+        self.videoPlayer = VideoPlayer()
+        self.streamingLayout = self._initStreamingLayout()
+        self.streamingWidget = QtWidgets.QWidget()
+        self.streamingWidget.setLayout(self.streamingLayout)
+
+        self.tab = self._initTab()
+
+        self.container = QtWidgets.QVBoxLayout()
         self.buttonsLayout = self._setButtonsLayout()
+        self.container.addWidget(self.tab)
         self.container.addLayout(self.buttonsLayout)
-        self.container.addWidget(self.streamingScrollArea)
         self.setLayout(self.container)
 
     def setStreamingImage(self, pixmap: QPixmap, clientId: str):
@@ -28,19 +37,11 @@ class DeviceWidget(QtWidgets.QWidget):
             self.deviceScreensRef[clientId].setStreamingImage(pixmap)
 
     def _initButtons(self):
-        buttonsSize = QtCore.QSize(90, 30)
         self.recordBtn = QtWidgets.QPushButton("Record")
         self.stopBtn = QtWidgets.QPushButton("Stop")
         self.replayBtn = QtWidgets.QPushButton("Replay")
         self.stopReplayBtn = QtWidgets.QPushButton("Stop Replay")
         self.loadFileBtn = QtWidgets.QPushButton("Load")
-        UIManager.setWidgetSize(
-            buttonsSize,
-            self.replayBtn,
-            self.stopBtn, self.replayBtn,
-            self.stopReplayBtn,
-            self.loadFileBtn
-        )
 
         self.recordBtn.clicked.connect(self.onRecordBtnClicked)
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
@@ -68,12 +69,53 @@ class DeviceWidget(QtWidgets.QWidget):
         widget = QtWidgets.QWidget()
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidget(widget)
-        widget.setLayout(self.streamingContainer)
+        widget.setLayout(self.streamingScreens)
         scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scrollArea.setWidgetResizable(True)
 
         return scrollArea
+
+    def _initStreamingLayout(self):
+        vLayout = QtWidgets.QVBoxLayout()
+        btnLayout = self._initStreamingButtons()
+
+        vLayout.addLayout(btnLayout)
+        vLayout.addWidget(self.streamingScrollArea)
+        return vLayout
+
+    def _initStreamingButtons(self) -> QtWidgets.QHBoxLayout:
+        btnLayout = QtWidgets.QHBoxLayout()
+        self.landscapeBtn = QtWidgets.QPushButton("Landscape")
+        self.portraitBtn = QtWidgets.QPushButton("Portrait")
+
+        btnLayout.addWidget(self.landscapeBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        btnLayout.addWidget(self.portraitBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+
+        self.landscapeBtn.clicked.connect(self.onLandscapeBtnClicked)
+        self.portraitBtn.clicked.connect(self.onPortraitBtnClicked)
+        return btnLayout
+
+    def _initTab(self) -> QtWidgets.QTabWidget:
+        tab = QtWidgets.QTabWidget()
+        tab.addTab(self.streamingWidget, "Streaming")
+        tab.addTab(self.videoPlayer, "Video player")
+        tab.setMovable(True)
+        tab.setTabShape(QtWidgets.QTabWidget.TabShape.Triangular)
+
+        return tab
+
+    def _setButtonsLayout(self) -> QtWidgets.QLayout:
+        buttonsLayout = QtWidgets.QHBoxLayout()
+        buttonsLayout.addWidget(self.recordBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        buttonsLayout.addWidget(self.stopBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        buttonsLayout.addWidget(self.loadFileBtn,  alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        buttonsLayout.addWidget(self.replayBtn,  alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        buttonsLayout.addWidget(self.stopReplayBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+
+        buttonsLayout.setSpacing(5)
+        buttonsLayout.setContentsMargins(50, 5, 50, 5)
+        return buttonsLayout
 
     @QtCore.Slot()
     def onRecordBtnClicked(self):
@@ -91,16 +133,15 @@ class DeviceWidget(QtWidgets.QWidget):
     def onReplayBtnClicked(self):
         return
 
-    def _setButtonsLayout(self) -> QtWidgets.QLayout:
-        buttonsLayout = QtWidgets.QVBoxLayout()
-        buttonsLayout.addWidget(self.recordBtn)
-        buttonsLayout.addWidget(self.stopBtn)
-        buttonsLayout.addWidget(self.loadFileBtn)
-        buttonsLayout.addWidget(self.replayBtn)
-        buttonsLayout.addWidget(self.stopReplayBtn)
+    @QtCore.Slot()
+    def onLandscapeBtnClicked(self):
+        for screen in self.screens:
+            screen.setOrientation(Orientation.LANDSCAPE)
 
-        buttonsLayout.setContentsMargins(50, 10, 50, 10)
-        return buttonsLayout
+    @QtCore.Slot()
+    def onPortraitBtnClicked(self):
+        for screen in self.screens:
+            screen.setOrientation(Orientation.PORTRAIT)
 
     def onDeviceDisconnected(self, *args, **kwargs):
         if 'device' in kwargs:

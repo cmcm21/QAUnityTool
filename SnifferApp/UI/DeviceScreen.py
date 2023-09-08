@@ -2,14 +2,11 @@ from PySide6 import QtWidgets, QtCore, QtGui
 from Network.Clients.DeviceClient import DeviceClient, DeviceState
 from UI.ProgressBar import ProgressBar
 from Utils.StreamingVideoHelper import StreamingVideoHelper
-from enum import Enum
+from Utils.UIOrientation import Orientation
 
 SIZE_ZERO = QtCore.QSize(0, 0)
-
-
-class Orientation(Enum):
-    LANDSCAPE = 0
-    PORTRAIT = 1
+LANDSCAPE_IMG_PATH = "Assets/NoStreamingImgLandscape.png"
+PORTRAIT_IMG_PATH = "Assets/NoStreamingImgPortrait.png"
 
 
 def _checkImageOrientation(pixmap: QtGui.QPixmap) -> Orientation:
@@ -26,16 +23,18 @@ class DeviceScreen(QtWidgets.QWidget):
         self.device = None
         self.address = None
         self.landscapeSize = QtCore.QSize(400, 75)
-        self.portraitSize = QtCore.QSize(100, 250)
+        self.portraitSize = QtCore.QSize(200, 400)
         self.lastImgSize = SIZE_ZERO
+        self.orientation = Orientation.LANDSCAPE
 
-        self.noStreamingPath = "Assets/NoStreamingImg.png"
         self.qNameLabel = QtWidgets.QLabel(str(self.address))
         self.qStreamingLabel = QtWidgets.QLabel("Video Streaming")
-        self.progressBar = ProgressBar(QtCore.QSize(435, 15))
+        self.progressBar = ProgressBar(QtCore.QSize(435, 30))
+        self.progressBar.setMaximumHeight(50)
+        self.progressBar.setContentsMargins(40, 5, 0, 5)
         self.qvBox = QtWidgets.QVBoxLayout()
-        self.qvBox.addWidget(self.qNameLabel, alignment=QtCore.Qt.AlignmentFlag.AlignLeading)
-        self.qvBox.addWidget(self.qStreamingLabel, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.qvBox.addWidget(self.qNameLabel, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.qvBox.addWidget(self.qStreamingLabel, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.qvBox.addWidget(self.progressBar)
         self.qvBox.setSpacing(1)
         self.qvBox.setContentsMargins(5, 5, 5, 5)
@@ -47,7 +46,7 @@ class DeviceScreen(QtWidgets.QWidget):
     def setDevice(self, device: DeviceClient):
         self.device = device
         self.address = device.address
-        self.qNameLabel.setText(str(device.hostname))
+        self.qNameLabel.setText(f"{device.hostname} {device.address}")
         self.device.stateChangedEvent += self._onDeviceChangedState
 
     def setHelper(self, helper: StreamingVideoHelper):
@@ -66,8 +65,15 @@ class DeviceScreen(QtWidgets.QWidget):
         self.qNameLabel.setText("None")
 
     def _showDefaultImage(self):
-        pixmap = QtGui.QPixmap(self.noStreamingPath)
-        pixmap = pixmap.scaled(self.landscapeSize, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        if self.orientation == Orientation.LANDSCAPE:
+            imagePath = LANDSCAPE_IMG_PATH
+            scaleFactor = self.landscapeSize
+        else:
+            imagePath = PORTRAIT_IMG_PATH
+            scaleFactor = self.portraitSize
+
+        pixmap = QtGui.QPixmap(imagePath)
+        pixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
         self.qStreamingLabel.setPixmap(pixmap)
 
     def setStreamingImage(self, pixmap: QtGui.QPixmap):
@@ -81,3 +87,7 @@ class DeviceScreen(QtWidgets.QWidget):
         self.qStreamingLabel.setPixmap(scaledPixmap)
         self.setLayout(self.qvBox)
 
+    def setOrientation(self, orientation: Orientation):
+        self.orientation = orientation
+        if self.device is None or self.device.deviceState == DeviceState.IDLE:
+            self._showDefaultImage()

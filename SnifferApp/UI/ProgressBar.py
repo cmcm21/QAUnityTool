@@ -9,16 +9,16 @@ class ProgressBar(QtWidgets.QWidget):
         super().__init__()
         self.progressLayout = QtWidgets.QVBoxLayout()
         self.progressBar = QtWidgets.QProgressBar()
-        self.progressLabel = QtWidgets.QLabel()
+        self.progressLabel = QtWidgets.QLabel("Rendering")
         if size is not None:
-            UIManager.setWidgetSize(size, self.progressBar, self.progressLabel)
+            UIManager.setWidgetSize(size, self.progressBar)
         else:
             self.progressBar.setMaximumHeight(30)
             self.progressBar.setMinimumWidth(QtGui.QGuiApplication.primaryScreen().size().width())
-
+        self.progressBar.setTextVisible(True)
         self.progressLayout.addWidget(self.progressLabel, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
-        self.progressLayout.addWidget(self.progressBar, alignment=QtCore.Qt.AlignmentFlag.AlignBottom)
-        self.progressLayout.setSpacing(0)
+        self.progressLayout.addWidget(self.progressBar, alignment=QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.progressLayout.setSpacing(5)
         self.progressLayout.setContentsMargins(0, 0, 0, 0)
         self.max = 0
         self.setLayout(self.progressLayout)

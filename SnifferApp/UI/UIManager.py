@@ -43,9 +43,8 @@ class UIManager:
 
         self.mainWindow.setCentralWidget(QtWidgets.QWidget())
         self.mainWindow.centralWidget().setLayout(self.vLayout)
-        self.mainWindow.centralWidget().setMaximumSize(QtCore.QSize(1400, 800))
+        self.mainWindow.setMinimumWidth(1300)
         self.mainWindow.showNormal()
-        #self.mainWindow.showMaximized()
 
     def _connectEvents(self):
         self.serverWidget.devicesSelectedChanged += self._onDeviceSelectedChanged
