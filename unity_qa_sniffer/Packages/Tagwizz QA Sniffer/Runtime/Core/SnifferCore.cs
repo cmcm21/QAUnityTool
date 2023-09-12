@@ -77,6 +77,8 @@ namespace TagwizzQASniffer.Core
             _recorder.StopRec();
             
             if(_framesRecorder != null) _framesRecorder.StopRecording();
+            
+            Debug.Log("Sniffer Core Stopped");
         }
 
         public void Record()
@@ -118,6 +120,7 @@ namespace TagwizzQASniffer.Core
             _state = SnifferState.PLAYING_BACK;
             PlayFrameRecorder();
             _recorder.Replay();
+            Debug.Log("Sniffer Core Stopped Replay");
         }
 
         public void StopReplay()

@@ -2,7 +2,6 @@ import time
 
 from Network.GeneralSocket import GeneralSocket
 from Utils.Events import Event
-from Utils.StreamingVideoHelper import StreamingVideoHelper
 import socket
 
 BUFFER_SIZE = 32754
@@ -15,6 +14,7 @@ class StreamingClient(GeneralSocket):
         super().__init__(ownSocket, address)
         print(f"\nStreaming client {address} is connected\n")
         self.frameReceivedCompleted = Event()
+        self.disconnectedEvent = Event()
         self.frameNumber = 0
 
     def start(self):
@@ -38,7 +38,7 @@ class StreamingClient(GeneralSocket):
                     bytesRead.decode()
                     if self.frameNumber > 0:
                         frameEndTime = time.time()
-                        self.frameReceivedCompleted( frame=b''.join(frameBytes), id=self.id)
+                        self.frameReceivedCompleted(frame=b''.join(frameBytes), id=self.id)
                         frameBytes.clear()
                         frameBytesAmount = 0
                         frameStartTime = time.time()
@@ -54,6 +54,7 @@ class StreamingClient(GeneralSocket):
                 print("Error while reading frame")
 
     def _streamClientDisconnected(self):
+        self.disconnectedEvent(device=self)
         self.close()
 
     def close(self):

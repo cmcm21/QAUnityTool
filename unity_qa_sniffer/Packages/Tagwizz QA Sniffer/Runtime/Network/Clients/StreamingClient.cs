@@ -20,7 +20,7 @@ namespace TagwizzQASniffer.Network
         private IPAddress[] _ipArray;
         private IPEndPoint _endPoint;
         private Socket _sender;
-        private readonly Queue<MemoryStream> _framesToSend = new Queue<MemoryStream>();
+        private Queue<MemoryStream> _framesToSend;
         private Thread _socketThread;
         private StreamingClientState _state;
         private bool _canSend = false;
@@ -33,6 +33,7 @@ namespace TagwizzQASniffer.Network
         {
             _state = StreamingClientState.IDLE;
             _observer = new ClientObserver();
+            _framesToSend = new Queue<MemoryStream>();
         }
 
         public void StartClient(string ip, int streamingPort)
@@ -72,11 +73,9 @@ namespace TagwizzQASniffer.Network
             }
             catch (SocketException e) {
                 Debug.LogFormat("Socket exception: {0}", e.Message.ToString());
-                _observer.ExceptionThrownNotify();
             } 
             finally {
-                _sender.Close();
-                _observer.DisconnectedNotify();
+                StopClient();
             } 
         }
         
@@ -108,13 +107,13 @@ namespace TagwizzQASniffer.Network
             }
             catch (SocketException e)
             {
+                StopClient();
                 Debug.LogFormat("Socket exception: {0}", e.Message.ToString());
-                _observer.ExceptionThrownNotify();
             }
             catch (Exception e)
             {
+                StopClient();
                 Debug.LogFormat("Exception sending data");
-                _observer.ExceptionThrownNotify();
             }
             finally 
             { 
@@ -127,6 +126,7 @@ namespace TagwizzQASniffer.Network
         public void StopClient()
         {
             _canSend = false;
+            _framesToSend.Clear();
             if(_socketThread != null)
                 _socketThread.Abort();
             

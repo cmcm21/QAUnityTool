@@ -10,7 +10,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(NetworkBehaviour))]
 public class UINetworkManager : MonoBehaviour,  IClientListener
 {
-        public enum ListenerState { CONNECTED, DISCONNECTED, ERROR, NONE }
+        public enum ListenerState { CONNECTED, DISCONNECTED, NONE }
         
         [SerializeField] private TMP_InputField ipInput;
         [SerializeField] private TMP_InputField portInput;
@@ -71,13 +71,7 @@ public class UINetworkManager : MonoBehaviour,  IClientListener
 
         public void Update()
         {
-            if (_listenerState == ListenerState.ERROR)
-            {
-                logger.text = "Exception from connection, Disconnected";
-                connectBtn.interactable = true;
-                _listenerState = ListenerState.NONE;
-            }
-            else if (_listenerState == ListenerState.CONNECTED)
+            if (_listenerState == ListenerState.CONNECTED)
             {
                 logger.text = "Connected";
                 _listenerState = ListenerState.NONE;
@@ -106,10 +100,5 @@ public class UINetworkManager : MonoBehaviour,  IClientListener
         void IClientListener.Disconnected()
         {
             _listenerState = ListenerState.DISCONNECTED;
-        }
-
-        void IClientListener.ExceptionThrown()
-        {
-            _listenerState = ListenerState.ERROR;
         }
 }

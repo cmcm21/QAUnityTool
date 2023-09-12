@@ -46,6 +46,7 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
 
     def _handleClient(self, client: StreamingClient):
         client.frameReceivedCompleted += self._onFrameCompleted
+        client.disconnectedEvent +=  self._onDeviceDisconnected
         helper = StreamingVideoHelper()
         self.helpers[client.id] = helper
         self.clients.append(client)
@@ -58,6 +59,17 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
         if self._processQSignal(frame, clientId):
             self.helpers[clientId].addFrame(frame)
             self.frameReceivedCompleted(frame=frame, id=clientId)
+
+    def _onDeviceDisconnected(self, *args, **kwargs):
+        if 'device' in kwargs:
+            device: StreamingClient = kwargs['device']
+
+            if device.id in self.helpers.keys():
+                self.helpers[device.id].reset()
+                del self.helpers[device.id]
+
+            if device in self.clients:
+                self.clients.remove(device)
 
     def _processQSignal(self, frame: bytes, clientId: str) -> bool:
         pixmap = QPixmap()

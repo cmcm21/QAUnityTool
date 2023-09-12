@@ -135,7 +135,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 				{
 					var memoryStream = new MemoryStream(_frameQueue.Dequeue());
 					_observer.NotifyFrameRecorded(memoryStream);
-					_savingFrameNumber ++;
+					_savingFrameNumber++;
 				}
 				else
 				{

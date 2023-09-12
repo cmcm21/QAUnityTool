@@ -165,7 +165,8 @@ namespace TagwizzQASniffer.Network
                 _socketThread.Abort();
 
             try {
-                _sender?.Shutdown(SocketShutdown.Send);
+                if(_sender != null)
+                    _sender?.Shutdown(SocketShutdown.Send);
             }
             finally {
                 _sender?.Close(); 

@@ -25,6 +25,9 @@ class StreamingVideoHelper(QtCore.QObject):
     def addFrame(self, frame):
         self.allFrames.append(frame)
 
+    def reset(self):
+        self.allFrames.clear()
+
     def onRecordingStarted(self):
         self.startRecordingTime = time.time()
 
