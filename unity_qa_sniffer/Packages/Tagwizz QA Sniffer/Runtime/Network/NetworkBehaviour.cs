@@ -1,16 +1,13 @@
 using System;
 using System.Collections;
 using System.IO;
-using System.Net.Sockets;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Core.FramesRecorder;
 using TagwizzQASniffer.Core.Recording;
 using TagwizzQASniffer.Exceptions;
 using TagwizzQASniffer.Network.Clients;
 using UnityEngine;
-using TMPro;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace TagwizzQASniffer.Network
 {
@@ -34,7 +31,6 @@ namespace TagwizzQASniffer.Network
         public HubClient HubClient => _hubClient;
         public StreamingClient StreamingClient => _streamingClient;
         public Action networkInitialized;
-        
 
         private void Awake()
         {
@@ -50,7 +46,7 @@ namespace TagwizzQASniffer.Network
             _hubClient.OnReceivedMsgFromServerEvent += HubClientOnReceivedMsgFromServer;
             
             _hubClient.Observer.Subscribe(this);
-            _streamingClient.Observer.Subscribe(this);
+           // _streamingClient.Observer.Subscribe(this);
             _state = NetworkState.DISCONNECTED;
             networkInitialized?.Invoke();
         }
@@ -168,7 +164,6 @@ namespace TagwizzQASniffer.Network
             {
                 _hubClient.StartClient(serverIp, port);
                 _state = NetworkState.CONNECTED;
-                StartCoroutine(SendHostname());
             }
             catch (NetworkServerConnectionErrorException exp)
             {
@@ -187,18 +182,17 @@ namespace TagwizzQASniffer.Network
 
             return _state == NetworkState.CONNECTED;
         }
-
-        private IEnumerator SendHostname()
-        {
-            yield return new WaitForSeconds(0.5f);
-            _hubClient.SendMsgToServer($"{CommandSignal.SET_HOSTNAME}:{_deviceName}");
-        }
+        
 
         public void Disconnect()
         {
-           _hubClient.StopClient(); 
-           _streamingClient.StopClient();
-           _fileClient.StopClient();
+            _state = NetworkState.DISCONNECTED;
+            if(_snifferCore.State == SnifferState.RECORDING)
+                _snifferCore.Stop();
+            
+            _hubClient.StopClient(); 
+            _streamingClient.StopClient();
+            _fileClient.StopClient();
         }
         
         private bool ValidateInputs()
@@ -244,7 +238,20 @@ namespace TagwizzQASniffer.Network
             _hubClient.StopClient();
             _fileClient.StopClient();
             _streamingClient.StopClient();
+            _snifferCore?.Stop();
         }
+
+        private void OnConnectionInterrupted()
+        {
+            if (_snifferCore == null) return;
+            
+            if(_snifferCore.State == SnifferState.RECORDING)
+                _snifferCore.Stop();
+            else if(_snifferCore.State == SnifferState.PLAYING_BACK)
+                _snifferCore.StopReplay();
+        }
+        
+        
 
         #region IRecorderListener 
 
@@ -286,18 +293,20 @@ namespace TagwizzQASniffer.Network
         }
         #endregion
 
+        #region ClientListener 
+
         void IClientListener.Connected()
         {
+            if(_hubClient.IsConnected)
+                _hubClient.SendMsgToServer($"{CommandSignal.SET_HOSTNAME}:{_deviceName}");
         }
-
+ 
         void IClientListener.Disconnected()
         {
+            OnConnectionInterrupted();
+            _state = NetworkState.DISCONNECTED;
         }
-
-        void IClientListener.ExceptionThrown()
-        {
-            Debug.Log($"Connection exception occured");
-            InitNetworkComponents();
-        }
+ 
+        #endregion
     }
 }

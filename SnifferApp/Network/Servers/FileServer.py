@@ -33,7 +33,7 @@ class FileServer(GeneralSocket, QtCore.QObject):
 
         self.listeningSocket = True
         self.socket.bind(self.address)
-        self.socket.listen(MAX_DEVICES)
+        self.socket.listen(MAX_DEVICES_TO_LISTENING)
         print(f"File server started at {self.address}")
         self.socketThread.start()
 

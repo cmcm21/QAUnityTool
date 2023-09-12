@@ -27,7 +27,7 @@ class ServerManager(GeneralSocket):
 
         self.listeningSocket = True
         self.socket.bind(self.address)
-        self.socket.listen(MAX_DEVICES)
+        self.socket.listen(MAX_DEVICES_TO_LISTENING)
         self.serverInitEvent(message="Server started at :" + self.ip + " on port: " + str(self.port))
         self.socketThread.start()
 

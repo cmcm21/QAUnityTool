@@ -7,7 +7,6 @@ namespace TagwizzQASniffer.Network.Clients
     {
         public void Connected();
         public void Disconnected();
-        public void ExceptionThrown();
     }
 
     public class ClientObserver
@@ -23,20 +22,16 @@ namespace TagwizzQASniffer.Network.Clients
 
         public void ConnectedNotify()
         {
+            if (_clients == null) return;
             foreach (var client in _clients)
                 client.Connected();
         }
 
         public void DisconnectedNotify()
         {
+            if (_clients == null) return;
             foreach(var client in _clients)
                 client.Disconnected();
-        }
-
-        public void ExceptionThrownNotify()
-        {
-            foreach(var client in _clients)
-                client.ExceptionThrown();
         }
 
         public void Unsubscribe(IClientListener clientListener)

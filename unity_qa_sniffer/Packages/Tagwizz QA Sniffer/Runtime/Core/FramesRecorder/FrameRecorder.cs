@@ -121,7 +121,13 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 			tex.Apply();
 
 			// Encode the bytes in JPG format
-			byte[] bytes = ImageConversion.EncodeArrayToJPG(tex.GetRawTextureData(), tex.graphicsFormat, (uint)width, (uint)height);
+			byte[] bytes = ImageConversion.EncodeArrayToJPG(
+						tex.GetRawTextureData(), 
+						tex.graphicsFormat, 
+						(uint)width, 
+						(uint)height
+					  );
+			
 			Object.Destroy(tex);
 
 			_frameQueue.Enqueue(bytes);
@@ -135,7 +141,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 				{
 					var memoryStream = new MemoryStream(_frameQueue.Dequeue());
 					_observer.NotifyFrameRecorded(memoryStream);
-					_savingFrameNumber ++;
+					_savingFrameNumber++;
 				}
 				else
 				{

@@ -5,8 +5,8 @@ from PySide6.QtGui import QPixmap
 from UI.DeviceScreen import DeviceScreen
 from UI.UIVideoPlayer import VideoPlayer
 from Utils.Settings import *
-from UI import UIManager
 from Utils.UIOrientation import Orientation
+from Utils.StreamingVideoHelper import StreamingVideoHelper
 
 
 class DeviceWidget(QtWidgets.QWidget):
@@ -148,15 +148,16 @@ class DeviceWidget(QtWidgets.QWidget):
             device = kwargs['device']
             if device.id in self.deviceScreensRef:
                 self.deviceScreensRef[device.id].reset()
+
         if self.screensUsed > 0:
             self.screensUsed -= 1
 
     def noDevices(self):
-        for key, value in self.deviceScreensRef.items():
-            value.reset()
+        for screen in self.screens:
+            screen.reset()
 
     def createDeviceScreen(self, device: DeviceClient):
-        if self.screensUsed < MAX_DEVICES:
+        if self.screensUsed < MAX_DEVICES_TO_LISTENING:
             screenDevice: DeviceScreen = self.screens[self.screensUsed]
             self.deviceScreensRef[device.id] = screenDevice
             screenDevice.setDevice(device)

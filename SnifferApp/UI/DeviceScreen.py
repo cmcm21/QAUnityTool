@@ -77,7 +77,7 @@ class DeviceScreen(QtWidgets.QWidget):
         self.qStreamingLabel.setPixmap(pixmap)
 
     def setStreamingImage(self, pixmap: QtGui.QPixmap):
-        if self.device.deviceState == DeviceState.IDLE:
+        if self.device is None or self.device.deviceState == DeviceState.IDLE:
             return
 
         scaleFactor = self.landscapeSize \
