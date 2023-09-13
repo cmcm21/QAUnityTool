@@ -10,7 +10,7 @@ class GeneralSocket:
         self.address = address
         self.ip = address[0]
         self.port = address[1]
-        self.socketThread = Thread(target=self._socketWorker, daemon=True)
+        self.socketThread = Thread(target=self._socketWorker)
         self.listeningSocket = False
         self.id = str(self.ip)
         self.hostname = None

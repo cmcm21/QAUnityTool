@@ -15,10 +15,11 @@ namespace TagwizzQASniffer.Core
 
         private IRecorder _recorder;
         public IRecorder Recorder => _recorder;
-        private FrameRecorder _framesRecorder;
-        public FrameRecorder FramesRecorder => _framesRecorder;
+        private FrameCapture _framesCapture;
+        public FrameCapture framesCapture => _framesCapture;
         private SnifferSettings _snifferSettings;
         public SnifferSettings.InputSystemType SysType => _snifferSettings.InputSystem;
+        public SnifferSettings SnifferSettings => _snifferSettings;
 
         public void Init()
         {
@@ -27,7 +28,7 @@ namespace TagwizzQASniffer.Core
             InitDependencies();
             InitObserver();
             
-            if(_snifferSettings.RecordFrames)
+            if(_snifferSettings.LiveStreaming)
                 InitFramesRecorder();
         }
 
@@ -40,7 +41,7 @@ namespace TagwizzQASniffer.Core
         private void InitDependencies()
         {
             _recorder = _snifferSettings.InputSystem == SnifferSettings.InputSystemType.NEW_INPUT
-                ? (IRecorder)new NewInpSysRecorder()
+                ? (IRecorder)new NewInpSysRecorder(_snifferSettings)
                 : (IRecorder)new OldInpSysRecorder();
 
             _recorder.Subscribe(this);
@@ -65,10 +66,10 @@ namespace TagwizzQASniffer.Core
                         currentCamera = camera;
                 }
             }
-            _framesRecorder = currentCamera.gameObject.AddComponent<FrameRecorder>();
-            _framesRecorder.frameRate = _snifferSettings.FrameRate;
-            _framesRecorder.maxFrames = _snifferSettings.MaxFramesPerRec;
-            _framesRecorder.Observer.Subscribe(this);
+            _framesCapture = currentCamera.gameObject.AddComponent<FrameCapture>();
+            _framesCapture.frameRate = _snifferSettings.FrameRate;
+            _framesCapture.maxFrames = _snifferSettings.MaxFramesPerRec;
+            _framesCapture.Observer.Subscribe(this);
         }
         
         public void Stop()
@@ -76,7 +77,7 @@ namespace TagwizzQASniffer.Core
             _state = SnifferState.IDLE;
             _recorder.StopRec();
             
-            if(_framesRecorder != null) _framesRecorder.StopRecording();
+            if(_framesCapture != null) _framesCapture.StopRecording();
             
             Debug.Log("Sniffer Core Stopped");
         }
@@ -91,11 +92,11 @@ namespace TagwizzQASniffer.Core
 
         private void PlayFrameRecorder()
         {
-             if (_framesRecorder != null)
+             if (_framesCapture != null)
              {
-                 if(_framesRecorder.State == FrameRecorderState.RECORDING)
-                     _framesRecorder.StopRecording();
-                 _framesRecorder.StartRecording();
+                 if(_framesCapture.State == FrameRecorderState.RECORDING)
+                     _framesCapture.StopRecording();
+                 _framesCapture.StartRecording();
              }
         }
 
@@ -128,7 +129,7 @@ namespace TagwizzQASniffer.Core
             _state = SnifferState.IDLE;
             _recorder.StopPlay();
             
-            if(_framesRecorder != null) _framesRecorder.StopRecording();
+            if(_framesCapture != null) _framesCapture.StopRecording();
         }
 
         public void Save(string recordingFileName)
@@ -175,8 +176,8 @@ namespace TagwizzQASniffer.Core
         void IRecorderListener.OnReplayFinished() 
         {
             _state = SnifferState.IDLE;
-            if(_framesRecorder != null && _framesRecorder.State == FrameRecorderState.RECORDING)
-                _framesRecorder.StopRecording();
+            if(_framesCapture != null && _framesCapture.State == FrameRecorderState.RECORDING)
+                _framesCapture.StopRecording();
         }
  
 

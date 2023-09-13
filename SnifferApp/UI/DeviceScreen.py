@@ -61,6 +61,7 @@ class DeviceScreen(QtWidgets.QWidget):
             self._showDefaultImage()
 
     def reset(self):
+        self.hide()
         self._showDefaultImage()
         self.qNameLabel.setText("None")
 

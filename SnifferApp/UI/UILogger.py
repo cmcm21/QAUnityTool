@@ -11,13 +11,24 @@ class UILogger(QtWidgets.QWidget):
         self.layout.addWidget(self.console)
         self.layout.addWidget(self.clearBtn)
 
+        self.console.textChanged.connect(self._setVScrollBarMaxValue)
         self.clearBtn.clicked.connect(self.clear)
         self.setMaximumSize(QtCore.QSize(3000, 200))
         self.setLayout(self.layout)
 
     def appendText(self, text: str):
         self.console.append(text)
-        return
+        self._setVScrollBarMaxValue()
+
+    def _onTextChanged(self):
+        self._setVScrollBarMaxValue()
+
+    def _setVScrollBarMaxValue(self):
+        scrollBar = self.console.verticalScrollBar()
+        if scrollBar:
+            maxValue = scrollBar.maximum()
+            self.console.verticalScrollBar().setValue(maxValue)
+
 
     @QtCore.Slot()
     def clear(self):

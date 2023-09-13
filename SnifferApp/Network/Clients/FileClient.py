@@ -15,7 +15,7 @@ class FileClient(GeneralSocket):
     def __init__(self, ownSocket: socket.socket, address):
         super().__init__(ownSocket, address)
         print("File client: " + str(address) + f" connected")
-        self.sendThread = Thread(target=self._sendClientWorker, daemon=True)
+        self.sendThread = Thread(target=self._sendClientWorker)
         self.fileReceiveStartedEvent = Event()
         self.fileReceiveFinishedEvent = Event()
         self.fileSendStartedEvent = Event()
@@ -35,8 +35,8 @@ class FileClient(GeneralSocket):
         self.sendThread.start()
 
     def _socketWorker(self):
-        while not self.fileSet:
-            time.sleep(0.001)
+        #while not self.fileSet:
+        #    time.sleep(0.001)
 
         fileName = os.path.basename(self.filePath)
         try:

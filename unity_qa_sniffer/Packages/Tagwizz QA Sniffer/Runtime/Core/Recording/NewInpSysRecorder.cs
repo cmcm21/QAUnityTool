@@ -11,13 +11,14 @@ namespace TagwizzQASniffer.Core.Recording
 
         private readonly List<IRecorderListener> _recorderListeners = new List<IRecorderListener>();
         
-        public NewInpSysRecorder()
+        public NewInpSysRecorder(SnifferSettings settings)
         {
             _inputRecorder = new InputRecorder
             {
-                simulateOriginalTimingOnReplay = false,
-                recordFrames = true,
-                devicePath = string.Empty,
+                simulateOriginalTimingOnReplay = settings.SimulateOriginalTimingOnReplay,
+                recordFrames = settings.RecordInputFrames,
+                replayOnNewDevices = settings.ReplayOnNewDevices,
+                recordStateEventsOnly = settings.RecordStateEventOnly
             };
             
             _inputRecorder.changeEvent.AddListener((state) => {

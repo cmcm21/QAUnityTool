@@ -142,7 +142,8 @@ class SaveCommand(Command):
         if self.streamingFileExtension not in fullName:
             fullName += self.streamingFileExtension
 
-        self.serverManager.streamingServer.helpers[device.id].saveFramesToVideo(fullName)
+        if device.id in self.serverManager.streamingServer.helpers:
+            self.serverManager.streamingServer.helpers[device.id].saveFramesToVideo(fullName)
 
     def _onFileReceiveFinished(self, *args, **kwargs):
         super().execute()

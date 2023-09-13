@@ -10,7 +10,7 @@ namespace TagwizzQASniffer.Core.FramesRecorder
 {
 	public enum FrameRecorderState {RECORDING,IDLE, WAITING}
 	[RequireComponent(typeof(Camera))]
-	public class FrameRecorder : MonoBehaviour 
+	public class FrameCapture : MonoBehaviour 
 	{
 		// Public Properties
 		public int maxFrames; // maximum number of frames you want to record in one video

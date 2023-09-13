@@ -61,6 +61,7 @@ class DeviceWidget(QtWidgets.QWidget):
                 row += 1
                 column = 0
 
+            screenDevice.hide()
         streamingContainer.setSpacing(0)
         streamingContainer.setContentsMargins(0, 0, 0, 0)
         return streamingContainer

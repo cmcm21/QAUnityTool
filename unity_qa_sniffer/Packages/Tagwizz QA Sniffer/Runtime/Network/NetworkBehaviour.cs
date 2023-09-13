@@ -133,7 +133,7 @@ namespace TagwizzQASniffer.Network
         private void ConnectEvents()
         {
             _snifferCore.Recorder.Subscribe(this);
-            _snifferCore.FramesRecorder.Observer.Subscribe(this);
+            _snifferCore.framesCapture.Observer.Subscribe(this);
         }
 
         private void SendServerSnifferCodeChangedState()
@@ -170,14 +170,18 @@ namespace TagwizzQASniffer.Network
                 Debug.Log($"Error trying to connect hub client: {exp.Message}");
                 _state = NetworkState.DISCONNECTED;
             }
-           
-            try {
-                _streamingClient.StartClient(serverIp, NetworkDefinitions.STREAMING_PORT);
-                _state = NetworkState.CONNECTED;
-            }
-            catch (NetworkServerConnectionErrorException exp) {
-                Debug.Log($"Error trying to connect streaming client: {exp.Message}");
-                _state = NetworkState.DISCONNECTED;
+
+            if (_snifferCore.SnifferSettings.LiveStreaming)
+            {
+                try {
+                    _streamingClient.StartClient(serverIp, NetworkDefinitions.STREAMING_PORT);
+                    _state = NetworkState.CONNECTED;
+                }
+                catch (NetworkServerConnectionErrorException exp) {
+                    Debug.Log($"Error trying to connect streaming client: {exp.Message}");
+                    _state = NetworkState.DISCONNECTED;
+                }
+
             }
 
             return _state == NetworkState.CONNECTED;

@@ -68,6 +68,8 @@ class DeviceClient(GeneralSocket):
                 self._handleDeviceDisconnection()
         except ConnectionError:
             self._handleDeviceDisconnection()
+        except OSError:
+            self._handleDeviceDisconnection()
 
     def close(self):
         super().close()
