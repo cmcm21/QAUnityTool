@@ -47,6 +47,8 @@ class DeviceWidget(QtWidgets.QWidget):
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
         self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
         self.replayBtn.clicked.connect(self.onReplayBtnClicked)
+        self.stopReplayBtn.clicked.connect(self.onStopReplayBtnClicked)
+        self.disableAllCommandsButtons()
 
     def _initStreamingScreens(self) -> QtWidgets.QLayout:
         streamingContainer = QtWidgets.QGridLayout()
@@ -120,19 +122,43 @@ class DeviceWidget(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def onRecordBtnClicked(self):
-        pass
+        self.stopBtn.setEnabled(True)
+        self.recordBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onStopBtnClicked(self):
-        return
+        self.recordBtn.setEnabled(True)
+        self.replayBtn.setEnabled(True)
+        self.stopBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(True)
+        self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onLoadBtnClicked(self):
-        return
+        self.recordBtn.setEnabled(False)
+        self.replayBtn.setEnabled(True)
+        self.loadFileBtn.setEnabled(True)
+        self.stopReplayBtn.setEnabled(False)
+        self.stopBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onReplayBtnClicked(self):
-        return
+        self.recordBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(True)
+        self.loadFileBtn.setEnabled(False)
+        self.stopBtn.setEnabled(False)
+
+    @QtCore.Slot()
+    def onStopReplayBtnClicked(self):
+        self.replayBtn.setEnabled(True)
+        self.recordBtn.setEnabled(True)
+        self.stopBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(True)
+        self.stopReplayBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onLandscapeBtnClicked(self):
@@ -143,6 +169,20 @@ class DeviceWidget(QtWidgets.QWidget):
     def onPortraitBtnClicked(self):
         for screen in self.screens:
             screen.setOrientation(Orientation.PORTRAIT)
+
+    def defaultCommandsButtonsConf(self):
+        self.recordBtn.setEnabled(True)
+        self.replayBtn.setEnabled(False)
+        self.stopBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(True)
+        self.stopReplayBtn.setEnabled(False)
+
+    def disableAllCommandsButtons(self):
+        self.recordBtn.setEnabled(False)
+        self.replayBtn.setEnabled(False)
+        self.stopBtn.setEnabled(False)
+        self.loadFileBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(False)
 
     def onDeviceDisconnected(self, *args, **kwargs):
         if 'device' in kwargs:
@@ -156,6 +196,8 @@ class DeviceWidget(QtWidgets.QWidget):
     def noDevices(self):
         for screen in self.screens:
             screen.reset()
+
+        self.disableAllCommandsButtons()
 
     def createDeviceScreen(self, device: DeviceClient):
         if self.screensUsed < MAX_DEVICES_TO_LISTENING:
@@ -171,6 +213,9 @@ class DeviceWidget(QtWidgets.QWidget):
                 self.deviceScreensRef[device.id].setDevice(device)
 
     def deviceSelected(self, devices: list[DeviceClient]):
+        if len(devices) > 0:
+            self.defaultCommandsButtonsConf()
+
         for device in devices:
             if device.id in self.deviceScreensRef:
                 self.deviceScreensRef[device.id].show()
@@ -182,6 +227,8 @@ class DeviceWidget(QtWidgets.QWidget):
     def resetStreaming(self, address: str):
         if address in self.deviceScreensRef:
             self.deviceScreensRef[address].reset()
+            
+        self.defaultCommandsButtonsConf()
 
     def __del__(self):
         return
