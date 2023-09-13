@@ -2,8 +2,9 @@
 ---
 title: Sniffer Hub Application
 ---
+
 classDiagram
-direction BT
+direction LR
 class HubApplication {
 	-UIManager uiManager
 	-ServerManager server
@@ -13,7 +14,7 @@ class HubApplication {
 	+ExecuteCommand(Command command) 
 }
 
-class CommandName{
+class CommandSignal{
 <<Enum>>
 	PLAY
 	REPLAY
@@ -24,21 +25,20 @@ class CommandName{
 }
 
 class ServerManager{
-	-List~DeviceConnection~ connections
-	-Dictionary~string,DeviceConnection~ clientRefs
+	-List ~DeviceConnection~ connections
 	+Socket clientSelected
  
 	+Init()
 	+Listen()
-	+SendCommandNameAllClients(CommandName command)
+	+SendCommandSignalAllClients(CommandSignal command)
 	+SendFileAllClients(string filePath) 
 } 
 
 class DeviceConnection{
-	-Socket clientSocket;
+	-Socket clientSocket
 	
 	+ListenCommandNames()
-	+SendCommandName(CommandName command)
+	+SendCommandSignal(CommandSignal command)
 	+SendFile(string filePath) 
 	+GetFile()
 	+GetDeviceData()
@@ -46,9 +46,13 @@ class DeviceConnection{
 
 ServerManager*--HubApplication
 DeviceConnection*--ServerManager
-DeviceConnection--CommandName
-ServerManager--CommandName
+DeviceConnection*--CommandSignal
+
+
 ```
+
+
+
 
 
 
@@ -63,7 +67,7 @@ class Command{
 	#HubApplication application
 	#ServerManager server 
 	#CommandName name
-	+Command(HubApplication app, ServerManager server,CommandName name)	 
+	+Command(HubApplication app, ServerManager server,CommandSignal name)	 
 	+Execute()
 }
 
@@ -107,6 +111,7 @@ Command <|--SendFileCommand
 Command o--CommandHistory
 
 ```
+
 
 
 

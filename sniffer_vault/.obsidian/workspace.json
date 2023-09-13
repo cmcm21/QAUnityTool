@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "2023-09-06.md",
+                "file": "Documentación de QA Sniffer.md",
                 "mode": "source",
                 "source": false
               }
@@ -69,8 +69,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "e3e48fb6066ee8e4",
@@ -86,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "2023-09-06.md",
+                "file": "Documentación de QA Sniffer.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -103,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "2023-09-06.md",
+                "file": "Documentación de QA Sniffer.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -126,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "2023-09-06.md"
+                "file": "Documentación de QA Sniffer.md"
               }
             }
           }
@@ -149,20 +148,30 @@
   },
   "active": "6869b7f58dfa3b0e",
   "lastOpenFiles": [
-    "2023-09-01.md",
-    "2023-09-06.md",
+    "Images/Pasted image 20230913174619.png",
+    "Documentación de QA Sniffer.md",
+    "Images/Pasted image 20230913175018.png",
+    "Images/Pasted image 20230913174911.png",
+    "Images/Pasted image 20230913174720.png",
+    "Images/PythonInterpreterScreenShot.png",
+    "Images/PythonNewInterpreterScreenShot.png",
+    "Notes/2023-08-01.md",
+    "Sniffer Core Diagram.md",
+    "Notes/2023-09-06.md",
+    "Notes/2023-08-07.md",
+    "Images/SnifferSettingsImage.png",
+    "Images/TagwizzQASnifferPath.png",
+    "Images",
     "TODO/2023-08-24.md",
     "TODO/2023-08-23.md",
-    "Notes/Today Tasks.md",
-    "2023-08-03.md",
-    "TODO",
-    "2023-08-01.md",
     "Architecture/Sniffer Hub.md",
-    "2023-08-07.md",
-    "Sniffer Core Diagram.md",
-    "Architecture/Sniffer Class Diagrams.md",
     "Architecture/Input System Flow Chart.md",
-    "2023-08-11.md",
+    "Architecture/Sniffer Class Diagrams.md",
+    "Notes/2023-09-01.md",
+    "Notes/Today Tasks.md",
+    "Notes/2023-08-03.md",
+    "TODO",
+    "Notes/2023-08-11.md",
     "2023-07-31.md",
     "Untitled 1.canvas",
     "Untitled.canvas",
