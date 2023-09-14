@@ -113,6 +113,12 @@ class SaveCommand(Command):
         self.streamingFileExtension = ".avi"
         self.inputFileExtension = ".inputtrace"
 
+        if not os.path.isdir(self.inputDirectory):
+            os.mkdir(self.inputDirectory)
+
+        if not os.path.isdir(self.streamingDirectory):
+            os.mkdir(self.streamingDirectory)
+
     def execute(self) -> bool:
         super().execute()
         qfileTuple: tuple = QFileDialog.getSaveFileName(
