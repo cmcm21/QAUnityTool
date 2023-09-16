@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Documentación de QA Sniffer.md",
+                "file": "Notes/2023-09-15.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Documentación de QA Sniffer.md",
+                "file": "Notes/2023-09-15.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Documentación de QA Sniffer.md",
+                "file": "Notes/2023-09-15.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Documentación de QA Sniffer.md"
+                "file": "Notes/2023-09-15.md"
+              }
+            }
+          },
+          {
+            "id": "0f8d0ac69be572e9",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency"
               }
             }
           }
@@ -148,8 +158,16 @@
   },
   "active": "6869b7f58dfa3b0e",
   "lastOpenFiles": [
-    "Images/Pasted image 20230913174619.png",
+    "Notes/Today Tasks.md",
+    "Notes/2023-09-15.md",
+    "TODO/TODO.md",
+    "Notes/Date.md",
+    "Notes/2023-08-23.md",
+    "Notes/2023-08-24.md",
+    "Architecture/Sniffer Class Diagrams.md",
+    "Architecture/Input System Flow Chart.md",
     "Documentación de QA Sniffer.md",
+    "Images/Pasted image 20230913174619.png",
     "Images/Pasted image 20230913175018.png",
     "Images/Pasted image 20230913174911.png",
     "Images/Pasted image 20230913174720.png",
@@ -162,13 +180,8 @@
     "Images/SnifferSettingsImage.png",
     "Images/TagwizzQASnifferPath.png",
     "Images",
-    "TODO/2023-08-24.md",
-    "TODO/2023-08-23.md",
     "Architecture/Sniffer Hub.md",
-    "Architecture/Input System Flow Chart.md",
-    "Architecture/Sniffer Class Diagrams.md",
     "Notes/2023-09-01.md",
-    "Notes/Today Tasks.md",
     "Notes/2023-08-03.md",
     "TODO",
     "Notes/2023-08-11.md",

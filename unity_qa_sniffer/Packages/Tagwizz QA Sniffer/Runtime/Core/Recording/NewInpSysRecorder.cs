@@ -21,9 +21,10 @@ namespace TagwizzQASniffer.Core.Recording
                 recordStateEventsOnly = settings.RecordStateEventOnly
             };
             
-            _inputRecorder.changeEvent.AddListener((state) => {
+            _inputRecorder.changeEvent.AddListener((state, inputEventPtr) => {
                 switch (state) {
                     case InputRecorder.Change.ReplayStopped:
+                        Debug.Log("Replay stopped");
                         _recorderListeners.ForEach(l => l.OnReplayFinished());
                         break;
                     case InputRecorder.Change.ReplayStarted:
@@ -35,11 +36,18 @@ namespace TagwizzQASniffer.Core.Recording
                     case InputRecorder.Change.CaptureStopped:
                         _recorderListeners.ForEach(l => l.OnRecordFinished());
                         break;
+                    case InputRecorder.Change.ReplayStepByStep:
+                        _recorderListeners.ForEach(l=>l.OnReplayStepByStepStarted());
+                        break;
                     case InputRecorder.Change.None:
                         break;
                     case InputRecorder.Change.EventCaptured:
+                        if(inputEventPtr != null && inputEventPtr.valid)
+                            Debug.Log($"[{GetType()}]::Event Capture: {inputEventPtr}");
                         break;
                     case InputRecorder.Change.EventPlayed:
+                        if(inputEventPtr != null && inputEventPtr.valid)
+                            Debug.Log($"[{GetType()}]::Event Played: {inputEventPtr}");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(state), state, null);
@@ -83,9 +91,9 @@ namespace TagwizzQASniffer.Core.Recording
             _inputRecorder.OnDestroy();
         }
 
-        public int GetRecLenght() => _inputRecorder.replayPosition;
+        public int GetReplayPosition() => _inputRecorder.replayPosition;
 
-        public int GetRecPosition() =>(int)_inputRecorder.eventCount;
+        public int GetRecordingLength() =>(int)_inputRecorder.eventCount;
         
         public void StartRec()
         {
@@ -116,7 +124,12 @@ namespace TagwizzQASniffer.Core.Recording
         {
             _inputRecorder.StopReplay();
         }
-        
+
+        public void ReplayOneStep()
+        {
+           _inputRecorder.ReplayNextEvent(); 
+        }
+
         public void LoadFromFile(string fileName)
         {
             _inputRecorder.LoadCaptureFromFile(fileName);

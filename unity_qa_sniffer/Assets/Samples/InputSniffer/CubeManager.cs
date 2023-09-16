@@ -17,17 +17,19 @@ public class CubeManager : MonoBehaviour
     
     private void Update()
     {
-       if(_canRotate) 
-           transform.Rotate(Vector3.up,rotateSpeed*Time.deltaTime);
+        if (Keyboard.current == null)
+            return;
+        if(_canRotate) 
+            transform.Rotate(Vector3.up,rotateSpeed*Time.deltaTime);
        
-       if(Keyboard.current.downArrowKey.isPressed)
-           transform.Translate(Vector3.down * Time.deltaTime * moveSpeed);
-       if(Keyboard.current.rightArrowKey.isPressed)
-           transform.Translate(Vector3.right * Time.deltaTime * moveSpeed);
-       if(Keyboard.current.leftArrowKey.isPressed)
-           transform.Translate(Vector3.left * Time.deltaTime * moveSpeed);
-       if(Keyboard.current.upArrowKey.isPressed)
-           transform.Translate(Vector3.up * Time.deltaTime * moveSpeed);
+        if(Keyboard.current.downArrowKey.isPressed)
+            transform.Translate(Vector3.down * Time.deltaTime * moveSpeed);
+        if(Keyboard.current.rightArrowKey.isPressed)
+            transform.Translate(Vector3.right * Time.deltaTime * moveSpeed);
+        if(Keyboard.current.leftArrowKey.isPressed)
+            transform.Translate(Vector3.left * Time.deltaTime * moveSpeed);
+        if(Keyboard.current.upArrowKey.isPressed)
+            transform.Translate(Vector3.up * Time.deltaTime * moveSpeed);
     }
 
     public void Rotate()

@@ -35,12 +35,10 @@ class FileClient(GeneralSocket):
         self.sendThread.start()
 
     def _socketWorker(self):
-        #while not self.fileSet:
-        #    time.sleep(0.001)
 
         fileName = os.path.basename(self.filePath)
         try:
-            send = self.socket.send(fileName.encode())
+            send = self.socket.sendall(fileName.encode())
             if send == b'':
                 self._handleFileClientDisconnection()
                 return
@@ -69,14 +67,14 @@ class FileClient(GeneralSocket):
             print("Error while reading file")
         except RuntimeError:
             print("Error while reading file")
+        except OSError as error:
+            print(f"File Socket was disposed, error: {error}")
         finally:
             self.fileReceiveFinishedEvent(file=fileName)
             print("File received process finished")
             self.close()
 
     def _sendClientWorker(self):
-        while not self.fileSet:
-            time.sleep(0.001)
 
         fileName = os.path.basename(self.filePath)
         fileSize = os.path.getsize(self.filePath)
@@ -108,6 +106,8 @@ class FileClient(GeneralSocket):
             print("Error while sending file")
         except RuntimeError:
             print("Error while sending file")
+        except OSError:
+            print("File Socket was disposed")
         finally:
             self.fileSendFinishedEvent(address=self.address, file=fileName)
             self.close()

@@ -277,16 +277,16 @@ namespace TagwizzQASniffer.Editor
         {
              if (_recordSlider != null)
              {
-                 _recordSlider.highValue = _snifferCore.Recorder.GetRecLenght();
+                 _recordSlider.highValue = _snifferCore.Recorder.GetReplayPosition();
                  _recordSlider.lowValue = 0;
-                 _recordSlider.value = _snifferCore.Recorder.GetRecPosition();
+                 _recordSlider.value = _snifferCore.Recorder.GetRecordingLength();
              }
         }
 
         private void Update()
         {
             if (_recordSlider != null && _snifferCore != null && _snifferCore.Recorder != null) 
-                _recordSlider.value = (float)_snifferCore.Recorder.GetRecPosition();
+                _recordSlider.value = (float)_snifferCore.Recorder.GetRecordingLength();
         }
 
         private void OnDestroy() {

@@ -31,6 +31,8 @@ class StreamingClient(GeneralSocket):
         frameEndTime = 0
         while self.listeningSocket:
             try:
+                if self.socket is None:
+                    return
                 bytesRead = self.socket.recv(BUFFER_SIZE)
                 if bytesRead == b'':
                     self._streamClientDisconnected()
@@ -52,6 +54,9 @@ class StreamingClient(GeneralSocket):
                 print("Error while reading frame")
             except RuntimeError:
                 print("Error while reading frame")
+            except OSError as error:
+                print(f"Streaming client socket was disposed, error: {error}")
+                break
 
     def _streamClientDisconnected(self):
         self.disconnectedEvent(device=self)

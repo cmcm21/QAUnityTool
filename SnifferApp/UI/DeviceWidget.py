@@ -40,6 +40,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.recordBtn = QtWidgets.QPushButton("Record")
         self.stopBtn = QtWidgets.QPushButton("Stop")
         self.replayBtn = QtWidgets.QPushButton("Replay")
+        self.replayOneStepBtn = QtWidgets.QPushButton("Replay One Step")
         self.stopReplayBtn = QtWidgets.QPushButton("Stop Replay")
         self.loadFileBtn = QtWidgets.QPushButton("Load")
 
@@ -47,6 +48,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.stopBtn.clicked.connect(self.onStopBtnClicked)
         self.loadFileBtn.clicked.connect(self.onLoadBtnClicked)
         self.replayBtn.clicked.connect(self.onReplayBtnClicked)
+        self.replayOneStepBtn.clicked.connect(self.onReplayOneStepBtnClicked)
         self.stopReplayBtn.clicked.connect(self.onStopReplayBtnClicked)
         self.disableAllCommandsButtons()
 
@@ -114,6 +116,7 @@ class DeviceWidget(QtWidgets.QWidget):
         buttonsLayout.addWidget(self.stopBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
         buttonsLayout.addWidget(self.loadFileBtn,  alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
         buttonsLayout.addWidget(self.replayBtn,  alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
+        buttonsLayout.addWidget(self.replayOneStepBtn,  alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
         buttonsLayout.addWidget(self.stopReplayBtn, alignment=QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         buttonsLayout.setSpacing(5)
@@ -126,12 +129,14 @@ class DeviceWidget(QtWidgets.QWidget):
         self.recordBtn.setEnabled(False)
         self.stopReplayBtn.setEnabled(False)
         self.replayBtn.setEnabled(False)
+        self.replayOneStepBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(False)
 
     @QtCore.Slot()
     def onStopBtnClicked(self):
         self.recordBtn.setEnabled(True)
         self.replayBtn.setEnabled(True)
+        self.replayOneStepBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(True)
         self.stopReplayBtn.setEnabled(False)
@@ -140,6 +145,7 @@ class DeviceWidget(QtWidgets.QWidget):
     def onLoadBtnClicked(self):
         self.recordBtn.setEnabled(False)
         self.replayBtn.setEnabled(True)
+        self.replayOneStepBtn.setEnabled(True)
         self.loadFileBtn.setEnabled(True)
         self.stopReplayBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
@@ -148,6 +154,16 @@ class DeviceWidget(QtWidgets.QWidget):
     def onReplayBtnClicked(self):
         self.recordBtn.setEnabled(False)
         self.replayBtn.setEnabled(False)
+        self.replayOneStepBtn.setEnabled(False)
+        self.stopReplayBtn.setEnabled(True)
+        self.loadFileBtn.setEnabled(False)
+        self.stopBtn.setEnabled(False)
+
+    @QtCore.Slot()
+    def onReplayOneStepBtnClicked(self):
+        self.recordBtn.setEnabled(False)
+        self.replayBtn.setEnabled(True)
+        self.replayOneStepBtn.setEnabled(True)
         self.stopReplayBtn.setEnabled(True)
         self.loadFileBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
@@ -155,6 +171,7 @@ class DeviceWidget(QtWidgets.QWidget):
     @QtCore.Slot()
     def onStopReplayBtnClicked(self):
         self.replayBtn.setEnabled(True)
+        self.replayOneStepBtn.setEnabled(True)
         self.recordBtn.setEnabled(True)
         self.stopBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(True)
@@ -173,6 +190,7 @@ class DeviceWidget(QtWidgets.QWidget):
     def defaultCommandsButtonsConf(self):
         self.recordBtn.setEnabled(True)
         self.replayBtn.setEnabled(False)
+        self.replayOneStepBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(True)
         self.stopReplayBtn.setEnabled(False)
@@ -181,6 +199,7 @@ class DeviceWidget(QtWidgets.QWidget):
         self.recordBtn.setEnabled(False)
         self.replayBtn.setEnabled(False)
         self.stopBtn.setEnabled(False)
+        self.replayOneStepBtn.setEnabled(False)
         self.loadFileBtn.setEnabled(False)
         self.stopReplayBtn.setEnabled(False)
 

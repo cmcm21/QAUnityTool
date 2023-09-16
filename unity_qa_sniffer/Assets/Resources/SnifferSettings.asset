@@ -15,6 +15,10 @@ MonoBehaviour:
   inputSystemType: 0
   snifferObserver: {fileID: 6129087749859578532, guid: 5bf0f32028dc7e545a3a80042ab35a55, type: 3}
   recordingOption: 0
-  recordFrames: 1
+  recordInputFrames: 1
+  replayOnNewDevices: 1
+  simulateOriginalTimingOnReplay: 1
+  recordStateEventsOnly: 0
+  liveStreaming: 1
   maxFramesPerRec: 5000
   frameRate: 15

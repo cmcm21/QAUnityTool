@@ -10,7 +10,7 @@ class GeneralSocket:
         self.address = address
         self.ip = address[0]
         self.port = address[1]
-        self.socketThread = Thread(target=self._socketWorker)
+        self.socketThread = Thread(target=self._socketWorker,daemon=True)
         self.listeningSocket = False
         self.id = str(self.ip)
         self.hostname = None
@@ -25,12 +25,19 @@ class GeneralSocket:
 
     @abstractmethod
     def close(self):
+        if not self.listeningSocket:
+            return
+
         self.listeningSocket = False
 
         if self.socketThread.is_alive():
             try:
-                self.socketThread.join()
+                self.socketThread.join(1)
             except RuntimeError:
                 print(f"device {self.address} listening thread couldn't join ")
 
-        self.socket.close()
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except OSError:
+            print("Socket is disconnected")

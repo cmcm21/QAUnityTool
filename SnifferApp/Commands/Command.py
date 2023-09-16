@@ -21,6 +21,12 @@ class Command:
         if self.serverManager.selectedDevices is None:
             return False
 
+    def sendExecutedEventSignal(self, signal: CommandSignal, device: DeviceClient, customMessage=None):
+        if customMessage is None:
+            self.onCommandExecutedEvent(message=f"Sending signal {signal} to {device.address}")
+        else:
+            self.onCommandExecutedEvent(message=customMessage)
+
 
 class CommandHistory:
     def __init__(self):
@@ -122,12 +128,14 @@ class SaveCommand(Command):
     def execute(self) -> bool:
         super().execute()
         qfileTuple: tuple = QFileDialog.getSaveFileName(
-            self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace")
+            self.app.uiManager.GetWidget(), caption="Save File", filter="*.inputtrace" )
+
         fileName = qfileTuple[0]
         if fileName != "":
             for device in self.serverManager.selectedDevices:
                 self.saveVideo(fileName, device)
                 self.saveFile(fileName, device)
+                self.sendExecutedEventSignal(CommandSignal.SAVE_FILE, device)
         else:
             print("File wasn't saved")
             return False
@@ -139,8 +147,6 @@ class SaveCommand(Command):
         self.serverManager.fileServer.sendFile = False
         self.serverManager.fileServer.setFile(device.id, realName)
         device.sendSignalToDevice(CommandSignal.SAVE_FILE)
-        self.onCommandExecutedEvent(message="Sending {} signal to {}".format(
-                CommandSignal.SAVE_FILE.value, device.id), signal=CommandSignal.SAVE_FILE)
 
     def saveVideo(self, fileName: str, device: DeviceClient):
         baseName = os.path.basename(fileName)
@@ -174,8 +180,7 @@ class LoadFileCommand(Command):
             for selectedDevice in self.serverManager.selectedDevices:
                 self.serverManager.fileServer.setFile(selectedDevice.id, fileName)
                 selectedDevice.sendSignalToDevice(CommandSignal.LOAD_FILE)
-                self.onCommandExecutedEvent(message="Sending {} signal to {}".format(
-                    CommandSignal.LOAD_FILE.value, selectedDevice.id), signal=CommandSignal.LOAD_FILE)
+                self.sendExecutedEventSignal(CommandSignal.LOAD_FILE, selectedDevice)
         else:
             print("File wasn't loaded")
 
@@ -205,4 +210,17 @@ class AutoSaveCommand(SaveCommand):
         for device in self.serverManager.selectedDevices:
             self.saveVideo(streamingName, device)
             self.saveFile(inputFileName, device)
+            self.sendExecutedEventSignal(CommandSignal.SAVE_FILE, device)
         return True
+
+
+class ReplayOneStepCommand(Command):
+    def __init__(self, snifferHub: SnifferHub, serverManager: ServerManager):
+        super().__init__(snifferHub, serverManager)
+
+    def execute(self) -> bool:
+        for selectedDevice in self.serverManager.selectedDevices:
+            selectedDevice.sendSignalToDevice(CommandSignal.REPLAY_ONE_STEP)
+            self.sendExecutedEventSignal(CommandSignal.REPLAY_ONE_STEP, selectedDevice)
+
+        return len(self.serverManager.selectedDevices) > 0

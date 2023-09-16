@@ -215,7 +215,7 @@ namespace UnityEngine.InputSystem
 
             CreateEventTrace();
             m_EventTrace.Enable();
-            m_ChangeEvent?.Invoke(Change.CaptureStarted);
+            m_ChangeEvent?.Invoke(Change.CaptureStarted, null);
         }
 
         public void StopCapture()
@@ -223,8 +223,28 @@ namespace UnityEngine.InputSystem
             if (m_EventTrace != null && m_EventTrace.enabled)
             {
                 m_EventTrace.Disable();
-                m_ChangeEvent?.Invoke(Change.CaptureStopped);
+                m_ChangeEvent?.Invoke(Change.CaptureStopped, null);
             }
+        }
+
+        public void ReplayNextEvent()
+        {
+            if (m_EventTrace == null)
+                return;
+            
+            if(m_EventTrace.enabled)
+                StopCapture();
+
+            if (m_ReplayController == null)
+            {
+                SetupReplayController();
+                m_ChangeEvent?.Invoke(Change.ReplayStepByStep,null);
+            }            
+            
+            if(m_ReplayController is { finished: false } && m_ReplayController.position < m_ReplayController.trace.eventCount)
+                m_ReplayController.PlayOneEvent();
+            else
+                StopReplay();
         }
 
         public void StartReplay()
@@ -239,24 +259,30 @@ namespace UnityEngine.InputSystem
             }
 
             StopCapture();
-
-            // Configure replay controller.
-            m_ReplayController = m_EventTrace.Replay()
-                .OnFinished(StopReplay)
-                .OnEvent(ptr =>
-                {
-                    m_ChangeEvent?.Invoke(Change.EventPlayed);
-                });
-            if (m_ReplayOnNewDevices)
-                m_ReplayController.WithAllDevicesMappedToNewInstances();
-
+                
+            SetupReplayController();
             // Start replay.
             if (m_SimulateOriginalTimingOnReplay)
                 m_ReplayController.PlayAllEventsAccordingToTimestamps();
             else
                 m_ReplayController.PlayAllFramesOneByOne();
 
-            m_ChangeEvent?.Invoke(Change.ReplayStarted);
+            m_ChangeEvent?.Invoke(Change.ReplayStarted, null);
+        }
+
+        private void SetupReplayController()
+        {
+            // Configure replay controller.
+            m_ReplayController = m_EventTrace.Replay()
+                .OnFinished(StopReplay)
+                .OnEvent(ptr =>
+                {
+                    
+                    m_ChangeEvent?.Invoke(Change.EventPlayed, ptr);
+                });
+            if (m_ReplayOnNewDevices)
+                m_ReplayController.WithAllDevicesMappedToNewInstances();
+
         }
 
         public void StopReplay()
@@ -265,7 +291,7 @@ namespace UnityEngine.InputSystem
             {
                 m_ReplayController.Dispose();
                 m_ReplayController = null;
-                m_ChangeEvent?.Invoke(Change.ReplayStopped);
+                m_ChangeEvent?.Invoke(Change.ReplayStopped, null);
             }
         }
 
@@ -334,7 +360,7 @@ namespace UnityEngine.InputSystem
 
         private void OnEventRecorded(InputEventPtr eventPtr)
         {
-            m_ChangeEvent?.Invoke(Change.EventCaptured);
+            m_ChangeEvent?.Invoke(Change.EventCaptured, eventPtr);
         }
 
         private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
@@ -466,10 +492,11 @@ namespace UnityEngine.InputSystem
             CaptureStopped,
             ReplayStarted,
             ReplayStopped,
+            ReplayStepByStep,
         }
 
         [Serializable]
-        public class ChangeEvent : UnityEvent<Change>
+        public class ChangeEvent : UnityEvent<Change, InputEventPtr>
         {
         }
     }

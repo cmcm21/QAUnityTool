@@ -34,6 +34,9 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
     def _socketWorker(self):
         while self.listeningSocket:
             try:
+                if self.socket is None:
+                    print("Streaming server broke")
+                    break
                 streamingSocket, address = self.socket.accept()
                 streamingClient = StreamingClient(streamingSocket, address)
                 self._handleClient(streamingClient)
@@ -41,12 +44,13 @@ class StreamingServer(GeneralSocket, QtCore.QObject):
                 print("Error while connecting to streaming client")
             except RuntimeError:
                 print("Error while connecting to streaming client")
-
-        self.close()
+            except OSError as error:
+                print(f"Streaming server socket was disposed, OsError: {error}")
+                break
 
     def _handleClient(self, client: StreamingClient):
         client.frameReceivedCompleted += self._onFrameCompleted
-        client.disconnectedEvent +=  self._onDeviceDisconnected
+        client.disconnectedEvent += self._onDeviceDisconnected
         helper = StreamingVideoHelper()
         self.helpers[client.id] = helper
         self.clients.append(client)

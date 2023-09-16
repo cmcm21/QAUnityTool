@@ -6,8 +6,6 @@ from Network.GeneralSocket import GeneralSocket
 from Network.Servers.StreamingServer import StreamingServer
 from Utils.Settings import *
 
-bufferSize = 1024
-
 
 class ServerManager(GeneralSocket):
     def __init__(self):
@@ -28,12 +26,15 @@ class ServerManager(GeneralSocket):
         self.listeningSocket = True
         self.socket.bind(self.address)
         self.socket.listen(MAX_DEVICES_TO_LISTENING)
+        print(f"Server manager Started at {self.address}")
         self.serverInitEvent(message="Server started at :" + self.ip + " on port: " + str(self.port))
         self.socketThread.start()
 
     def _socketWorker(self):
         while self.listeningSocket:
             try:
+                if self.socket is None:
+                    break
                 (client, address) = self.socket.accept()
                 device = DeviceClient(client, address)
                 self._handleNewDevice(device)
@@ -41,8 +42,9 @@ class ServerManager(GeneralSocket):
                 print("[ServerManager]::Error while listening clients")
             except RuntimeError:
                 print("[ServerManager]::Runtime Error in Server")
-
-        self.close()
+            except OSError as error:
+                print(f"[ServerManager]:: Socket is not a socket anymore, OSError: {error}")
+                break
 
     def setDeviceSelected(self, devices: list[DeviceClient]):
         self.selectedDevices = devices
@@ -63,15 +65,29 @@ class ServerManager(GeneralSocket):
             self.NoMoreDevicesConnectedEvent()
 
     def close(self):
+        if not self.listeningSocket:
+            return
+
         self.listeningSocket = False
 
-        if self.socketThread.is_alive():
-            self.socketThread.join()
+        try:
+            if self.socketThread.is_alive():
+                self.socketThread.join(1)
+
+        except RuntimeError:
+            print("thread couldn't join")
 
         for device in self.devices:
             device.close()
 
-        self.socket.close()
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except OSError as error:
+            print(f"socket is disconnected, error: {error}")
+
+        self.streamingServer.close()
+        self.fileServer.close()
 
     def __del__(self):
         self.close()

@@ -113,7 +113,7 @@ namespace TagwizzQASniffer.Network
          
         public void StopClient()
         {
-            if (!_isReading && !_sender.Connected)
+            if (_sender == null || !_isReading && !_sender.Connected)
             {
                 _observer.DisconnectedNotify(); 
                 return;

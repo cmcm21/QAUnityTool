@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace TagwizzQASniffer.Core 
 {
-    public enum SnifferState {RECORDING,IDLE,PLAYING_BACK}
+    public enum SnifferState {RECORDING,IDLE,PLAYING_BACK, PLAYING_STEPBYSTEP}
     public class SnifferCore : IRecorderListener, IFramesRecorderListener
     {
         private SnifferState _state;
@@ -28,8 +28,7 @@ namespace TagwizzQASniffer.Core
             InitDependencies();
             InitObserver();
             
-            if(_snifferSettings.LiveStreaming)
-                InitFramesRecorder();
+            InitFramesRecorder();
         }
 
         public void Destroy()
@@ -132,6 +131,18 @@ namespace TagwizzQASniffer.Core
             if(_framesCapture != null) _framesCapture.StopRecording();
         }
 
+        public void ReplayOneStep()
+        {
+            if(_state == SnifferState.RECORDING)
+                Stop();
+            
+            if(_state == SnifferState.IDLE)
+                PlayFrameRecorder();
+            
+            _state = SnifferState.PLAYING_STEPBYSTEP;
+            _recorder.ReplayOneStep();
+        }
+
         public void Save(string recordingFileName)
         {
             try
@@ -164,8 +175,7 @@ namespace TagwizzQASniffer.Core
  
         void IRecorderListener.OnRecordFinished()
         {
-            if(_state == SnifferState.RECORDING)
-                Record();
+            _state = SnifferState.IDLE;
         }
  
         void IRecorderListener.OnReplayStarted()
@@ -179,7 +189,11 @@ namespace TagwizzQASniffer.Core
             if(_framesCapture != null && _framesCapture.State == FrameRecorderState.RECORDING)
                 _framesCapture.StopRecording();
         }
- 
+
+        void IRecorderListener.OnReplayStepByStepStarted()
+        {
+            _state = SnifferState.PLAYING_STEPBYSTEP;
+        }
 
         #endregion
        #region IFrameRecorderListener 

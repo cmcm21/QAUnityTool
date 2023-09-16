@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using TagwizzQASniffer.Core;
 using TagwizzQASniffer.Core.FramesRecorder;
@@ -12,7 +13,7 @@ using UnityEngine.InputSystem;
 namespace TagwizzQASniffer.Network
 {
    
-    enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE, SET_HOSTNAME}
+    enum CommandSignal { RECORD, STOP_REC, REPLAY, STOP_REPLAY, LOAD_FILE, SAVE_FILE, SET_HOSTNAME, REPLAY_ONE_STEP}
     public enum NetworkState {CONNECTED, DISCONNECTED}
 
     public class NetworkBehaviour : MonoBehaviour, IRecorderListener, IFramesRecorderListener, IClientListener
@@ -31,10 +32,13 @@ namespace TagwizzQASniffer.Network
         public HubClient HubClient => _hubClient;
         public StreamingClient StreamingClient => _streamingClient;
         public Action networkInitialized;
+        // we use a queue in order to execute commands in the main thread of the game (needed for inputRecorder)
+        private Queue<string> _commandsFromServer; 
 
         private void Awake()
         {
             _deviceName = SystemInfo.deviceName;
+            _commandsFromServer = new Queue<string>(); 
             InitNetworkComponents();
         }
 
@@ -57,11 +61,13 @@ namespace TagwizzQASniffer.Network
             _state = NetworkState.DISCONNECTED;
             
             Debug.Log($"System Information: {SystemInfo.deviceName}");
+            Init();
+            Show();
         }
 
         private void HubClientOnReceivedMsgFromServer(string message)
         {
-           DecodeMessage(message); 
+            _commandsFromServer.Enqueue(message);
         }
 
 
@@ -72,9 +78,14 @@ namespace TagwizzQASniffer.Network
                 _snifferCore.Record();
             else if (message == CommandSignal.STOP_REC.ToString() && state == SnifferState.RECORDING)
                 _snifferCore.Stop();
-            else if (message == CommandSignal.REPLAY.ToString() && state == SnifferState.IDLE)
+            else if (message == CommandSignal.REPLAY.ToString() 
+                     && (state == SnifferState.IDLE || state == SnifferState.PLAYING_STEPBYSTEP))
                 _snifferCore.Replay();
-            else if (message == CommandSignal.STOP_REPLAY.ToString() && state == SnifferState.PLAYING_BACK)
+            else if(message == CommandSignal.REPLAY_ONE_STEP.ToString() 
+                     && (state == SnifferState.IDLE || state == SnifferState.PLAYING_STEPBYSTEP))
+                _snifferCore.ReplayOneStep();
+            else if (message == CommandSignal.STOP_REPLAY.ToString() 
+                     && (state == SnifferState.PLAYING_BACK || state == SnifferState.PLAYING_STEPBYSTEP))
                 _snifferCore.StopReplay();
             else if (message == CommandSignal.SAVE_FILE.ToString() && state == SnifferState.IDLE)
                 ProcessSaveCommand();
@@ -206,22 +217,28 @@ namespace TagwizzQASniffer.Network
         
         private void Update()
         {
-            if (!IsActivated()) return;
-            
-            if(_snifferCore == null)
-                Init();
-            else
+            if (_commandsFromServer.Count > 0)
+                DecodeMessage(_commandsFromServer.Dequeue());
+
+            if (IsActivated())
             {
-                if (_canvasGroup.alpha == 0)
-                    Show();
+                if(_snifferCore == null)
+                    Init();
                 else
-                    Hide();
+                {
+                    if (_canvasGroup.alpha == 0)
+                        Show();
+                    else
+                        Hide();
+                }
             }
         }
 
         private bool IsActivated()
         {
-            return Input.touchCount >= 4 || Keyboard.current.f1Key.wasPressedThisFrame;
+            if (Keyboard.current == null)
+                return false;
+            return Keyboard.current.f1Key.wasPressedThisFrame;
         }
 
         private void OnDestroy()
@@ -278,7 +295,11 @@ namespace TagwizzQASniffer.Network
         {
             SendServerSnifferCodeChangedState();
         }
-       
+
+        void  IRecorderListener.OnReplayStepByStepStarted()
+        {
+            SendServerSnifferCodeChangedState();
+        }
 
         #endregion
 

@@ -20,6 +20,7 @@ namespace TagwizzQASniffer.Core
     {
         private readonly HashSet<ISnifferObserverSubscriber> _subscribers = new HashSet<ISnifferObserverSubscriber>();
 
+
         public void Subscribe(ISnifferObserverSubscriber subscriber)
         {
             _subscribers.Add(subscriber);
@@ -31,6 +32,7 @@ namespace TagwizzQASniffer.Core
         }
         private void Awake()
         {
+            DontDestroyOnLoad(this);
             foreach(var subscriber  in _subscribers)
                 subscriber.OnAwake();
         }

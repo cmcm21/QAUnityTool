@@ -43,6 +43,8 @@ class FileServer(GeneralSocket, QtCore.QObject):
     def _socketWorker(self):
         while self.listeningSocket:
             try:
+                if self.socket is None:
+                    break
                 fileSocket, address = self.socket.accept()
                 fileClient = FileClient(fileSocket, address)
                 self._connectEvents(fileClient)
@@ -55,6 +57,9 @@ class FileServer(GeneralSocket, QtCore.QObject):
 
             except ConnectionError:
                 print("File server Connection Error")
+            except OSError as error:
+                print(f"File server socket was disposed : {error}")
+                break
 
     def _connectEvents(self, fileClient: FileClient):
         fileClient.fileReceiveStartedEvent = self.fileReceiveStartedEvent
@@ -93,9 +98,12 @@ class FileServer(GeneralSocket, QtCore.QObject):
             del self.fileClients[fileClient.id]
 
     def close(self):
+        if not self.listeningSocket:
+            return
+
         self.listeningSocket = False
         if self.socketThread.is_alive():
-            self.socketThread.join()
+            self.socketThread.join(1)
 
         for fileClient in self.fileClients:
             fileClient.fileReceiveStartedEvent -= self._onFileReceivedStarted
@@ -106,7 +114,11 @@ class FileServer(GeneralSocket, QtCore.QObject):
 
             fileClient.close()
         if self.socket is not None:
-            self.socket.close()
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+                self.socket.close()
+            except OSError:
+                print("Socket is disconnected")
 
     def __del__(self):
         self.close()

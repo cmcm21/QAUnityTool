@@ -1,8 +1,9 @@
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore, QtGui
 from UI.ServerWidget import ServerWidget
 from UI.UILogger import UILogger
 from UI.DeviceWidget import DeviceWidget
 from UI.ProgressBar import ProgressBar
+from Utils.Events import Event
 from Network.Clients.DeviceClient import DeviceClient
 import platform
 
@@ -13,23 +14,40 @@ def setWidgetSize(size: QtCore.QSize, *args):
         widget.setMaximumSize(size)
 
 
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.onCloseEvent = Event()
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        self.onCloseEvent()
+        super().closeEvent(event)
+
+
 class UIManager:
     def __init__(self):
         self.guiApp = QtWidgets.QApplication([])
         self.guiApp.setStyle(platform.system())
+        self.guiApp.quitOnLastWindowClosed()
 
         self.serverWidget = ServerWidget()
         self.uiLogger = UILogger()
         self.deviceWidget = DeviceWidget()
         self.fileTransferringProgressbar = ProgressBar()
+        self.onApplicationQuitEvent = Event()
 
         self._initMainWindow()
 
         self.fileTransferringProgressbar.setVisible(False)
         self._connectEvents()
+        self.mainWindow.onCloseEvent += self._onWindowsQuit
+
+    def _onWindowsQuit(self, *args, **kwargs):
+        self.uiLogger.appendText("Closing Application... please wait")
+        self.onApplicationQuitEvent(args, kwargs)
 
     def _initMainWindow(self):
-        self.mainWindow = QtWidgets.QMainWindow()
+        self.mainWindow = MainWindow()
         self.mainWindow.setWindowTitle("Sniffer Hub")
 
         self.hLayout = QtWidgets.QHBoxLayout()

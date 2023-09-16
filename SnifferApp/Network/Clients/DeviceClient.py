@@ -31,6 +31,8 @@ class DeviceClient(GeneralSocket):
     def _socketWorker(self):
         while self.listeningSocket:
             try:
+                if self.socket is None:
+                    break
                 message = self.socket.recv(BUFFER_SIZE)
                 if message == b'':
                     self._handleDeviceDisconnection()
@@ -39,6 +41,9 @@ class DeviceClient(GeneralSocket):
                     self._decodeClientMessage(message.decode())
             except ConnectionError:
                 self._handleDeviceDisconnection()
+            except OSError as error:
+                print(f"Device Socket was disposed, error: {error}")
+                break
 
     def _handleDeviceDisconnection(self):
         print(f"Device client {self.address} disconnected")
@@ -63,7 +68,7 @@ class DeviceClient(GeneralSocket):
 
     def sendSignalToDevice(self, signal: CommandSignal):
         try:
-            send = self.socket.send(signal.value.encode())
+            send = self.socket.sendall(signal.value.encode())
             if send == 0:
                 self._handleDeviceDisconnection()
         except ConnectionError:

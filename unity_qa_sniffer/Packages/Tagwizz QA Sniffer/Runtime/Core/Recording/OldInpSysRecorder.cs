@@ -49,9 +49,9 @@ namespace TagwizzQASniffer.Core.Recording
         public event Action OnReplayStarted;
         public event Action OnReplayFinished;
 
-        public int GetRecLenght() => 0;
+        public int GetReplayPosition() => 0;
 
-        public int GetRecPosition() => 0;
+        public int GetRecordingLength() => 0;
 
         public void StartRec()
         {
@@ -93,6 +93,7 @@ namespace TagwizzQASniffer.Core.Recording
 
         public void Replay() {}
         public void StopPlay() { }
+        public void ReplayOneStep() { }
 
         public void LoadFromFile(string fileName) { }
         

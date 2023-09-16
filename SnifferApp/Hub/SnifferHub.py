@@ -24,6 +24,7 @@ class SnifferHub:
         self.uiManager.execute()
 
     def _connectEvents(self):
+        self.uiManager.onApplicationQuitEvent += self._onApplicationQuit
         self.serverManager.newDeviceConnectedEvent += self._onNewDeviceAdded
         self.serverManager.serverInitEvent += self._onServerStarted
         self.serverManager.NoMoreDevicesConnectedEvent += self._onNoMoreDevices
@@ -50,6 +51,11 @@ class SnifferHub:
         self.serverManager.fileServer.qFileTransferEndSignal.connect(
             self.uiManager.fileTransferringProgressbar.endProgressBar
         )
+
+    def _onApplicationQuit(self, *args, **kwargs):
+        del self.uiManager
+        del self.serverManager
+        del self
 
     def _onNewDeviceAdded(self, *args, **kwargs):
         device: DeviceClient = kwargs["device"]
@@ -113,6 +119,7 @@ class SnifferHub:
         stopCommand = StopCommand(self, self.serverManager)
         replayCommand = ReplayCommand(self, self.serverManager)
         stopReplayCommand = StopReplayCommand(self, self.serverManager)
+        replayOneStepCommand = ReplayOneStepCommand(self, self.serverManager)
         loadCommand = LoadFileCommand(self, self.serverManager)
         autoSaveCommand = AutoSaveCommand(self, self.serverManager)
 
@@ -121,6 +128,7 @@ class SnifferHub:
             recordCommand,
             stopCommand,
             replayCommand,
+            replayOneStepCommand,
             stopReplayCommand,
             loadCommand,
             autoSaveCommand
@@ -132,6 +140,7 @@ class SnifferHub:
         self._setButtonCommand(self.uiManager.deviceWidget.replayBtn, replayCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.stopReplayBtn, stopReplayCommand)
         self._setButtonCommand(self.uiManager.deviceWidget.loadFileBtn, loadCommand)
+        self._setButtonCommand(self.uiManager.deviceWidget.replayOneStepBtn, replayOneStepCommand)
 
     def _connectCommandEventToLogger(self, *args):
         for command in args:
