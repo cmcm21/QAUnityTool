@@ -1,0 +1,13 @@
+- Hub = Aplicación de python.
+
+- Hacer que la funcionalidad de Replay one step funcione correctamente
+	- Hacer que funcione el streaming correctamente cuando se hace one step replay
+		- que empiece hacer live streaming en el primer one step replay
+		- que dejede hacer live streaming después del ultimo step del one step replay(cuando se ejecuten todos los inputEvents del replay)
+	- Hacer que el estado del hub (device widget) regrese a su forma default cuando termine de hacer replay one step (todos los events)
+- Hacer pruebas de replay one step en space Elite.
+- Hacer un progress bar/slider que muestre la duración del replay en el hub junto con el streaming (que funcione tanto para one step replay como para replay normal).
+- Agregar el manejo de multimedia para reproducir los videos generados por el recording en el hub (pestaña de video)
+- Actualizar el GUI del hub al nuevo diseño.
+- Hacer que el frame recorder funcione con todas las camaras/ pantallas del juego.
+	- por el momento solo esta tomando las imagenes(frames) producidas en la camara principal, pero hay ciertas ocasciones donde pantallas de camaras secundarias no son guardardas (checarlo en FrameCapture.cs)
