@@ -18,7 +18,7 @@ SnifferApp/*/__pycache__/
 SnifferApp/TestRecFiles/
 SnifferApp/TestStreamingVideos/
 
-.pyc
+*.pyc
 .idea
 
 # MemoryCaptures can get excessive in size.
