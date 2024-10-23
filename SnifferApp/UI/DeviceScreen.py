@@ -74,7 +74,10 @@ class DeviceScreen(QtWidgets.QWidget):
             scaleFactor = self.portraitSize
 
         pixmap = QtGui.QPixmap(imagePath)
-        pixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        try:
+            pixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        except OSError:
+            pixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.qStreamingLabel.setPixmap(pixmap)
 
     def setStreamingImage(self, pixmap: QtGui.QPixmap):
@@ -84,7 +87,10 @@ class DeviceScreen(QtWidgets.QWidget):
         scaleFactor = self.landscapeSize \
             if (_checkImageOrientation(pixmap) == Orientation.LANDSCAPE) else self.portraitSize
 
-        scaledPixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+        try:
+            scaledPixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        except OSError:
+            scaledPixmap = pixmap.scaled(scaleFactor, aspectMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
         self.qStreamingLabel.setPixmap(scaledPixmap)
         self.setLayout(self.qvBox)
 
